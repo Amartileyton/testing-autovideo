@@ -1,0 +1,64 @@
+{
+  "generatedAt": "2026-10-19T14:00:00.000Z",
+  "fps": 30,
+  "crossDissolveFrames": 10,
+  "totalDurationInFrames": 250,
+  "totalDurationSeconds": 8.33,
+  "backgroundMusicFile": null,
+  "scenes": [
+    {
+      "id": "scene-1",
+      "audioFile": "",
+      "characterPreset": "dramatic",
+      "actualDuration": 4.0,
+      "durationInFrames": 130,
+      "wordsPerSecond": 4.25,
+      "leadingSilenceMs": 45,
+      "trailingSilenceMs": 120,
+      "trimOffsetMs": 0,
+      "warnings": [],
+      "wordTimestamps": [
+        { "word": "El", "startMs": 50, "endMs": 200, "startFrame": 2, "endFrame": 6 },
+        { "word": "motor", "startMs": 200, "endMs": 450, "startFrame": 6, "endFrame": 14 },
+        { "word": "de", "startMs": 450, "endMs": 560, "startFrame": 14, "endFrame": 17 },
+        { "word": "vídeo", "startMs": 560, "endMs": 850, "startFrame": 17, "endFrame": 26 },
+        { "word": "programático", "startMs": 850, "endMs": 1350, "startFrame": 26, "endFrame": 41 },
+        { "word": "convierte", "startMs": 1350, "endMs": 1750, "startFrame": 41, "endFrame": 53 },
+        { "word": "cada", "startMs": 1750, "endMs": 1980, "startFrame": 53, "endFrame": 59 },
+        { "word": "palabra", "startMs": 1980, "endMs": 2350, "startFrame": 59, "endFrame": 71 },
+        { "word": "de", "startMs": 2350, "endMs": 2480, "startFrame": 71, "endFrame": 74 },
+        { "word": "ElevenLabs", "startMs": 2480, "endMs": 2950, "startFrame": 74, "endFrame": 89 },
+        { "word": "en", "startMs": 2950, "endMs": 3080, "startFrame": 89, "endFrame": 92 },
+        { "word": "coordenadas", "startMs": 3080, "endMs": 3520, "startFrame": 92, "endFrame": 106 },
+        { "word": "exactas.", "startMs": 3520, "endMs": 3950, "startFrame": 106, "endFrame": 119 }
+      ]
+    },
+    {
+      "id": "scene-2",
+      "audioFile": "",
+      "characterPreset": "narrator",
+      "actualDuration": 4.0,
+      "durationInFrames": 130,
+      "wordsPerSecond": 4.0,
+      "leadingSilenceMs": 40,
+      "trailingSilenceMs": 110,
+      "trimOffsetMs": 0,
+      "warnings": [],
+      "wordTimestamps": [
+        { "word": "La", "startMs": 40, "endMs": 180, "startFrame": 1, "endFrame": 5 },
+        { "word": "cámara", "startMs": 180, "endMs": 480, "startFrame": 5, "endFrame": 14 },
+        { "word": "cinemática", "startMs": 480, "endMs": 960, "startFrame": 14, "endFrame": 29 },
+        { "word": "se", "startMs": 960, "endMs": 1100, "startFrame": 29, "endFrame": 33 },
+        { "word": "desplaza", "startMs": 1100, "endMs": 1520, "startFrame": 33, "endFrame": 46 },
+        { "word": "sobre", "startMs": 1520, "endMs": 1780, "startFrame": 46, "endFrame": 53 },
+        { "word": "un", "startMs": 1780, "endMs": 1920, "startFrame": 53, "endFrame": 58 },
+        { "word": "lienzo", "startMs": 1920, "endMs": 2280, "startFrame": 58, "endFrame": 68 },
+        { "word": "único", "startMs": 2280, "endMs": 2650, "startFrame": 68, "endFrame": 80 },
+        { "word": "impulsada", "startMs": 2650, "endMs": 3150, "startFrame": 80, "endFrame": 95 },
+        { "word": "por", "startMs": 3150, "endMs": 3320, "startFrame": 95, "endFrame": 100 },
+        { "word": "resortes", "startMs": 3320, "endMs": 3680, "startFrame": 100, "endFrame": 110 },
+        { "word": "matemáticos.", "startMs": 3680, "endMs": 3950, "startFrame": 110, "endFrame": 119 }
+      ]
+    }
+  ]
+}

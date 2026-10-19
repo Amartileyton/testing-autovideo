@@ -1,0 +1,40 @@
+{
+  "name": "antigravity-remotion-elevenlabs-studio",
+  "version": "1.0.0",
+  "description": "Estudio de producción de vídeo programático vectorial basado en Remotion y sincronizado con ElevenLabs",
+  "private": true,
+  "scripts": {
+    "dev": "remotion studio --port 3000",
+    "start": "remotion studio --port 3000",
+    "build": "remotion render src/index.ts MainVideo out/video.mp4",
+    "sync:audio": "node scripts/elevenlabs-sync.mjs",
+    "qa:gate": "node scripts/promptible-gate.mjs",
+    "session:restore": "node scripts/restore-session.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/captions": "4.0.536",
+    "@remotion/cli": "4.0.536",
+    "@remotion/elevenlabs": "4.0.536",
+    "@remotion/media-utils": "4.0.536",
+    "@remotion/shapes": "4.0.536",
+    "@remotion/tailwind-v4": "4.0.536",
+    "@remotion/transitions": "4.0.536",
+    "dotenv": "^16.4.7",
+    "lucide-react": "^0.475.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.536",
+    "roughjs": "^4.6.6",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.0.7",
+    "typescript": "^5.7.3"
+  }
+}

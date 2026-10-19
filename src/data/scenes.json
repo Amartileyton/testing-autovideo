@@ -1,0 +1,45 @@
+{
+  "projectTitle": "Diagnóstico Inicial — Estudio Vectorial Antigravity",
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "crossDissolveFrames": 10,
+  "scenes": [
+    {
+      "id": "scene-1",
+      "title": "ARQUITECTURA VECTORIAL",
+      "text": "El motor de vídeo programático convierte cada palabra de ElevenLabs en coordenadas exactas a treinta fotogramas por segundo.",
+      "characterPreset": "dramatic",
+      "visualCue": "Diagrama vectorial del motor de sincronización con contador de precisión en milisegundos y nodos de malla técnica.",
+      "cameraTarget": {
+        "x": 0,
+        "y": 0,
+        "zoom": 1.0,
+        "rotateDeg": 0
+      },
+      "metrics": {
+        "label": "FRECUENCIA DE MUESTREO",
+        "numericValue": 30,
+        "unit": "FPS"
+      }
+    },
+    {
+      "id": "scene-2",
+      "title": "FÍSICA CONTINUA",
+      "text": "La cámara cinemática se desplaza sobre un lienzo único impulsada por resortes matemáticos sin transiciones de hoja de estilo.",
+      "characterPreset": "narrator",
+      "visualCue": "Esquema del aparejo CameraRig desplazándose hacia el segundo cuadrante con curva amortiguada y tarjeta editorial RoughJS.",
+      "cameraTarget": {
+        "x": 0,
+        "y": 980,
+        "zoom": 1.04,
+        "rotateDeg": 0
+      },
+      "metrics": {
+        "label": "ZONA SEGURA VERTICAL",
+        "numericValue": 85,
+        "unit": "%"
+      }
+    }
+  ]
+}
