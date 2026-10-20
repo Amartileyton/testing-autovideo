@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { WordTimestamp } from '../data/schema';
 import {
@@ -10,71 +10,68 @@ import {
 
 export interface DynamicCaptionsProps {
   wordTimestamps: WordTimestamp[];
-  /** Offset global en fotogramas donde arranca esta escena */
+  /** Offset global en fotogramas donde arranca esta secuencia */
   sceneStartFrame?: number;
   /** Número de palabras por ventana deslizante (por defecto 3, cadencia TrendForge) */
   wordsPerWindow?: number;
 }
 
 /**
- * Localiza el índice de la palabra activa con la ventana de tolerancia de 450ms (0.45s)
- * reciclada de TrendForge (SubtitleLayer.tsx) para evitar parpadeos o desapariciones
- * en pausas prosódicas naturales entre palabras.
- */
-function findActiveWordIndex(words: WordTimestamp[], currentMs: number): number {
-  const exact = words.findIndex(
-    (w) => currentMs >= w.startMs && currentMs < w.endMs
-  );
-  if (exact !== -1) return exact;
-
-  // Ventana de tolerancia de 0.45s (450ms) tras el final de cada palabra
-  for (let i = words.length - 1; i >= 0; i--) {
-    if (currentMs >= words[i].endMs && currentMs < words[i].endMs + 450) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-/**
- * DynamicCaptions — Subtítulos en directo con cadencia y anti-vibración recicladas de TrendForge:
- * 1. Ventana deslizante fija de 3 palabras (wordsPerWindow = 3) + tolerancia de 0.45s en pausas.
- * 2. Cero vibraciones de layout: sin rebote vertical en el contenedor, métricas de padding/fontWeight
- *    constantes entre estados activo/inactivo y escala sobre-amortiguada desde 1.0 -> 1.06 (nunca < 1.0).
- * 3. Texto sin fondo (backgroundless) y tipografía editorial seria ('IBM Plex Sans', 'Inter').
- * 4. Posicionado dentro del 85% superior activo (por encima de SAFE_ZONE.maxSafeY = 1632px).
+ * DynamicCaptions — Subtítulos en directo portados de TrendForge (SubtitleLayer.tsx):
+ * 1. Ventana deslizante fija de 3 palabras (wordsPerWindow = 3) + tolerancia de retención de 0.45s (450ms)
+ *    para eliminar cualquier parpadeo o corte entre palabras.
+ * 2. Eliminación total de vibraciones:
+ *    - Cero rebote vertical en el contenedor (solo fundido suave chunkFadeIn de 80ms).
+ *    - Padding, margen y peso tipográfico idénticos entre palabra activa e inactiva (cero reflujo horizontal).
+ *    - Escala sobre-amortiguada (SPRING_SNAPPY) que parte estrictamente de 1.0 -> 1.08 desde el centro.
+ * 3. Texto sin fondo (backgroundColor: 'transparent') y tipografía editorial seria ('IBM Plex Sans', 'Inter').
  */
 export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
-  wordTimestamps,
+  wordTimestamps = [],
   sceneStartFrame = 0,
   wordsPerWindow = 3,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const localFrame = frame - sceneStartFrame;
-  const currentTimeMs = (localFrame / fps) * 1000;
+  const currentSec = localFrame / fps;
+  const currentMs = currentSec * 1000;
 
-  if (!wordTimestamps || wordTimestamps.length === 0) {
+  // Localizar palabra activa con margen de tolerancia de 0.45s (450ms) idéntico a TrendForge
+  const activeWordIdx = useMemo(() => {
+    if (!wordTimestamps.length) return -1;
+    // 1. Búsqueda exacta de timestamp
+    const exact = wordTimestamps.findIndex(
+      (w) => currentMs >= w.startMs && currentMs < w.endMs
+    );
+    if (exact !== -1) return exact;
+
+    // 2. Margen de tolerancia (450ms / 0.45s) para pausas naturales de dicción
+    for (let i = wordTimestamps.length - 1; i >= 0; i--) {
+      if (
+        currentMs >= wordTimestamps[i].endMs &&
+        currentMs < wordTimestamps[i].endMs + 450
+      ) {
+        return i;
+      }
+    }
+    return -1;
+  }, [wordTimestamps, currentMs]);
+
+  if (wordTimestamps.length === 0 || activeWordIdx === -1) {
     return null;
   }
 
-  const activeWordIdx = findActiveWordIndex(wordTimestamps, currentTimeMs);
-  if (activeWordIdx === -1) {
-    return null;
-  }
-
-  // Ventana deslizante fija de 3 palabras (cadencia TrendForge)
+  // Agrupar en ventanas deslizantes fijas de 3 palabras (cadencia TrendForge)
   const windowStart =
     Math.floor(activeWordIdx / wordsPerWindow) * wordsPerWindow;
-  const visibleWords = wordTimestamps.slice(
-    windowStart,
-    windowStart + wordsPerWindow
-  );
+  const windowEnd = Math.min(wordTimestamps.length, windowStart + wordsPerWindow);
+  const currentChunk = wordTimestamps.slice(windowStart, windowEnd);
 
-  // Transición suave de opacidad de grupo (80ms) sin rebote vertical para eliminar vibraciones
-  const chunkStartMs = visibleWords[0]?.startMs ?? 0;
-  const groupOpacity = interpolate(
-    currentTimeMs - chunkStartMs,
+  // Animación de entrada suave del grupo (0.08s / 80ms) sin sacudidas verticales
+  const chunkStartMs = currentChunk[0]?.startMs ?? 0;
+  const chunkFadeIn = interpolate(
+    currentMs - chunkStartMs,
     [0, 80],
     [0, 1],
     CLAMP_EXTRAPOLATION
@@ -86,95 +83,70 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
         position: 'absolute',
         left: SAFE_ZONE.horizontalPaddingPx,
         right: SAFE_ZONE.horizontalPaddingPx,
-        top: SAFE_ZONE.maxSafeY - 168,
-        height: 124,
+        top: SAFE_ZONE.maxSafeY - 172,
+        height: 128,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         pointerEvents: 'none',
-        opacity: groupOpacity,
-        transform: 'translate3d(0, 0, 0)',
+        zIndex: 80,
+        opacity: chunkFadeIn,
       }}
     >
       <div
         style={{
-          backgroundColor: 'transparent',
           display: 'flex',
-          flexWrap: 'nowrap',
+          flexWrap: 'wrap',
           justifyContent: 'center',
-          alignItems: 'baseline',
+          alignItems: 'center',
+          gap: '12px 18px',
           maxWidth: SAFE_ZONE.maxSafeX - SAFE_ZONE.minSafeX,
+          padding: '10px 20px',
+          backgroundColor: 'transparent',
+          border: 'none',
+          boxShadow: 'none',
         }}
       >
-        {visibleWords.map((w, idx) => {
+        {currentChunk.map((item, idx) => {
           const globalIdx = windowStart + idx;
-          const isCurrent = globalIdx === activeWordIdx;
-          const isPast = globalIdx < activeWordIdx;
+          const isActive = globalIdx === activeWordIdx;
 
-          const wordStartFrame = Math.round((w.startMs / 1000) * fps);
-          const framesSinceStart = Math.max(0, localFrame - wordStartFrame);
-
+          // Animación spring suave sin oscilación resonante (partiendo de 1.0 como en TrendForge)
+          const wordStartFrames = (item.startMs / 1000) * fps;
+          const wordFrameOffset = Math.max(0, localFrame - wordStartFrames);
           const popSpring = spring({
-            frame: isCurrent ? framesSinceStart : 0,
+            frame: isActive ? wordFrameOffset : 0,
             fps,
             config: SPRING_SNAPPY,
           });
 
-          // Escala que parte estrictamente de 1.0 (nunca < 1.0) para evitar micro-sacudidas
-          const activeScale = isCurrent
-            ? interpolate(popSpring, [0, 1], [1.0, 1.06], CLAMP_EXTRAPOLATION)
+          const activeScale = isActive
+            ? interpolate(popSpring, [0, 1], [1.0, 1.08], CLAMP_EXTRAPOLATION)
             : 1.0;
-
-          const underlineScaleX = isCurrent
-            ? interpolate(popSpring, [0, 1], [0.2, 1.0], CLAMP_EXTRAPOLATION)
-            : 0;
-
-          const wordColor = isCurrent
-            ? PALETTE.accentPrimary
-            : isPast
-              ? PALETTE.ink
-              : '#44423E';
 
           return (
             <span
-              key={`${globalIdx}-${w.word}`}
+              key={`${globalIdx}-${item.word}-${item.startMs}`}
               style={{
-                position: 'relative',
-                display: 'inline-block',
-                margin: '0 10px',
-                padding: '0 2px',
                 fontFamily:
-                  "'IBM Plex Sans', 'Inter', 'Helvetica Neue', 'Arial', system-ui, sans-serif",
-                fontSize: 48,
+                  "'IBM Plex Sans', 'Inter', 'Helvetica Neue', -apple-system, system-ui, sans-serif",
+                fontSize: 50,
                 fontWeight: 700,
-                lineHeight: 1.18,
                 letterSpacing: '-0.015em',
-                color: wordColor,
+                lineHeight: 1.16,
+                color: isActive ? PALETTE.accentPrimary : PALETTE.ink,
                 backgroundColor: 'transparent',
-                // Halo editorial cálido del color del papel (#F8F7F4) para legibilidad limpia sin fondo ni neón
+                // Halo nítido del color del papel técnico (#F8F7F4) para lectura limpia sin fondo ni neón
                 textShadow:
-                  '0 2px 0 #F8F7F4, 0 -2px 0 #F8F7F4, 2px 0 0 #F8F7F4, -2px 0 0 #F8F7F4, 0 4px 10px rgba(248, 247, 244, 0.92)',
+                  '0 2px 0 #F8F7F4, 0 -2px 0 #F8F7F4, 2px 0 0 #F8F7F4, -2px 0 0 #F8F7F4, 0 4px 12px rgba(248, 247, 244, 0.95)',
                 transform: `scale(${activeScale})`,
-                transformOrigin: 'center bottom',
+                transformOrigin: 'center center',
+                display: 'inline-block',
                 willChange: 'transform',
+                margin: '0 3px',
               }}
             >
-              {w.word}
-              {/* Subrayado arquitectónico fuera del flujo de layout (cero desplazamiento lateral) */}
-              <span
-                style={{
-                  position: 'absolute',
-                  left: 2,
-                  right: 2,
-                  bottom: -6,
-                  height: 3.5,
-                  borderRadius: 2,
-                  backgroundColor: PALETTE.accentPrimary,
-                  opacity: isCurrent ? 1 : 0,
-                  transform: `scaleX(${underlineScaleX})`,
-                  transformOrigin: 'left center',
-                }}
-              />
+              {item.word}
             </span>
           );
         })}

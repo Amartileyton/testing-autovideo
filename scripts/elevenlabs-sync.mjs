@@ -229,8 +229,10 @@ export function buildWordTimestamps(alignment, fps, trimOffsetMs = 0) {
 
     if (/\s/.test(ch)) {
       if (currentWord.length > 0 && wordStartSec !== null) {
-        // Cadencia TrendForge: usamos el inicio del espacio (s) como fin continuo de la palabra
-        const continuousEndSec = Math.max(wordEndSec ?? s, s);
+        // Cadencia TrendForge: enlazamos el final de la palabra con el final del espacio (e)
+        // cuando es una transición normal entre palabras (<= 350ms), eliminando micro-huecos
+        const spaceBridgeSec = e - s <= 0.35 ? e : s;
+        const continuousEndSec = Math.max(wordEndSec ?? s, spaceBridgeSec);
         const startMs = Math.max(0, Math.round(wordStartSec * 1000 - trimOffsetMs));
         const endMs = Math.max(
           startMs + 25,

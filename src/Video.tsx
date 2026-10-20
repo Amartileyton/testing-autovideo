@@ -6,10 +6,11 @@ import {
   interpolate,
   staticFile,
   useCurrentFrame,
+  useVideoConfig,
 } from 'remotion';
 import audioManifestJson from '../public/audio/info.json';
 import scenesJson from './data/scenes.json';
-import type { AudioManifest, VideoProps } from './data/schema';
+import type { AudioManifest, VideoProps, WordTimestamp } from './data/schema';
 import { CameraRig, type CameraKeyframe } from './components/CameraRig';
 import { DynamicCaptions } from './components/DynamicCaptions';
 import { Scene1 } from './scenes/Scene1';
@@ -60,7 +61,29 @@ export const Video: React.FC<VideoProps> = ({
   enableBackgroundMusic = false,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const timeline = useMemo(() => computeSceneTimeline(manifest), []);
+
+  /**
+   * Stream unificado de palabras a nivel global (arquitectura TrendForgeShort.tsx):
+   * evita cortes o solapamientos de subtítulos durante las transiciones entre escenas.
+   */
+  const globalWordTimestamps: WordTimestamp[] = useMemo(() => {
+    const merged: WordTimestamp[] = [];
+    for (const sceneWin of timeline) {
+      const offsetMs = Math.round((sceneWin.from / fps) * 1000);
+      for (const w of sceneWin.wordTimestamps) {
+        merged.push({
+          word: w.word,
+          startMs: w.startMs + offsetMs,
+          endMs: w.endMs + offsetMs,
+          startFrame: w.startFrame + sceneWin.from,
+          endFrame: w.endFrame + sceneWin.from,
+        });
+      }
+    }
+    return merged;
+  }, [timeline, fps]);
 
   /**
    * Keyframes de cámara continua sincronizados al fotograma de inicio de cada escena en info.json
@@ -74,7 +97,12 @@ export const Video: React.FC<VideoProps> = ({
     ];
     return timeline.map((item, idx) => {
       const sceneMeta = scenesJson.scenes[idx];
-      const fallback = defaultCoords[idx] ?? { x: 0, y: idx * 1980, zoom: 1, rotateDeg: 0 };
+      const fallback = defaultCoords[idx] ?? {
+        x: 0,
+        y: idx * 1980,
+        zoom: 1,
+        rotateDeg: 0,
+      };
       return {
         frame: item.from,
         x: sceneMeta?.cameraTarget?.x ?? fallback.x,
@@ -89,16 +117,10 @@ export const Video: React.FC<VideoProps> = ({
    * Curva de Audio Ducking automática para la pista opcional de música de fondo
    */
   const isVoiceSpeaking = useMemo(() => {
-    return timeline.some((sceneWin) => {
-      const localFrame = frame - sceneWin.from;
-      if (localFrame < 0 || localFrame > sceneWin.durationInFrames) {
-        return false;
-      }
-      return sceneWin.wordTimestamps.some(
-        (w) => localFrame >= w.startFrame - 3 && localFrame <= w.endFrame + 4
-      );
-    });
-  }, [timeline, frame]);
+    return globalWordTimestamps.some(
+      (w) => frame >= w.startFrame - 3 && frame <= w.endFrame + 4
+    );
+  }, [globalWordTimestamps, frame]);
 
   const bgmVolume = interpolate(
     isVoiceSpeaking ? 1 : 0,
@@ -166,7 +188,7 @@ export const Video: React.FC<VideoProps> = ({
           }
           canvasOffsetX={scenesJson.scenes[1]?.cameraTarget?.x ?? 1100}
           canvasOffsetY={scenesJson.scenes[1]?.cameraTarget?.y ?? 0}
-          enterFrame={timeline[1]?.from ?? 189}
+          enterFrame={timeline[1]?.from ?? 196}
         />
 
         <Scene3
@@ -178,7 +200,7 @@ export const Video: React.FC<VideoProps> = ({
           }
           canvasOffsetX={scenesJson.scenes[2]?.cameraTarget?.x ?? 1100}
           canvasOffsetY={scenesJson.scenes[2]?.cameraTarget?.y ?? 1980}
-          enterFrame={timeline[2]?.from ?? 389}
+          enterFrame={timeline[2]?.from ?? 415}
         />
 
         <Scene4
@@ -190,46 +212,32 @@ export const Video: React.FC<VideoProps> = ({
           }
           canvasOffsetX={scenesJson.scenes[3]?.cameraTarget?.x ?? 0}
           canvasOffsetY={scenesJson.scenes[3]?.cameraTarget?.y ?? 1980}
-          enterFrame={timeline[3]?.from ?? 571}
+          enterFrame={timeline[3]?.from ?? 629}
         />
       </CameraRig>
 
-      {/* Secuencias sincronizadas al fotograma desde public/audio/info.json */}
-      {timeline.map((sceneWin) => {
-        const sceneOpacity = interpolate(
-          frame - sceneWin.from,
-          [
-            0,
-            manifest.crossDissolveFrames,
-            sceneWin.durationInFrames - manifest.crossDissolveFrames,
-            sceneWin.durationInFrames,
-          ],
-          [0, 1, 1, 0],
-          CLAMP_EXTRAPOLATION
-        );
+      {/* Secuencias de audio sincronizadas al fotograma desde public/audio/info.json */}
+      {timeline.map((sceneWin) => (
+        <Sequence
+          key={sceneWin.id}
+          from={sceneWin.from}
+          durationInFrames={sceneWin.durationInFrames}
+          name={`Scene-${sceneWin.id}`}
+        >
+          {sceneWin.audioFile ? (
+            <Audio src={staticFile(sceneWin.audioFile)} />
+          ) : null}
+        </Sequence>
+      ))}
 
-        return (
-          <Sequence
-            key={sceneWin.id}
-            from={sceneWin.from}
-            durationInFrames={sceneWin.durationInFrames}
-            name={`Scene-${sceneWin.id}`}
-          >
-            {sceneWin.audioFile ? (
-              <Audio src={staticFile(sceneWin.audioFile)} />
-            ) : null}
-
-            {enableCaptions ? (
-              <div style={{ opacity: sceneOpacity }}>
-                <DynamicCaptions
-                  wordTimestamps={sceneWin.wordTimestamps}
-                  sceneStartFrame={0}
-                />
-              </div>
-            ) : null}
-          </Sequence>
-        );
-      })}
+      {/* Capa única de subtítulos en directo a nivel raíz (arquitectura TrendForge SubtitleLayer) */}
+      {enableCaptions ? (
+        <DynamicCaptions
+          wordTimestamps={globalWordTimestamps}
+          sceneStartFrame={0}
+          wordsPerWindow={3}
+        />
+      ) : null}
 
       {/* Pista opcional de música de fondo con curva de audio ducking automática */}
       {enableBackgroundMusic && manifest.backgroundMusicFile ? (
