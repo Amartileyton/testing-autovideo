@@ -1,13 +1,16 @@
 import React from 'react';
-import { Cpu, Radio, Waves } from 'lucide-react';
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { RoughCard } from '../components/RoughCard';
 import {
-  CLAMP_EXTRAPOLATION,
-  PALETTE,
-  SAFE_ZONE,
-  SPRING_SNAPPY,
-} from '../theme/motion';
+  interpolate,
+  useCurrentFrame,
+} from 'remotion';
+import {
+  CornerHudTelemetry,
+  DimensionRuler,
+  HeroPropStage,
+  LeaderLineCallout,
+  VectorSelectionBox,
+} from '../components/blueprints/ResultaaqueeBlueprints';
+import { CLAMP_EXTRAPOLATION } from '../theme/motion';
 
 export interface Scene2Props {
   headline?: string;
@@ -20,60 +23,22 @@ export interface Scene2Props {
 }
 
 /**
- * Scene2 — Escena Par (Slot 4)
- * Diagrama causal del módulo transductor piezoeléctrico (PMUT) bajo las capas
- * de cristal y panel OLED emitiendo frentes de onda acústica a 20 MHz (1540 m/s).
+ * Scene 2 — Pulso Acústico Ultrasónico (Art-First + Estilo @resultaaquee Ref 3 Corte Rayos X CAD)
+ * - HeroPropStage 3D CAD: Corte isométrico Rayos X del módulo transductor piezoeléctrico PMUT
+ *   emitiendo ondas acústicas concéntricas a 20 MHz a través del OLED apagado y el cristal cian.
+ * - Cotas ámbar (DimensionRuler), VectorSelectionBox y líneas guía quebradas (LeaderLineCallout).
  */
 export const Scene2: React.FC<Scene2Props> = ({
-  headline = 'PULSO ACÚSTICO ULTRASÓNICO',
   metricValue = 20,
-  metricUnit = 'MHz',
-  metricLabel = 'FRECUENCIA ACÚSTICA',
   canvasOffsetX = 1100,
   canvasOffsetY = 0,
-  enterFrame = 189,
+  enterFrame = 196,
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
   const localFrame = Math.max(0, frame - enterFrame);
 
-  const headerSpring = spring({
-    frame: localFrame,
-    fps,
-    config: SPRING_SNAPPY,
-  });
-
-  const waveSpring1 = spring({
-    frame: Math.max(0, localFrame - 10),
-    fps,
-    config: SPRING_SNAPPY,
-  });
-
-  const waveSpring2 = spring({
-    frame: Math.max(0, localFrame - 18),
-    fps,
-    config: SPRING_SNAPPY,
-  });
-
-  const waveSpring3 = spring({
-    frame: Math.max(0, localFrame - 26),
-    fps,
-    config: SPRING_SNAPPY,
-  });
-
   const animatedFreq = Math.round(
-    interpolate(localFrame, [0, 42], [0, metricValue], CLAMP_EXTRAPOLATION)
-  );
-
-  const animatedSpeed = Math.round(
-    interpolate(localFrame, [6, 48], [0, 1540], CLAMP_EXTRAPOLATION)
-  );
-
-  const pulseProgress = interpolate(
-    localFrame,
-    [8, 55],
-    [0, 1],
-    CLAMP_EXTRAPOLATION
+    interpolate(localFrame, [15, 110], [0, metricValue], CLAMP_EXTRAPOLATION)
   );
 
   return (
@@ -84,261 +49,96 @@ export const Scene2: React.FC<Scene2Props> = ({
         top: canvasOffsetY,
         width: 1080,
         height: 1920,
-        paddingLeft: SAFE_ZONE.horizontalPaddingPx,
-        paddingRight: SAFE_ZONE.horizontalPaddingPx,
-        paddingTop: 110,
-        boxSizing: 'border-box',
+        pointerEvents: 'none',
       }}
     >
-      {/* Etiqueta técnica superior (>= 28px) */}
+      {/* Telemetría de esquina superior */}
+      <CornerHudTelemetry
+        leftLabel="FRECUENCIA ACÚSTICA"
+        leftValue={`${animatedFreq} MHz`}
+        rightLabel="EMISIÓN DE LUZ OLED"
+        rightValue="0 LÚMENES"
+        accentColor="#F59E0B"
+        textColor="#38BDF8"
+      />
+
+      {/* Hero Prop 3D CAD: Corte Rayos X del Transductor Piezoeléctrico PMUT */}
+      <HeroPropStage
+        src="assets/props/hero-scene2-pmut-cutaway.png"
+        x={540}
+        y={705}
+        size={690}
+        enterFrame={8}
+        localFrame={localFrame}
+        accentColor="#F59E0B"
+        secondaryColor="#38BDF8"
+        scanBeam
+        pulseRings
+        noiseSeed="scene2-pmut"
+        cadTag="FIG 02 · PMUT X-RAY CUTAWAY"
+      />
+
+      {/* Marco de selección vectorial azul sobre el módulo transductor */}
       <div
         style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 14,
-          backgroundColor: PALETTE.surfaceMuted,
-          border: `2px solid ${PALETTE.border}`,
-          borderRadius: 999,
-          padding: '10px 24px',
-          marginBottom: 24,
-          transform: `scale(${interpolate(headerSpring, [0, 1], [0.9, 1], CLAMP_EXTRAPOLATION)})`,
+          position: 'absolute',
+          left: 365,
+          top: 1065,
+          zIndex: 55,
         }}
       >
-        <Radio size={30} color={PALETTE.accentSecondary} strokeWidth={2.5} />
-        <span
-          style={{
-            fontFamily: 'monospace',
-            fontSize: 28,
-            fontWeight: 700,
-            color: PALETTE.ink,
-            letterSpacing: '0.06em',
-          }}
-        >
-          TRANSDUCTOR PMUT · CAPA SUB-OLED
-        </span>
+        <VectorSelectionBox color="#3B82F6" active={localFrame > 35}>
+          <span
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 28,
+              fontWeight: 700,
+              color: '#FFFFFF',
+            }}
+          >
+            PULSO MECÁNICO · 1.540 m/s
+          </span>
+        </VectorSelectionBox>
       </div>
 
-      {/* Titular Editorial (>= 64px, <= 7 palabras) */}
-      <h2
-        style={{
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          fontSize: 72,
-          fontWeight: 900,
-          lineHeight: 1.04,
-          letterSpacing: '-0.03em',
-          color: PALETTE.ink,
-          margin: '0 0 36px 0',
-          opacity: interpolate(headerSpring, [0, 1], [0, 1], CLAMP_EXTRAPOLATION),
-        }}
-      >
-        {headline}
-      </h2>
+      {/* Líneas guía quebradas (LeaderLineCallout) */}
+      <LeaderLineCallout
+        anchorX={360}
+        anchorY={855}
+        elbowX={180}
+        elbowY={1220}
+        labelX={210}
+        labelY={1220}
+        title="transductor ultrasónico"
+        subtitle="Qualcomm 3D Sonic — vibra a 20 millones de Hz"
+        color="#F59E0B"
+        enterFrame={35}
+      />
 
-      <RoughCard
-        width={888}
-        height={720}
-        enterFrame={enterFrame + 6}
-        accentColor={PALETTE.accentSecondary}
-        seed={202}
-      >
-        {/* Cabecera interna del diagrama */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Waves size={36} color={PALETTE.accentSecondary} strokeWidth={2.5} />
-            <span
-              style={{
-                fontFamily: 'monospace',
-                fontSize: 28,
-                fontWeight: 700,
-                color: PALETTE.inkMuted,
-              }}
-            >
-              ARQUITECTURA PIEZOELÉCTRICA
-            </span>
-          </div>
-          <Cpu size={38} color={PALETTE.accentPrimary} strokeWidth={2.4} />
-        </div>
+      <LeaderLineCallout
+        anchorX={730}
+        anchorY={580}
+        elbowX={860}
+        elbowY={1360}
+        labelX={760}
+        labelY={1360}
+        title="atraviesa el cristal sin luz"
+        subtitle="la onda mecánica cruza el OLED totalmente apagado"
+        color="#38BDF8"
+        enterFrame={90}
+        align="right"
+      />
 
-        {/* Diagrama causal vectorial: Capas Cristal + OLED + Emisor PMUT y ondas concéntricas */}
-        <svg width={816} height={380} viewBox="0 0 816 380">
-          {/* Capa 1: Cristal Protector */}
-          <rect
-            x={24}
-            y={16}
-            width={768}
-            height={64}
-            rx={10}
-            fill={PALETTE.surfaceMuted}
-            stroke={PALETTE.border}
-            strokeWidth={3}
-          />
-          <text
-            x={48}
-            y={58}
-            fill={PALETTE.ink}
-            fontFamily="monospace"
-            fontSize="28"
-            fontWeight="700"
-          >
-            CAPA 01 · CRISTAL TEMPLADO
-          </text>
-
-          {/* Capa 2: Panel OLED */}
-          <rect
-            x={24}
-            y={94}
-            width={768}
-            height={64}
-            rx={10}
-            fill={PALETTE.surface}
-            stroke={PALETTE.border}
-            strokeWidth={3}
-            strokeDasharray="10 6"
-          />
-          <text
-            x={48}
-            y={136}
-            fill={PALETTE.inkMuted}
-            fontFamily="monospace"
-            fontSize="28"
-            fontWeight="700"
-          >
-            CAPA 02 · MATRIZ OLED EMISIVA
-          </text>
-
-          {/* Zona de propagación de frentes de onda acústicos concéntricos hacia arriba */}
-          <path
-            d="M 278 272 A 140 95 0 0 1 538 272"
-            fill="none"
-            stroke={PALETTE.accentSecondary}
-            strokeWidth={4.5}
-            opacity={interpolate(waveSpring1, [0, 1], [0, 0.95], CLAMP_EXTRAPOLATION)}
-            transform={`translate(0, ${interpolate(waveSpring1, [0, 1], [24, 0], CLAMP_EXTRAPOLATION)})`}
-          />
-          <path
-            d="M 218 242 A 210 145 0 0 1 598 242"
-            fill="none"
-            stroke={PALETTE.accentSecondary}
-            strokeWidth={4}
-            strokeDasharray="12 8"
-            opacity={interpolate(waveSpring2, [0, 1], [0, 0.85], CLAMP_EXTRAPOLATION)}
-            transform={`translate(0, ${interpolate(waveSpring2, [0, 1], [30, 0], CLAMP_EXTRAPOLATION)})`}
-          />
-          <path
-            d="M 158 210 A 280 190 0 0 1 658 210"
-            fill="none"
-            stroke={PALETTE.accentPrimary}
-            strokeWidth={4}
-            opacity={interpolate(waveSpring3, [0, 1], [0, 0.9], CLAMP_EXTRAPOLATION)}
-            transform={`translate(0, ${interpolate(waveSpring3, [0, 1], [36, 0], CLAMP_EXTRAPOLATION)})`}
-          />
-
-          {/* Vectores de dirección axial hacia arriba */}
-          <line
-            x1={408}
-            y1={288}
-            x2={408}
-            y2={interpolate(pulseProgress, [0, 1], [260, 32], CLAMP_EXTRAPOLATION)}
-            stroke={PALETTE.accentPrimary}
-            strokeWidth={4}
-          />
-          <polygon
-            points={`408,${interpolate(pulseProgress, [0, 1], [248, 20], CLAMP_EXTRAPOLATION)} 394,${interpolate(pulseProgress, [0, 1], [270, 42], CLAMP_EXTRAPOLATION)} 422,${interpolate(pulseProgress, [0, 1], [270, 42], CLAMP_EXTRAPOLATION)}`}
-            fill={PALETTE.accentPrimary}
-            opacity={interpolate(pulseProgress, [0, 0.2, 1], [0, 1, 1], CLAMP_EXTRAPOLATION)}
-          />
-
-          {/* Capa 3: Módulo Transductor Piezoeléctrico PMUT */}
-          <rect
-            x={138}
-            y={294}
-            width={540}
-            height={72}
-            rx={12}
-            fill={PALETTE.surfaceMuted}
-            stroke={PALETTE.accentSecondary}
-            strokeWidth={4}
-          />
-          <text
-            x={408}
-            y={340}
-            textAnchor="middle"
-            fill={PALETTE.ink}
-            fontFamily="monospace"
-            fontSize="28"
-            fontWeight="700"
-          >
-            ARRAY PMUT · EMISOR PIEZOELÉCTRICO
-          </text>
-        </svg>
-
-        {/* Contadores numéricos inferiores */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
-            borderTop: `2px solid ${PALETTE.gridLine}`,
-            paddingTop: 20,
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontFamily: 'monospace',
-                fontSize: 28,
-                fontWeight: 700,
-                color: PALETTE.inkMuted,
-                marginBottom: 4,
-              }}
-            >
-              {metricLabel}
-            </div>
-            <div
-              style={{
-                fontFamily: 'system-ui, sans-serif',
-                fontSize: 78,
-                fontWeight: 900,
-                color: PALETTE.ink,
-                lineHeight: 1,
-              }}
-            >
-              {animatedFreq} {metricUnit}
-            </div>
-          </div>
-
-          <div style={{ textAlign: 'right' }}>
-            <div
-              style={{
-                fontFamily: 'monospace',
-                fontSize: 28,
-                fontWeight: 700,
-                color: PALETTE.inkMuted,
-                marginBottom: 4,
-              }}
-            >
-              VELOCIDAD ACÚSTICA
-            </div>
-            <div
-              style={{
-                fontFamily: 'system-ui, sans-serif',
-                fontSize: 64,
-                fontWeight: 900,
-                color: PALETTE.accentSecondary,
-                lineHeight: 1,
-              }}
-            >
-              {animatedSpeed} m/s
-            </div>
-          </div>
-        </div>
-      </RoughCard>
+      {/* Regla de acotación del espesor atravesado */}
+      <DimensionRuler
+        x1={160}
+        y1={1520}
+        x2={920}
+        y2={1520}
+        label="FRECUENCIA: 20.000.000 Hz"
+        color="#38BDF8"
+        enterFrame={70}
+      />
     </div>
   );
 };

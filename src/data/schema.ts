@@ -101,7 +101,7 @@ export type AudioManifest = z.infer<typeof AudioManifestSchema>;
  */
 export const VideoPropsSchema = z.object({
   title: z.string().default('Diagnóstico Estudio Vectorial Antigravity'),
-  surfaceColor: z.string().default('#F8F7F4'),
+  surfaceColor: z.string().default('#111111'),
   enableCaptions: z.boolean().default(true),
   enableBackgroundMusic: z.boolean().default(false),
 });

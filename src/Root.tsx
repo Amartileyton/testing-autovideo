@@ -2,7 +2,7 @@ import React from 'react';
 import { Composition } from 'remotion';
 import audioManifestJson from '../public/audio/info.json';
 import { VideoPropsSchema, type AudioManifest } from './data/schema';
-import { PALETTE, VIDEO_CONFIG } from './theme/motion';
+import { BLUEPRINT_THEMES, VIDEO_CONFIG } from './theme/motion';
 import { Video } from './Video';
 
 const manifest = audioManifestJson as AudioManifest;
@@ -12,7 +12,7 @@ const manifest = audioManifestJson as AudioManifest;
  * de las escenas en public/audio/info.json descontando los fotogramas de cross-dissolve (10 frames).
  */
 const calculateTotalFrames = (audioManifest: AudioManifest): number => {
-  if (!audioManifest.scenes || audioManifest.scenes.length === 0) {
+  if (!audioManifest.scenes || !audioManifest.scenes.length) {
     return 180;
   }
   const crossDissolve =
@@ -42,7 +42,7 @@ export const RemotionRoot: React.FC = () => {
         schema={VideoPropsSchema}
         defaultProps={{
           title: 'Cómo Funciona el Lector de Huellas Ultrasónico 3D',
-          surfaceColor: PALETTE.surface,
+          surfaceColor: BLUEPRINT_THEMES.DARK_CAD_XRAY.surface,
           enableCaptions: true,
           enableBackgroundMusic: false,
         }}

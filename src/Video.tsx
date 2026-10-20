@@ -17,7 +17,11 @@ import { Scene1 } from './scenes/Scene1';
 import { Scene2 } from './scenes/Scene2';
 import { Scene3 } from './scenes/Scene3';
 import { Scene4 } from './scenes/Scene4';
-import { CLAMP_EXTRAPOLATION, PALETTE, SAFE_ZONE } from './theme/motion';
+import {
+  BLUEPRINT_THEMES,
+  CLAMP_EXTRAPOLATION,
+  SAFE_ZONE,
+} from './theme/motion';
 
 const manifest = audioManifestJson as AudioManifest;
 
@@ -56,7 +60,7 @@ export function computeSceneTimeline(
 }
 
 export const Video: React.FC<VideoProps> = ({
-  surfaceColor = PALETTE.surface,
+  surfaceColor = BLUEPRINT_THEMES.DARK_CAD_XRAY.surface,
   enableCaptions = true,
   enableBackgroundMusic = false,
 }) => {
@@ -65,7 +69,7 @@ export const Video: React.FC<VideoProps> = ({
   const timeline = useMemo(() => computeSceneTimeline(manifest), []);
 
   /**
-   * Stream unificado de palabras a nivel global (arquitectura TrendForgeShort.tsx):
+   * Stream unificado de palabras a nivel global (arquitectura TrendForge + @resultaaquee):
    * evita cortes o solapamientos de subtítulos durante las transiciones entre escenas.
    */
   const globalWordTimestamps: WordTimestamp[] = useMemo(() => {
@@ -91,7 +95,7 @@ export const Video: React.FC<VideoProps> = ({
   const cameraKeyframes: CameraKeyframe[] = useMemo(() => {
     const defaultCoords = [
       { x: 0, y: 0, zoom: 1.0, rotateDeg: 0 },
-      { x: 1100, y: 0, zoom: 1.04, rotateDeg: 0 },
+      { x: 1100, y: 0, zoom: 1.03, rotateDeg: 0 },
       { x: 1100, y: 1980, zoom: 1.02, rotateDeg: 0 },
       { x: 0, y: 1980, zoom: 1.0, rotateDeg: 0 },
     ];
@@ -131,9 +135,14 @@ export const Video: React.FC<VideoProps> = ({
 
   return (
     <AbsoluteFill style={{ backgroundColor: surfaceColor }}>
-      {/* Lienzo continuo gobernado por CameraRig (SPRING_CAMERA) */}
-      <CameraRig keyframes={cameraKeyframes} surfaceColor={surfaceColor}>
-        {/* Conectores vectoriales entre cuadrantes del lienzo continuo */}
+      {/* Lienzo continuo @resultaaquee gobernado por CameraRig (DARK_CAD_XRAY + Rack-Focus Blur) */}
+      <CameraRig
+        keyframes={cameraKeyframes}
+        surfaceColor={surfaceColor}
+        blueprintMode="DARK_CAD_XRAY"
+        rackFocusBlur={true}
+      >
+        {/* Conectores de ingeniería CAD entre cuadrantes del lienzo continuo */}
         <svg
           width={2400}
           height={4000}
@@ -145,23 +154,23 @@ export const Video: React.FC<VideoProps> = ({
           }}
         >
           <path
-            d="M 984 520 L 1196 520"
-            stroke={PALETTE.border}
-            strokeWidth={3}
+            d="M 984 740 L 1196 740"
+            stroke="rgba(255, 255, 255, 0.14)"
+            strokeWidth={2}
             strokeDasharray="10 10"
             fill="none"
           />
           <path
-            d="M 1640 1320 L 1640 2090"
-            stroke={PALETTE.border}
-            strokeWidth={3}
+            d="M 1640 1520 L 1640 2090"
+            stroke="rgba(255, 255, 255, 0.14)"
+            strokeWidth={2}
             strokeDasharray="10 10"
             fill="none"
           />
           <path
-            d="M 1196 2500 L 984 2500"
-            stroke={PALETTE.border}
-            strokeWidth={3}
+            d="M 1196 2700 L 984 2700"
+            stroke="rgba(255, 255, 255, 0.14)"
+            strokeWidth={2}
             strokeDasharray="10 10"
             fill="none"
           />
@@ -200,7 +209,7 @@ export const Video: React.FC<VideoProps> = ({
           }
           canvasOffsetX={scenesJson.scenes[2]?.cameraTarget?.x ?? 1100}
           canvasOffsetY={scenesJson.scenes[2]?.cameraTarget?.y ?? 1980}
-          enterFrame={timeline[2]?.from ?? 415}
+          enterFrame={timeline[2]?.from ?? 423}
         />
 
         <Scene4
@@ -212,7 +221,7 @@ export const Video: React.FC<VideoProps> = ({
           }
           canvasOffsetX={scenesJson.scenes[3]?.cameraTarget?.x ?? 0}
           canvasOffsetY={scenesJson.scenes[3]?.cameraTarget?.y ?? 1980}
-          enterFrame={timeline[3]?.from ?? 629}
+          enterFrame={timeline[3]?.from ?? 628}
         />
       </CameraRig>
 
@@ -230,12 +239,14 @@ export const Video: React.FC<VideoProps> = ({
         </Sequence>
       ))}
 
-      {/* Capa única de subtítulos en directo a nivel raíz (arquitectura TrendForge SubtitleLayer) */}
+      {/* Subtítulos @resultaaquee (Ref 2 & Ref 3): Tercio superior + Caja de Selección Vectorial Azul */}
       {enableCaptions ? (
         <DynamicCaptions
           wordTimestamps={globalWordTimestamps}
           sceneStartFrame={0}
-          wordsPerWindow={3}
+          wordsPerWindow={5}
+          variant="vector-box"
+          placement="upper"
         />
       ) : null}
 
@@ -254,7 +265,7 @@ export const Video: React.FC<VideoProps> = ({
           left: SAFE_ZONE.horizontalPaddingPx,
           right: SAFE_ZONE.horizontalPaddingPx,
           top: SAFE_ZONE.maxSafeY,
-          borderTop: `2px dashed ${PALETTE.gridLine}`,
+          borderTop: '1.5px dashed rgba(255, 255, 255, 0.10)',
           pointerEvents: 'none',
         }}
       />

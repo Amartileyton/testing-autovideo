@@ -7,29 +7,74 @@ import {
   SAFE_ZONE,
   SPRING_SNAPPY,
 } from '../theme/motion';
+import { VectorSelectionBox } from './blueprints/ResultaaqueeBlueprints';
+
+export type CaptionVariant =
+  | 'vector-box'      // Ref 2 & Ref 3: Marco de selección vectorial azul Figma (#3B82F6) con 4 nodos
+  | 'ochre-blueprint' // Ref 1: Texto blanco con acento ocre (#FBBF24) sobre azul ingeniería
+  | 'red-pill'        // Ref 5: Pastilla rectangular roja (#DC2626) sobre laboratorio oscuro
+  | 'editorial-clean'; // Modo papel técnico claro (#F8F7F4)
+
+export type CaptionPlacement = 'upper' | 'middle' | 'lower';
 
 export interface DynamicCaptionsProps {
   wordTimestamps: WordTimestamp[];
   /** Offset global en fotogramas donde arranca esta secuencia */
   sceneStartFrame?: number;
-  /** Número de palabras por ventana deslizante (por defecto 3, cadencia TrendForge) */
+  /** Número de palabras por ventana deslizante (por defecto 5 en vector-box/ochre, 3 en red-pill/editorial) */
   wordsPerWindow?: number;
+  /** Variante estética extraída de los vídeos de referencia de @resultaaquee */
+  variant?: CaptionVariant;
+  /** Ubicación vertical en el lienzo 9:16 (upper = tercio superior Ref 2/3, middle = bajo raíl Ref 5, lower = tercio inferior Ref 1) */
+  placement?: CaptionPlacement;
 }
 
 /**
- * DynamicCaptions — Subtítulos en directo portados de TrendForge (SubtitleLayer.tsx):
- * 1. Ventana deslizante fija de 3 palabras (wordsPerWindow = 3) + tolerancia de retención de 0.45s (450ms)
- *    para eliminar cualquier parpadeo o corte entre palabras.
- * 2. Eliminación total de vibraciones:
- *    - Cero rebote vertical en el contenedor (solo fundido suave chunkFadeIn de 80ms).
- *    - Padding, margen y peso tipográfico idénticos entre palabra activa e inactiva (cero reflujo horizontal).
- *    - Escala sobre-amortiguada (SPRING_SNAPPY) que parte estrictamente de 1.0 -> 1.08 desde el centro.
- * 3. Texto sin fondo (backgroundColor: 'transparent') y tipografía editorial seria ('IBM Plex Sans', 'Inter').
+ * Detecta si una palabra es un término clave semántico (sustantivo/cifra/concepto)
+ * para aplicarle el marco de selección vectorial o acento ocre al estilo @resultaaquee.
+ */
+function isSemanticKeyword(word: string): boolean {
+  const clean = word.replace(/[.,;:¡!¿?«»"']/g, '').toLowerCase();
+  if (clean.length >= 6) return true;
+  if (/\d/.test(clean)) return true;
+  const hooks = new Set([
+    'cero',
+    'uno',
+    'dos',
+    'tres',
+    'cuatro',
+    'diez',
+    'mil',
+    'millón',
+    'luz',
+    'eco',
+    'poro',
+    'piel',
+    'chip',
+    'mapa',
+    'onda',
+    'aire',
+    'ojo',
+  ]);
+  return hooks.has(clean);
+}
+
+/**
+ * DynamicCaptions — Motor de Subtítulos @resultaaquee + TrendForge Sync:
+ * 1. Tolerancia de retención de 450ms (0.45s) en pausas naturales.
+ * 2. Cero vibraciones y cero reflujo horizontal:
+ *    - Todas las palabras (activas e inactivas) comparten exactamente el mismo box-model
+ *      (padding: '2px 10px', border: '2.5px solid ...', fontWeight: 700).
+ *    - Escala sobre-amortiguada (SPRING_SNAPPY) acotada de 1.0 a 1.05.
+ * 3. Soporta los 4 modos visuales: 'vector-box' (Ref 2/3), 'ochre-blueprint' (Ref 1),
+ *    'red-pill' (Ref 5) y 'editorial-clean'.
  */
 export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
   wordTimestamps = [],
   sceneStartFrame = 0,
-  wordsPerWindow = 3,
+  wordsPerWindow,
+  variant = 'vector-box',
+  placement = 'lower',
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -37,16 +82,18 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
   const currentSec = localFrame / fps;
   const currentMs = currentSec * 1000;
 
-  // Localizar palabra activa con margen de tolerancia de 0.45s (450ms) idéntico a TrendForge
+  const effectiveWindowSize =
+    wordsPerWindow ??
+    (variant === 'vector-box' || variant === 'ochre-blueprint' ? 5 : 3);
+
+  // Localizar palabra activa con margen de tolerancia de 450ms (0.45s)
   const activeWordIdx = useMemo(() => {
     if (!wordTimestamps.length) return -1;
-    // 1. Búsqueda exacta de timestamp
     const exact = wordTimestamps.findIndex(
       (w) => currentMs >= w.startMs && currentMs < w.endMs
     );
     if (exact !== -1) return exact;
 
-    // 2. Margen de tolerancia (450ms / 0.45s) para pausas naturales de dicción
     for (let i = wordTimestamps.length - 1; i >= 0; i--) {
       if (
         currentMs >= wordTimestamps[i].endMs &&
@@ -62,13 +109,14 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
     return null;
   }
 
-  // Agrupar en ventanas deslizantes fijas de 3 palabras (cadencia TrendForge)
   const windowStart =
-    Math.floor(activeWordIdx / wordsPerWindow) * wordsPerWindow;
-  const windowEnd = Math.min(wordTimestamps.length, windowStart + wordsPerWindow);
+    Math.floor(activeWordIdx / effectiveWindowSize) * effectiveWindowSize;
+  const windowEnd = Math.min(
+    wordTimestamps.length,
+    windowStart + effectiveWindowSize
+  );
   const currentChunk = wordTimestamps.slice(windowStart, windowEnd);
 
-  // Animación de entrada suave del grupo (0.08s / 80ms) sin sacudidas verticales
   const chunkStartMs = currentChunk[0]?.startMs ?? 0;
   const chunkFadeIn = interpolate(
     currentMs - chunkStartMs,
@@ -77,14 +125,39 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
     CLAMP_EXTRAPOLATION
   );
 
+  // Determinar qué palabra del bloque lleva el VectorSelectionBox (nunca conectores/artículos)
+  const boxedGlobalIdx = useMemo(() => {
+    let candidate = -1;
+    for (let i = windowStart; i <= activeWordIdx && i < windowEnd; i++) {
+      if (isSemanticKeyword(wordTimestamps[i].word)) {
+        candidate = i;
+      }
+    }
+    if (candidate !== -1) return candidate;
+    for (let i = windowStart; i < windowEnd; i++) {
+      if (isSemanticKeyword(wordTimestamps[i].word)) {
+        return i;
+      }
+    }
+    return activeWordIdx;
+  }, [wordTimestamps, windowStart, windowEnd, activeWordIdx]);
+
+  // Posición vertical según placement (siempre dentro de SAFE_ZONE 85% superior)
+  const topPosition =
+    placement === 'upper'
+      ? SAFE_ZONE.upperThirdCaptionY
+      : placement === 'middle'
+        ? 1140
+        : SAFE_ZONE.maxSafeY - 180;
+
   return (
     <div
       style={{
         position: 'absolute',
         left: SAFE_ZONE.horizontalPaddingPx,
         right: SAFE_ZONE.horizontalPaddingPx,
-        top: SAFE_ZONE.maxSafeY - 172,
-        height: 128,
+        top: topPosition,
+        minHeight: 132,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -99,19 +172,18 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
           flexWrap: 'wrap',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: '12px 18px',
+          gap: '10px 8px',
           maxWidth: SAFE_ZONE.maxSafeX - SAFE_ZONE.minSafeX,
-          padding: '10px 20px',
+          padding: '8px 16px',
           backgroundColor: 'transparent',
-          border: 'none',
-          boxShadow: 'none',
         }}
       >
         {currentChunk.map((item, idx) => {
           const globalIdx = windowStart + idx;
           const isActive = globalIdx === activeWordIdx;
+          const isPastOrCurrent = globalIdx <= activeWordIdx;
+          const isKeyword = isSemanticKeyword(item.word);
 
-          // Animación spring suave sin oscilación resonante (partiendo de 1.0 como en TrendForge)
           const wordStartFrames = (item.startMs / 1000) * fps;
           const wordFrameOffset = Math.max(0, localFrame - wordStartFrames);
           const popSpring = spring({
@@ -121,9 +193,113 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
           });
 
           const activeScale = isActive
-            ? interpolate(popSpring, [0, 1], [1.0, 1.08], CLAMP_EXTRAPOLATION)
+            ? interpolate(popSpring, [0, 1], [1.0, 1.05], CLAMP_EXTRAPOLATION)
             : 1.0;
 
+          // MODO 1: Vector Selection Box (Ref 2 Teclado iPhone & Ref 3 Gancho del Metro)
+          // Exactamente 1 marco de selección vectorial activo a la vez sobre la palabra clave pronunciada
+          if (variant === 'vector-box') {
+            const showBox = globalIdx === boxedGlobalIdx;
+            return (
+              <span
+                key={`${globalIdx}-${item.word}-${item.startMs}`}
+                style={{
+                  transform: `scale(${activeScale})`,
+                  transformOrigin: 'center center',
+                  display: 'inline-block',
+                }}
+              >
+                <VectorSelectionBox
+                  active={showBox}
+                  color="#3B82F6"
+                  showRotationStem={true}
+                >
+                  <span
+                    style={{
+                      fontFamily:
+                        "'IBM Plex Sans', 'Inter', 'Helvetica Neue', system-ui, sans-serif",
+                      fontSize: 48,
+                      fontWeight: 700,
+                      letterSpacing: '-0.015em',
+                      lineHeight: 1.18,
+                      color: isActive
+                        ? '#FFFFFF'
+                        : isPastOrCurrent && isKeyword
+                          ? '#F8FAFC'
+                          : isPastOrCurrent
+                            ? '#CBD5E1'
+                            : '#8E8E93',
+                      textShadow: '0 2px 10px rgba(0, 0, 0, 0.65)',
+                    }}
+                  >
+                    {item.word}
+                  </span>
+                </VectorSelectionBox>
+              </span>
+            );
+          }
+
+          // MODO 2: Ochre Blueprint (Ref 1 — 1.000 botellas y 10 catadores)
+          if (variant === 'ochre-blueprint') {
+            const highlightOchre = isActive || (isPastOrCurrent && isKeyword);
+            return (
+              <span
+                key={`${globalIdx}-${item.word}-${item.startMs}`}
+                style={{
+                  fontFamily:
+                    "'IBM Plex Sans', 'Inter', 'Helvetica Neue', system-ui, sans-serif",
+                  fontSize: 48,
+                  fontWeight: 700,
+                  letterSpacing: '-0.015em',
+                  lineHeight: 1.18,
+                  padding: '2px 8px',
+                  color: highlightOchre
+                    ? '#FBBF24'
+                    : isPastOrCurrent
+                      ? '#FFFFFF'
+                      : 'rgba(255, 255, 255, 0.55)',
+                  textShadow: '0 2px 8px rgba(15, 53, 94, 0.75)',
+                  transform: `scale(${activeScale})`,
+                  transformOrigin: 'center center',
+                  display: 'inline-block',
+                }}
+              >
+                {item.word}
+              </span>
+            );
+          }
+
+          // MODO 3: Red Pill (Ref 5 — Las palomas y la cronofotografía)
+          if (variant === 'red-pill') {
+            return (
+              <span
+                key={`${globalIdx}-${item.word}-${item.startMs}`}
+                style={{
+                  fontFamily:
+                    "'IBM Plex Sans', 'Inter', 'Helvetica Neue', system-ui, sans-serif",
+                  fontSize: 48,
+                  fontWeight: 700,
+                  letterSpacing: '-0.015em',
+                  lineHeight: 1.15,
+                  padding: '2px 10px',
+                  borderRadius: 4,
+                  backgroundColor: isActive ? '#DC2626' : 'transparent',
+                  border: isActive
+                    ? '1.5px solid #FCA5A5'
+                    : '1.5px solid transparent',
+                  color: '#FFFFFF',
+                  transform: `scale(${activeScale})`,
+                  transformOrigin: 'center center',
+                  display: 'inline-block',
+                  boxSizing: 'border-box',
+                }}
+              >
+                {item.word}
+              </span>
+            );
+          }
+
+          // MODO 4: Editorial Clean (Papel técnico claro #F8F7F4)
           return (
             <span
               key={`${globalIdx}-${item.word}-${item.startMs}`}
@@ -136,13 +312,11 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
                 lineHeight: 1.16,
                 color: isActive ? PALETTE.accentPrimary : PALETTE.ink,
                 backgroundColor: 'transparent',
-                // Halo nítido del color del papel técnico (#F8F7F4) para lectura limpia sin fondo ni neón
                 textShadow:
                   '0 2px 0 #F8F7F4, 0 -2px 0 #F8F7F4, 2px 0 0 #F8F7F4, -2px 0 0 #F8F7F4, 0 4px 12px rgba(248, 247, 244, 0.95)',
                 transform: `scale(${activeScale})`,
                 transformOrigin: 'center center',
                 display: 'inline-block',
-                willChange: 'transform',
                 margin: '0 3px',
               }}
             >

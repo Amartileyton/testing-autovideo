@@ -1,13 +1,16 @@
 import React from 'react';
-import { Fingerprint, Layers, ScanLine } from 'lucide-react';
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { RoughCard } from '../components/RoughCard';
 import {
-  CLAMP_EXTRAPOLATION,
-  PALETTE,
-  SAFE_ZONE,
-  SPRING_SNAPPY,
-} from '../theme/motion';
+  interpolate,
+  useCurrentFrame,
+} from 'remotion';
+import {
+  CornerHudTelemetry,
+  DimensionRuler,
+  HeroPropStage,
+  LiveTelemetryGraph,
+  TargetReticle,
+} from '../components/blueprints/ResultaaqueeBlueprints';
+import { CLAMP_EXTRAPOLATION } from '../theme/motion';
 
 export interface Scene3Props {
   headline?: string;
@@ -20,67 +23,47 @@ export interface Scene3Props {
 }
 
 /**
- * Scene3 — Escena Impar (Slot 3)
- * Corte transversal topográfico 3D de la epidermis (crestas, valles y poros sudoríparos)
- * donde ondas ultrasónicas de eco miden la profundidad exacta hasta 400 µm en los ejes X · Y · Z.
- * Respeta Zona Segura Vertical 9:16 (padding >= 96px, titulares >= 64px <= 7 palabras, etiquetas >= 28px, y < 1400px).
+ * Scene 3 — Relieve Epidérmico en 3D (Art-First + Estilo @resultaaquee Ref 5 Cronofotografía + Osciloscopio)
+ * - Mitad superior: HeroPropStage macro de las crestas, poros y valles de la epidermis sobre el cristal
+ *   con dianas rojas (TargetReticle) en Cresta, Poro y Valle.
+ * - Raíl calibrado divisorio blanco y negro.
+ * - Mitad inferior: Gráfica posición-tiempo en vivo (LiveTelemetryGraph) conectada mediante
+ *   línea punteada vertical roja desde el valle epidérmico hasta el escalón de la gráfica.
  */
 export const Scene3: React.FC<Scene3Props> = ({
-  headline = 'RELIEVE EPIDÉRMICO EN 3D',
   metricValue = 400,
-  metricUnit = 'µm',
-  metricLabel = 'PENETRACIÓN EPIDÉRMICA',
   canvasOffsetX = 1100,
   canvasOffsetY = 1980,
-  enterFrame = 389,
+  enterFrame = 423,
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
   const localFrame = Math.max(0, frame - enterFrame);
 
-  const headerSpring = spring({
-    frame: localFrame,
-    fps,
-    config: SPRING_SNAPPY,
-  });
+  const depthCounter = Math.round(
+    interpolate(localFrame, [15, 130], [0, metricValue], CLAMP_EXTRAPOLATION)
+  );
 
+  // Progreso del escaneo horizontal y de la gráfica inferior (0 -> 1)
   const scanProgress = interpolate(
     localFrame,
-    [4, 68],
-    [0, 1],
+    [10, 175],
+    [0.05, 1],
     CLAMP_EXTRAPOLATION
   );
 
-  const animatedDepthUm = Math.round(
-    interpolate(localFrame, [6, 54], [0, metricValue], CLAMP_EXTRAPOLATION)
-  );
-
-  const animatedNodes = Math.round(
-    interpolate(localFrame, [10, 60], [0, 3], CLAMP_EXTRAPOLATION)
-  );
-
-  const footerSpring = spring({
-    frame: Math.max(0, localFrame - 16),
-    fps,
-    config: SPRING_SNAPPY,
-  });
-
-  const echoColumns = [
-    { x: 118, ridgeY: 168, type: 'CRESTA' },
-    { x: 232, ridgeY: 86, type: 'VALLE' },
-    { x: 348, ridgeY: 168, type: 'PORO' },
-    { x: 464, ridgeY: 84, type: 'VALLE' },
-    { x: 580, ridgeY: 168, type: 'CRESTA' },
-    { x: 696, ridgeY: 88, type: 'VALLE' },
-  ];
-
-  const scanLineX = interpolate(
+  // Coordenada X del escáner sincronizada con la gráfica inferior
+  const trackerX = interpolate(
     scanProgress,
-    [0, 1],
-    [70, 746],
+    [0.05, 1],
+    [220, 860],
     CLAMP_EXTRAPOLATION
   );
+
+  // Escalones de altura según si el escáner pasa por Cresta (x < 430), Poro (430..650) o Valle (> 650)
+  const trackerTopY =
+    trackerX < 430 ? 730 : trackerX < 650 ? 635 : 545;
+  const trackerBottomY =
+    trackerX < 430 ? 1390 : trackerX < 650 ? 1255 : 1125;
 
   return (
     <div
@@ -90,363 +73,136 @@ export const Scene3: React.FC<Scene3Props> = ({
         top: canvasOffsetY,
         width: 1080,
         height: 1920,
-        paddingLeft: SAFE_ZONE.horizontalPaddingPx,
-        paddingRight: SAFE_ZONE.horizontalPaddingPx,
-        paddingTop: 96,
-        boxSizing: 'border-box',
+        pointerEvents: 'none',
       }}
     >
-      {/* Etiqueta técnica superior (>= 28px) */}
+      {/* Telemetría de esquina superior */}
+      <CornerHudTelemetry
+        leftLabel="PENETRACIÓN EPIDÉRMICA"
+        leftValue={`${depthCounter} µm`}
+        rightLabel="RESOLUCIÓN TOPOGRÁFICA"
+        rightValue="CRESTA · PORO · VALLE"
+        accentColor="#EF4444"
+        textColor="#FACC15"
+      />
+
+      {/* Encabezado editorial en cursiva serif (Estilo Ref 5: "una placa, muchas exposiciones") */}
       <div
         style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 14,
-          backgroundColor: PALETTE.surfaceMuted,
-          border: `2.5px solid ${PALETTE.border}`,
-          borderRadius: 999,
-          padding: '10px 24px',
-          marginBottom: 22,
-          opacity: interpolate(headerSpring, [0, 1], [0, 1], CLAMP_EXTRAPOLATION),
-          transform: `scale(${interpolate(
-            headerSpring,
-            [0, 1],
-            [0.92, 1],
-            CLAMP_EXTRAPOLATION
-          )})`,
+          position: 'absolute',
+          left: 96,
+          top: 345,
+          pointerEvents: 'none',
+          zIndex: 60,
         }}
       >
-        <Layers size={32} color={PALETTE.accentSecondary} strokeWidth={2.5} />
-        <span
-          style={{
-            fontFamily: 'monospace',
-            fontSize: 28,
-            fontWeight: 700,
-            color: PALETTE.ink,
-            letterSpacing: '0.05em',
-          }}
-        >
-          TOPOGRAFÍA VOLUMÉTRICA · EJES X · Y · Z
-        </span>
-      </div>
-
-      {/* Titular Editorial (>= 64px, <= 7 palabras) */}
-      <h1
-        style={{
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          fontSize: 72,
-          fontWeight: 900,
-          lineHeight: 1.04,
-          letterSpacing: '-0.03em',
-          color: PALETTE.ink,
-          margin: '0 0 32px 0',
-          opacity: interpolate(headerSpring, [0, 1], [0, 1], CLAMP_EXTRAPOLATION),
-          transform: `translateY(${interpolate(
-            headerSpring,
-            [0, 1],
-            [24, 0],
-            CLAMP_EXTRAPOLATION
-          )}px)`,
-        }}
-      >
-        {headline}
-      </h1>
-
-      {/* Tarjeta principal RoughCard (888x720) con corte transversal epidérmico 3D */}
-      <RoughCard
-        width={888}
-        height={720}
-        enterFrame={enterFrame + 4}
-        accentColor={PALETTE.accentSecondary}
-        seed={303}
-      >
-        {/* Cabecera interna de la tarjeta */}
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            borderBottom: `2px solid ${PALETTE.gridLine}`,
-            paddingBottom: 16,
+            fontFamily: "Georgia, 'Times New Roman', serif",
+            fontSize: 36,
+            fontWeight: 700,
+            color: '#F5F5F4',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Fingerprint
-              size={36}
-              color={PALETTE.accentSecondary}
-              strokeWidth={2.4}
+          epidermis, en corte acústico
+        </div>
+        <div
+          style={{
+            fontFamily: "Georgia, 'Times New Roman', serif",
+            fontStyle: 'italic',
+            fontSize: 26,
+            color: '#A8A29E',
+          }}
+        >
+          un pulso, tres tiempos de eco distintos
+        </div>
+      </div>
+
+      {/* Hero Prop 3D CAD: Corte Macro de Crestas, Poros y Valles Epidérmicos */}
+      <HeroPropStage
+        src="assets/props/hero-scene3-epidermis-macro.png"
+        x={520}
+        y={675}
+        size={490}
+        enterFrame={6}
+        localFrame={localFrame}
+        accentColor="#38BDF8"
+        secondaryColor="#F59E0B"
+        scanBeam
+        pulseRings={false}
+        noiseSeed="scene3-epidermis"
+      />
+
+      {/* Escenario dividido: Dianas estroboscópicas + Raíl calibrado divisorio */}
+      <svg
+        width={1080}
+        height={1920}
+        style={{ position: 'absolute', inset: 0, overflow: 'visible', zIndex: 45 }}
+      >
+        {/* Dianas estroboscópicas (TargetReticle estilo Ref 5) clavadas en Cresta, Poro y Valle */}
+        <TargetReticle
+          x={310}
+          y={730}
+          opacity={0.75}
+          color="#EF4444"
+          label="CRESTA (0 µm)"
+        />
+        <TargetReticle
+          x={535}
+          y={635}
+          opacity={localFrame >= 55 ? 0.85 : 0.35}
+          color="#EF4444"
+          label="PORO (220 µm)"
+        />
+        <TargetReticle
+          x={745}
+          y={545}
+          opacity={localFrame >= 100 ? 1 : 0.35}
+          color="#EF4444"
+          label="VALLE (400 µm)"
+        />
+
+        {/* Diana móvil activa siguiendo el frente de eco */}
+        <TargetReticle x={trackerX} y={trackerTopY} opacity={1} color="#EF4444" />
+
+        {/* Raíl calibrado divisorio blanco y negro (Idéntico a Ref 5 Palomas) */}
+        <g transform="translate(0, 925)">
+          <rect x={96} y={0} width={888} height={24} fill="#E7E5E4" rx={4} />
+          {Array.from({ length: 12 }, (_, idx) => (
+            <rect
+              key={idx}
+              x={112 + idx * 72}
+              y={5}
+              width={36}
+              height={14}
+              fill="#1C1917"
             />
-            <span
-              style={{
-                fontFamily: 'monospace',
-                fontSize: 28,
-                fontWeight: 700,
-                color: PALETTE.ink,
-              }}
-            >
-              CORTE TRANSVERSAL EPIDÉRMICO
-            </span>
-          </div>
-          <ScanLine size={36} color={PALETTE.accentSuccess} strokeWidth={2.4} />
-        </div>
+          ))}
+        </g>
+      </svg>
 
-        {/* Diagrama vectorial causal: Corte transversal 3D con crestas, valles y poros */}
-        <svg width={816} height={370} viewBox="0 0 816 370">
-          {/* Cuadrícula de medición micrométrica Z (0 a 400 µm) */}
-          <rect
-            x={16}
-            y={12}
-            width={784}
-            height={272}
-            rx={12}
-            fill={PALETTE.surface}
-            stroke={PALETTE.border}
-            strokeWidth={2.5}
-          />
+      {/* Regla de acotación vertical de los 400 micrómetros */}
+      <DimensionRuler
+        x1={920}
+        y1={510}
+        x2={920}
+        y2={770}
+        label="400 µm"
+        color="#F59E0B"
+        enterFrame={75}
+      />
 
-          {/* Líneas guía de profundidad Z */}
-          <line
-            x1={28}
-            y1={86}
-            x2={788}
-            y2={86}
-            stroke={PALETTE.gridLine}
-            strokeWidth={2}
-            strokeDasharray="6 6"
-          />
-          <line
-            x1={28}
-            y1={168}
-            x2={788}
-            y2={168}
-            stroke={PALETTE.gridLine}
-            strokeWidth={2}
-            strokeDasharray="6 6"
-          />
-
-          {/* Etiqueta de cota superior 400 µm (>= 28px) */}
-          <text
-            x={36}
-            y={52}
-            fill={PALETTE.accentSecondary}
-            fontFamily="monospace"
-            fontSize={28}
-            fontWeight={700}
-          >
-            Z = 400 µm · DERMIS Y POROS
-          </text>
-
-          {/* Polígono sombreado del tejido epidérmico (Crestas, Valles y Poro Sudoríparo) */}
-          <path
-            d="M 48 24 L 768 24 L 768 124 L 696 88 L 580 168 L 464 84 L 364 168 L 356 122 L 340 122 L 332 168 L 232 86 L 118 168 L 48 118 Z"
-            fill={PALETTE.surfaceMuted}
-            stroke={PALETTE.ink}
-            strokeWidth={4}
-            strokeLinejoin="round"
-          />
-
-          {/* Indicador de poro sudoríparo en X=348 */}
-          <circle
-            cx={348}
-            cy={118}
-            r={10}
-            fill={PALETTE.accentPrimary}
-            stroke={PALETTE.surfaceElevated}
-            strokeWidth={2.5}
-          />
-
-          {/* Vectores ultrasónicos de eco midiendo la profundidad Z en cada punto */}
-          {echoColumns.map((col, idx) => {
-            const colSpring = spring({
-              frame: Math.max(0, localFrame - 8 - idx * 3),
-              fps,
-              config: SPRING_SNAPPY,
-            });
-            const currentY = interpolate(
-              colSpring,
-              [0, 1],
-              [274, col.ridgeY],
-              CLAMP_EXTRAPOLATION
-            );
-            const isValley = col.ridgeY < 120;
-
-            return (
-              <g key={col.x}>
-                {/* Pulso ascendente y eco reflejado */}
-                <line
-                  x1={col.x}
-                  y1={276}
-                  x2={col.x}
-                  y2={currentY}
-                  stroke={
-                    isValley ? PALETTE.accentSecondary : PALETTE.accentSuccess
-                  }
-                  strokeWidth={4}
-                  strokeDasharray={isValley ? '7 5' : undefined}
-                />
-                {/* Nodo de lectura topográfica */}
-                <circle
-                  cx={col.x}
-                  cy={currentY}
-                  r={8}
-                  fill={
-                    isValley ? PALETTE.accentSecondary : PALETTE.accentSuccess
-                  }
-                  stroke={PALETTE.surfaceElevated}
-                  strokeWidth={2.5}
-                />
-              </g>
-            );
-          })}
-
-          {/* Barrido vertical activo de reconstrucción X·Y·Z */}
-          <line
-            x1={scanLineX}
-            y1={20}
-            x2={scanLineX}
-            y2={278}
-            stroke={PALETTE.accentPrimary}
-            strokeWidth={3.5}
-          />
-
-          {/* Base inferior: Matriz receptora piezoeléctrica */}
-          <rect
-            x={16}
-            y={296}
-            width={784}
-            height={58}
-            rx={10}
-            fill={PALETTE.ink}
-          />
-          <text
-            x={408}
-            y={334}
-            textAnchor="middle"
-            fill={PALETTE.surfaceElevated}
-            fontFamily="monospace"
-            fontSize={28}
-            fontWeight={700}
-          >
-            MATRIZ RECEPTORA DE ECO ACÚSTICO (X · Y · Z)
-          </text>
-        </svg>
-
-        {/* Contadores numéricos reales: 0 -> 400 µm y Ejes 3D */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
-            borderTop: `2px solid ${PALETTE.gridLine}`,
-            paddingTop: 18,
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontFamily: 'monospace',
-                fontSize: 28,
-                fontWeight: 700,
-                color: PALETTE.inkMuted,
-                marginBottom: 4,
-              }}
-            >
-              {metricLabel}
-            </div>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 14,
-                fontFamily: 'system-ui, sans-serif',
-                fontSize: 76,
-                fontWeight: 900,
-                color: PALETTE.accentSecondary,
-                lineHeight: 1,
-              }}
-            >
-              <ScanLine
-                size={48}
-                color={PALETTE.accentSecondary}
-                strokeWidth={2.5}
-              />
-              <span>
-                {animatedDepthUm} {metricUnit}
-              </span>
-            </div>
-          </div>
-
-          <div style={{ textAlign: 'right' }}>
-            <div
-              style={{
-                fontFamily: 'monospace',
-                fontSize: 28,
-                fontWeight: 700,
-                color: PALETTE.inkMuted,
-                marginBottom: 4,
-              }}
-            >
-              MAPA VOLUMÉTRICO
-            </div>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 12,
-                fontFamily: 'system-ui, sans-serif',
-                fontSize: 70,
-                fontWeight: 900,
-                color: PALETTE.accentSuccess,
-                lineHeight: 1,
-              }}
-            >
-              <Layers
-                size={44}
-                color={PALETTE.accentSuccess}
-                strokeWidth={2.5}
-              />
-              <span>{animatedNodes}D X·Y·Z</span>
-            </div>
-          </div>
-        </div>
-      </RoughCard>
-
-      {/* Pie técnico diagnóstico dentro de la zona segura (< 1400px) */}
-      <div
-        style={{
-          marginTop: 24,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          backgroundColor: PALETTE.surfaceMuted,
-          border: `2px solid ${PALETTE.border}`,
-          borderRadius: 14,
-          padding: '16px 26px',
-          opacity: interpolate(
-            footerSpring,
-            [0, 1],
-            [0, 1],
-            CLAMP_EXTRAPOLATION
-          ),
-          transform: `translateY(${interpolate(
-            footerSpring,
-            [0, 1],
-            [16, 0],
-            CLAMP_EXTRAPOLATION
-          )}px)`,
-        }}
-      >
-        <span
-          style={{
-            fontFamily: 'monospace',
-            fontSize: 28,
-            fontWeight: 700,
-            color: PALETTE.ink,
-          }}
-        >
-          DETECCIÓN SUBDÉRMICA: CRESTAS · VALLES · POROS
-        </span>
-      </div>
+      {/* Gráfica de Telemetría en Tiempo Real (Mitad inferior conectada por línea punteada vertical) */}
+      <LiveTelemetryGraph
+        progress={scanProgress}
+        continuousPathD="M 220 1420 L 860 1090"
+        steppedPathD="M 220 1390 L 430 1390 L 430 1255 L 650 1255 L 650 1125 L 860 1125"
+        trackerX={trackerX}
+        trackerTopY={trackerTopY}
+        trackerBottomY={trackerBottomY}
+        primaryLabel="ECO ULTRASÓNICO 3D (ESCALONES Z)"
+        secondaryLabel="SENSOR ÓPTICO 2D (PLANO)"
+      />
     </div>
   );
 };

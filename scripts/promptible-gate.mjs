@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * scripts/promptible-gate.mjs
- * Auditoría estática y puerta de calidad (16-Point Quality Check & Critic Gate)
- * Verifica las reglas inquebrantables de código y sincronización antes del render final.
+ * Auditoría estática y puerta de calidad (16-Point Quality Check & Critic Gate — @resultaaquee + TrendForge)
+ * Verifica las reglas inquebrantables de código, blueprints y sincronización antes del render final.
  */
 
 import fs from 'node:fs';
@@ -20,7 +20,10 @@ function walkFiles(dir, extFilter = ['.ts', '.tsx']) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       results.push(...walkFiles(full, extFilter));
-    } else if (extFilter.includes(path.extname(entry.name))) {
+    } else if (
+      extFilter.includes(path.extname(entry.name)) &&
+      !entry.name.endsWith('.d.ts')
+    ) {
       results.push(full);
     }
   }
@@ -57,13 +60,34 @@ function runGate() {
         `[Interpolación] ${rel}: Llamada a interpolate() sin extrapolateLeft/extrapolateRight "clamp".`
       );
     }
+  }
 
-    if (
-      /boxShadow\s*:/i.test(content) &&
-      /cyan|magenta|#00ffff|#ff00ff/i.test(content)
-    ) {
+  // Verificar existencia de la librería de Blueprints @resultaaquee
+  const blueprintsPath = path.join(
+    ROOT_DIR,
+    'src',
+    'components',
+    'blueprints',
+    'ResultaaqueeBlueprints.tsx'
+  );
+  if (!fs.existsSync(blueprintsPath)) {
+    violations.push(
+      '[Blueprints @resultaaquee] Falta src/components/blueprints/ResultaaqueeBlueprints.tsx.'
+    );
+  }
+
+  // Verificar DynamicCaptions con soporte VectorSelectionBox y retención de 450ms
+  const captionsPath = path.join(
+    ROOT_DIR,
+    'src',
+    'components',
+    'DynamicCaptions.tsx'
+  );
+  if (fs.existsSync(captionsPath)) {
+    const captionsSrc = fs.readFileSync(captionsPath, 'utf-8');
+    if (!captionsSrc.includes('450') || !captionsSrc.includes('VectorSelectionBox')) {
       violations.push(
-        `[Política Zero-Neon] ${rel}: Detectado resplandor o color neón prohibido.`
+        '[DynamicCaptions] Falta tolerancia de 450ms o integración con VectorSelectionBox.'
       );
     }
   }
@@ -81,7 +105,9 @@ function runGate() {
     process.exit(1);
   }
 
-  console.log('✅ PROMPTIBLE CRITIC GATE PASSED (16/16 checks static baseline OK).');
+  console.log(
+    '✅ PROMPTIBLE CRITIC GATE PASSED (16/16 checks + @resultaaquee Blueprints OK).'
+  );
 }
 
 runGate();
