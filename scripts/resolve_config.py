@@ -55,10 +55,17 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         },
     },
     "elevenlabs": {
-        "voice_id": "JBFqnCBsd6RMkjVDRZzb",
+        "voice_id": "RwzBDEn5f6FIgpAjH9YN",
+        "voice_name": "Gabriel Blanco (Voz Canónica de Leo)",
         "model_id": "eleven_multilingual_v2",
         "output_format": "mp3_44100_128",
         "apply_text_normalization": "on",
+        "canonical_settings": {
+            "stability": 0.70,
+            "similarity_boost": 0.75,
+            "style": 0.05,
+            "use_speaker_boost": True,
+        },
         "audit": {
             "min_words_per_sec": 2.0,
             "max_words_per_sec": 4.5,

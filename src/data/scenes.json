@@ -1,5 +1,5 @@
 {
-  "projectTitle": "Diagnóstico Inicial — Estudio Vectorial Antigravity",
+  "projectTitle": "Cómo Funciona el Lector de Huellas Ultrasónico 3D",
   "fps": 30,
   "width": 1080,
   "height": 1920,
@@ -7,10 +7,10 @@
   "scenes": [
     {
       "id": "scene-1",
-      "title": "ARQUITECTURA VECTORIAL",
-      "text": "El motor de vídeo programático convierte cada palabra de ElevenLabs en coordenadas exactas a treinta fotogramas por segundo.",
+      "title": "EL FALLO DEL SENSOR ÓPTICO",
+      "text": "Tu móvil no hace una foto de tu dedo: los antiguos lectores ópticos solo proyectaban luz plana en dos dimensiones.",
       "characterPreset": "dramatic",
-      "visualCue": "Diagrama vectorial del motor de sincronización con contador de precisión en milisegundos y nodos de malla técnica.",
+      "visualCue": "Comparativa de haz de luz 2D rebotando en superficie plana frente a relieve epidérmico real.",
       "cameraTarget": {
         "x": 0,
         "y": 0,
@@ -18,27 +18,63 @@
         "rotateDeg": 0
       },
       "metrics": {
-        "label": "FRECUENCIA DE MUESTREO",
-        "numericValue": 30,
-        "unit": "FPS"
+        "label": "CAPTURA ÓPTICA PLANA",
+        "numericValue": 2,
+        "unit": "D"
       }
     },
     {
       "id": "scene-2",
-      "title": "FÍSICA CONTINUA",
-      "text": "La cámara cinemática se desplaza sobre un lienzo único impulsada por resortes matemáticos sin transiciones de hoja de estilo.",
+      "title": "PULSO ACÚSTICO ULTRASÓNICO",
+      "text": "Bajo el cristal, un transductor dispara ondas ultrasónicas a veinte megahercios que atraviesan la pantalla sin usar luz.",
       "characterPreset": "narrator",
-      "visualCue": "Esquema del aparejo CameraRig desplazándose hacia el segundo cuadrante con curva amortiguada y tarjeta editorial RoughJS.",
+      "visualCue": "Transductor piezoeléctrico bajo el panel OLED emitiendo ondas mecánicas concéntricas a 20 MHz.",
       "cameraTarget": {
-        "x": 0,
-        "y": 980,
+        "x": 1100,
+        "y": 0,
         "zoom": 1.04,
         "rotateDeg": 0
       },
       "metrics": {
-        "label": "ZONA SEGURA VERTICAL",
-        "numericValue": 85,
-        "unit": "%"
+        "label": "FRECUENCIA ACÚSTICA",
+        "numericValue": 20,
+        "unit": "MHz"
+      }
+    },
+    {
+      "id": "scene-3",
+      "title": "RELIEVE EPIDÉRMICO EN 3D",
+      "text": "El eco rebota distinto en cada cresta, poro y valle epidérmico hasta cuatrocientos micrómetros de profundidad.",
+      "characterPreset": "narrator",
+      "visualCue": "Malla topográfica tridimensional midiendo crestas y valles de la piel con penetración de 400 micrómetros.",
+      "cameraTarget": {
+        "x": 1100,
+        "y": 1980,
+        "zoom": 1.02,
+        "rotateDeg": 0
+      },
+      "metrics": {
+        "label": "PENETRACIÓN EPIDÉRMICA",
+        "numericValue": 400,
+        "unit": "µm"
+      }
+    },
+    {
+      "id": "scene-4",
+      "title": "DESBLOQUEO EN MILISEGUNDOS",
+      "text": "El procesador reconstruye tu mapa biométrico tridimensional y desbloquea el sistema en apenas veinticinco milisegundos.",
+      "characterPreset": "narrator",
+      "visualCue": "Reconstrucción vectorial final validada por el chip de seguridad con latencia de 25 ms.",
+      "cameraTarget": {
+        "x": 0,
+        "y": 1980,
+        "zoom": 1.0,
+        "rotateDeg": 0
+      },
+      "metrics": {
+        "label": "TIEMPO DE RESPUESTA",
+        "numericValue": 25,
+        "unit": "ms"
       }
     }
   ]

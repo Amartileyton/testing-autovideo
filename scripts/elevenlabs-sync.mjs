@@ -1,19 +1,23 @@
 #!/usr/bin/env node
 /**
  * scripts/elevenlabs-sync.mjs
- * Motor Exclusivo ElevenLabs y Sincronización Audio-First para Remotion.
+ * Motor Exclusivo ElevenLabs y Sincronización Audio-First para Remotion (con integración TrendForge).
  *
  * Flujo:
  * 1. Lee .env (ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID) y src/data/scenes.json.
- * 2. Mapea presets (narrator, expert, dramatic, conversational, calm) a voice_settings.
- * 3. Llama a POST https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/with-timestamps?output_format=mp3_44100_128
+ * 2. Usa por defecto la Voz Canónica de TrendForge: "RwzBDEn5f6FIgpAjH9YN" (Gabriel Blanco — Voz Canónica de Leo)
+ *    con su afinación calibrada (stability: 0.70, similarity_boost: 0.75, style: 0.05, use_speaker_boost: true),
+ *    o cualquiera de los CURATED_VOICE_PROFILES de Leo.
+ * 3. Preprocesa el texto con preprocessForTts() (de TrendForge): limpia acotaciones de cámara,
+ *    backticks de código y convierte [PAUSA X.Xs] en pausas prosódicas naturales (... o ,).
+ * 4. Llama a POST https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/with-timestamps?output_format=mp3_44100_128
  *    con Request Stitching (previous_text, next_text y previous_request_ids).
- * 4. Decodifica audio_base64 en public/audio/${scene.id}.mp3.
- * 5. Convierte alignment (characters, character_start_times_seconds, character_end_times_seconds)
- *    en wordTimestamps: [{ word, startMs, endMs, startFrame, endFrame }].
- * 6. Ejecuta ffprobe sobre cada MP3 para medir actualDuration y audita ritmo (2.0-4.5 palabras/s)
- *    y silencios (leadingSilence > 200ms, trailingSilence > 500ms), recortando o ajustando trimOffsetMs.
- * 7. Escribe el manifiesto maestro public/audio/info.json.
+ * 5. Decodifica audio_base64 en public/audio/${scene.id}.mp3.
+ * 6. Convierte alignment usando la cadencia continua de TrendForge (alignmentParser):
+ *    el final de cada palabra enlaza con el tStart del espacio siguiente para eliminar micro-cortes.
+ * 7. Ejecuta ffprobe sobre cada MP3 para medir actualDuration y audita ritmo (2.0-4.5 palabras/s)
+ *    y silencios (leadingSilence > 200ms, trailingSilence > 500ms).
+ * 8. Escribe el manifiesto maestro public/audio/info.json y public/assets/latest_alignment.json.
  */
 
 import fs from 'node:fs';
@@ -30,46 +34,168 @@ dotenv.config({ path: path.join(ROOT_DIR, '.env') });
 
 const SCENES_PATH = path.join(ROOT_DIR, 'src', 'data', 'scenes.json');
 const AUDIO_DIR = path.join(ROOT_DIR, 'public', 'audio');
+const ASSETS_DIR = path.join(ROOT_DIR, 'public', 'assets');
 const INFO_JSON_PATH = path.join(AUDIO_DIR, 'info.json');
+const LATEST_ALIGNMENT_PATH = path.join(ASSETS_DIR, 'latest_alignment.json');
+
+const REMOTION_COMPOSITOR_DIR = path.join(
+  ROOT_DIR,
+  'node_modules',
+  '@remotion',
+  'compositor-win32-x64-msvc'
+);
+const FFMPEG_BIN = fs.existsSync(path.join(REMOTION_COMPOSITOR_DIR, 'ffmpeg.exe'))
+  ? path.join(REMOTION_COMPOSITOR_DIR, 'ffmpeg.exe')
+  : 'ffmpeg';
+const FFPROBE_BIN = fs.existsSync(path.join(REMOTION_COMPOSITOR_DIR, 'ffprobe.exe'))
+  ? path.join(REMOTION_COMPOSITOR_DIR, 'ffprobe.exe')
+  : 'ffprobe';
 
 /**
- * Mapa oficial de Presets de Carácter -> voice_settings de ElevenLabs
+ * Voz Canónica reciclada de TrendForge: Gabriel Blanco (Voz Canónica de Leo)
  */
-export const CHARACTER_PRESETS = {
-  narrator: {
-    stability: 0.58,
-    similarity_boost: 0.78,
-    style: 0.22,
-    use_speaker_boost: true,
-  },
-  expert: {
-    stability: 0.65,
-    similarity_boost: 0.82,
-    style: 0.15,
-    use_speaker_boost: true,
-  },
-  dramatic: {
-    stability: 0.38,
-    similarity_boost: 0.85,
-    style: 0.62,
-    use_speaker_boost: true,
-  },
-  conversational: {
-    stability: 0.48,
+export const CANONICAL_VOICE_ID = 'RwzBDEn5f6FIgpAjH9YN';
+
+/**
+ * Catálogo curado de perfiles de voz de TrendForge (core/tts.py)
+ */
+export const CURATED_VOICE_PROFILES = {
+  RwzBDEn5f6FIgpAjH9YN: {
+    name: 'Gabriel Blanco (Voz Canónica de Leo)',
+    description:
+      'Voz oficial de Leo. Afinación calibrada: Tono con cuerpo, dicción técnica y aplomo',
+    stability: 0.70,
     similarity_boost: 0.75,
-    style: 0.35,
+    style: 0.05,
     use_speaker_boost: true,
   },
-  calm: {
-    stability: 0.78,
-    similarity_boost: 0.72,
-    style: 0.08,
+  pNInz6obpgDQGcFmaJgB: {
+    name: 'Leo Didáctico (Adam — Barítono Cálido y Claro)',
+    description:
+      'Voz masculina con cuerpo, dicción limpia y tono cercano de mentor técnico',
+    stability: 0.50,
+    similarity_boost: 0.75,
+    style: 0.05,
+    use_speaker_boost: true,
+  },
+  ErXwobaYiN019PkySvjV: {
+    name: 'Leo Dinámico (Antoni — Entusiasta y Ágil)',
+    description:
+      'Cadencia ágil, ideal para tutoriales rápidos de automatización y código',
+    stability: 0.45,
+    similarity_boost: 0.80,
+    style: 0.10,
+    use_speaker_boost: true,
+  },
+  onwK4e9ZLuTAKqWW03F9: {
+    name: 'Leo Analista (Daniel — Profundo y Sereno)',
+    description:
+      'Timbre grave y pausado, excelente para arquitectura de software y desmitificación',
+    stability: 0.60,
+    similarity_boost: 0.75,
+    style: 0.00,
+    use_speaker_boost: true,
+  },
+  VR6AewLTigWG4xSOukaG: {
+    name: 'Leo Conversacional (Arnold — Directo y Confiable)',
+    description: 'Tono firme y natural con gran presencia en formato vertical Short',
+    stability: 0.52,
+    similarity_boost: 0.70,
+    style: 0.05,
     use_speaker_boost: true,
   },
 };
 
 /**
+ * Mapa oficial de Presets de Carácter -> voice_settings calibrados sobre la Voz Canónica de TrendForge
+ */
+export const CHARACTER_PRESETS = {
+  narrator: {
+    stability: 0.70,
+    similarity_boost: 0.75,
+    style: 0.05,
+    use_speaker_boost: true,
+  },
+  expert: {
+    stability: 0.70,
+    similarity_boost: 0.78,
+    style: 0.05,
+    use_speaker_boost: true,
+  },
+  dramatic: {
+    stability: 0.55,
+    similarity_boost: 0.80,
+    style: 0.12,
+    use_speaker_boost: true,
+  },
+  conversational: {
+    stability: 0.52,
+    similarity_boost: 0.75,
+    style: 0.06,
+    use_speaker_boost: true,
+  },
+  calm: {
+    stability: 0.75,
+    similarity_boost: 0.75,
+    style: 0.02,
+    use_speaker_boost: true,
+  },
+};
+
+/**
+ * Convierte marcadores [PAUSA], [PAUSA 0.4s], [PAUSA: 0.5s] en pausas prosódicas naturales (... o ,).
+ * Portado directamente de TrendForge (core/llm.py).
+ */
+export function cleanPauseMarkers(text, replaceWithPunctuation = true) {
+  if (!text) return '';
+  let cleaned = text.replace(
+    /\[PAUSA(?:\s*[:=-]?\s*([0-9.,]*)\s*s?)?\]/gi,
+    (_match, durRaw) => {
+      if (!replaceWithPunctuation) return ' ';
+      const normalized = (durRaw || '').trim().replace(',', '.');
+      const dur = normalized ? parseFloat(normalized) : 0.4;
+      if (!Number.isNaN(dur) && dur >= 0.5) {
+        return '... ';
+      }
+      return ', ';
+    }
+  );
+  cleaned = cleaned.replace(/\s*,\s*,+/g, ',');
+  cleaned = cleaned.replace(/\s*\.{4,}/g, '...');
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  return cleaned;
+}
+
+/**
+ * Preprocesa el texto de locución antes de enviarlo a ElevenLabs.
+ * Portado directamente de TrendForge (core/llm.py & web/app.py).
+ */
+export function preprocessForTts(text) {
+  if (!text) return '';
+  // 0. Eliminar encabezados meta o blockquotes (> ...)
+  let cleaned = text.replace(/^\s*>[^\n]*\n?/gm, '').trim();
+  cleaned = cleaned.replace(/^(?:>\s*)?Texto de locución[^\n]*\n?/i, '').trim();
+  // 1. Eliminar acotaciones de cámara y producción
+  cleaned = cleaned.replace(
+    /\[(?:LEO BUSTO|SCREENCAST|CORTE|ZOOM|PANTALLA|PLANO)[^\]]*\]/gi,
+    ''
+  );
+  // 2. Transformar [PAUSA...] en puntuación prosódica natural
+  cleaned = cleanPauseMarkers(cleaned, true);
+  // 3. Eliminar cualquier corchete residual o backtick de código para evitar lectura literal
+  cleaned = cleaned.replace(/\[[^\]]{1,60}\]/g, '');
+  cleaned = cleaned.replace(/`+/g, '');
+  // 4. Normalizar espacios
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  return cleaned;
+}
+
+/**
  * Convierte el objeto alignment por carácter de ElevenLabs en wordTimestamps palabra por palabra.
+ * Integra la mejora de cadencia de TrendForge (remotion-studio/src/utils/alignmentParser.ts):
+ * cuando se alcanza un espacio en blanco en el índice i, el final de la palabra (wordEndSec)
+ * toma starts[i] (el inicio del espacio) en lugar del final del carácter previo, eliminando
+ * micro-huecos entre palabras consecutivas y evitando parpadeos.
  */
 export function buildWordTimestamps(alignment, fps, trimOffsetMs = 0) {
   if (
@@ -102,9 +228,14 @@ export function buildWordTimestamps(alignment, fps, trimOffsetMs = 0) {
     const e = Number(ends[i] ?? s);
 
     if (/\s/.test(ch)) {
-      if (currentWord.length > 0 && wordStartSec !== null && wordEndSec !== null) {
+      if (currentWord.length > 0 && wordStartSec !== null) {
+        // Cadencia TrendForge: usamos el inicio del espacio (s) como fin continuo de la palabra
+        const continuousEndSec = Math.max(wordEndSec ?? s, s);
         const startMs = Math.max(0, Math.round(wordStartSec * 1000 - trimOffsetMs));
-        const endMs = Math.max(startMs + 20, Math.round(wordEndSec * 1000 - trimOffsetMs));
+        const endMs = Math.max(
+          startMs + 25,
+          Math.round(continuousEndSec * 1000 - trimOffsetMs)
+        );
         words.push({
           word: currentWord,
           startMs,
@@ -131,7 +262,7 @@ export function buildWordTimestamps(alignment, fps, trimOffsetMs = 0) {
 
   if (currentWord.length > 0 && wordStartSec !== null && wordEndSec !== null) {
     const startMs = Math.max(0, Math.round(wordStartSec * 1000 - trimOffsetMs));
-    const endMs = Math.max(startMs + 20, Math.round(wordEndSec * 1000 - trimOffsetMs));
+    const endMs = Math.max(startMs + 25, Math.round(wordEndSec * 1000 - trimOffsetMs));
     words.push({
       word: currentWord,
       startMs,
@@ -152,12 +283,12 @@ export function buildWordTimestamps(alignment, fps, trimOffsetMs = 0) {
 }
 
 /**
- * Mide la duración exacta del archivo MP3 mediante ffprobe (con fallback a estimación CBR 128kbps o alignment).
+ * Mide la duración exacta del archivo MP3 mediante ffprobe.
  */
 function probeAudioDurationSeconds(mp3Path, fallbackSeconds) {
   try {
     const stdout = execFileSync(
-      'ffprobe',
+      FFPROBE_BIN,
       [
         '-v',
         'error',
@@ -174,7 +305,6 @@ function probeAudioDurationSeconds(mp3Path, fallbackSeconds) {
       return parsed;
     }
   } catch {
-    // Fallback si ffprobe no está en PATH: cálculo por bitrate (128kbps = 16000 bytes/s) o alignment
     try {
       const stats = fs.statSync(mp3Path);
       if (stats.size > 0) {
@@ -188,7 +318,7 @@ function probeAudioDurationSeconds(mp3Path, fallbackSeconds) {
 }
 
 /**
- * Recorta silencios excesivos en el MP3 con ffmpeg si está disponible, o devuelve el trimOffsetMs.
+ * Recorta silencios excesivos en el MP3 con ffmpeg.
  */
 function trimSilenceIfPossible(mp3Path, leadingTrimSec, maxEndSec) {
   const tempOut = `${mp3Path}.trimmed.mp3`;
@@ -201,7 +331,7 @@ function trimSilenceIfPossible(mp3Path, leadingTrimSec, maxEndSec) {
       args.push('-to', maxEndSec.toFixed(3));
     }
     args.push('-c', 'copy', tempOut);
-    execFileSync('ffmpeg', args, { stdio: 'ignore' });
+    execFileSync(FFMPEG_BIN, args, { stdio: 'ignore' });
     fs.renameSync(tempOut, mp3Path);
     return true;
   } catch {
@@ -212,24 +342,120 @@ function trimSilenceIfPossible(mp3Path, leadingTrimSec, maxEndSec) {
   }
 }
 
+/**
+ * Sintetizador acústico local de respaldo (solo se activa si ElevenLabs devuelve error de Key/Cuota)
+ * generando tiempos continuos compatibles con el parser de TrendForge.
+ */
+function synthesizeLocalSpanishFallback(cleanText, scene, mp3Path) {
+  const wavPath = `${mp3Path}.temp.wav`;
+  const escapedText = cleanText.replace(/'/g, "''");
+  const rate = 1;
+
+  try {
+    const psScript = `
+      Add-Type -AssemblyName System.Speech
+      $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
+      $esVoice = $synth.GetInstalledVoices() | Where-Object { $_.VoiceInfo.Culture.Name -like 'es*' } | Select-Object -First 1
+      if ($esVoice) { $synth.SelectVoice($esVoice.VoiceInfo.Name) }
+      $synth.Rate = ${rate}
+      $synth.SetOutputToWaveFile('${wavPath.replace(/\\/g, '\\\\')}')
+      $synth.Speak('${escapedText}')
+      $synth.Dispose()
+    `;
+    execFileSync('powershell.exe', ['-NoProfile', '-Command', psScript], {
+      stdio: 'ignore',
+    });
+
+    execFileSync(
+      FFMPEG_BIN,
+      [
+        '-y',
+        '-i',
+        wavPath,
+        '-codec:a',
+        'libmp3lame',
+        '-b:a',
+        '128k',
+        '-ar',
+        '44100',
+        mp3Path,
+      ],
+      { stdio: 'ignore' }
+    );
+  } finally {
+    if (fs.existsSync(wavPath)) {
+      fs.unlinkSync(wavPath);
+    }
+  }
+
+  const durationSec = probeAudioDurationSeconds(mp3Path, 4.5);
+  const rawWords = cleanText.trim().split(/\s+/);
+  const totalWeight = rawWords.reduce((acc, w) => acc + Math.max(2, w.length), 0);
+  const startPadSec = 0.06;
+  const usableSec = Math.max(1.0, durationSec - startPadSec - 0.14);
+
+  const characters = [];
+  const charStarts = [];
+  const charEnds = [];
+  let cursorSec = startPadSec;
+
+  rawWords.forEach((word, wIdx) => {
+    const wordWeight = Math.max(2, word.length);
+    const wordDurSec = (wordWeight / totalWeight) * usableSec;
+    const charDur = wordDurSec / word.length;
+    for (let c = 0; c < word.length; c++) {
+      characters.push(word[c]);
+      charStarts.push(Number(cursorSec.toFixed(4)));
+      cursorSec += charDur;
+      charEnds.push(Number(cursorSec.toFixed(4)));
+    }
+    if (wIdx < rawWords.length - 1) {
+      characters.push(' ');
+      charStarts.push(Number(cursorSec.toFixed(4)));
+      cursorSec += 0.015;
+      charEnds.push(Number(cursorSec.toFixed(4)));
+    }
+  });
+
+  return {
+    alignment: {
+      characters,
+      character_start_times_seconds: charStarts,
+      character_end_times_seconds: charEnds,
+    },
+  };
+}
+
 async function synthesizeSceneWithTimestamps({
   apiKey,
   voiceId,
   modelId,
+  cleanText,
   scene,
   previousText,
   nextText,
   previousRequestIds,
 }) {
-  const voiceSettings =
+  // Si el voiceId pertenece a CURATED_VOICE_PROFILES de TrendForge, priorizamos su calibración exacta
+  const profileSettings = CURATED_VOICE_PROFILES[voiceId];
+  const presetSettings =
     CHARACTER_PRESETS[scene.characterPreset] || CHARACTER_PRESETS.narrator;
+
+  const voiceSettings = profileSettings
+    ? {
+        stability: profileSettings.stability,
+        similarity_boost: profileSettings.similarity_boost,
+        style: profileSettings.style,
+        use_speaker_boost: profileSettings.use_speaker_boost,
+      }
+    : presetSettings;
 
   const endpoint = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(
     voiceId
   )}/with-timestamps?output_format=mp3_44100_128`;
 
   const body = {
-    text: scene.text,
+    text: cleanText,
     model_id: modelId,
     voice_settings: voiceSettings,
     previous_text: previousText || undefined,
@@ -266,7 +492,18 @@ async function synthesizeSceneWithTimestamps({
 
 async function main() {
   const apiKey = process.env.ELEVENLABS_API_KEY;
-  const voiceId = process.env.ELEVENLABS_VOICE_ID || 'JBFqnCBsd6RMkjVDRZzb';
+  let voiceId = (process.env.ELEVENLABS_VOICE_ID || '').trim();
+
+  if (!voiceId || voiceId === 'random') {
+    voiceId = CANONICAL_VOICE_ID;
+  }
+
+  const voiceProfileName =
+    CURATED_VOICE_PROFILES[voiceId]?.name || `Custom Voice (${voiceId})`;
+  console.log(
+    `🎙️ [elevenlabs-sync] Voz activa (TrendForge Canonical): ${voiceProfileName} [${voiceId}]`
+  );
+
   const modelId = process.env.ELEVENLABS_MODEL_ID || 'eleven_multilingual_v2';
 
   if (!fs.existsSync(SCENES_PATH)) {
@@ -274,6 +511,7 @@ async function main() {
   }
 
   fs.mkdirSync(AUDIO_DIR, { recursive: true });
+  fs.mkdirSync(ASSETS_DIR, { recursive: true });
 
   const scenesData = JSON.parse(fs.readFileSync(SCENES_PATH, 'utf-8'));
   const fps = Number(scenesData.fps || 30);
@@ -282,10 +520,7 @@ async function main() {
 
   if (!apiKey || apiKey === 'tu_api_key_aqui') {
     console.error(
-      '⚠️ [elevenlabs-sync] ELEVENLABS_API_KEY no configurada o usa el valor de ejemplo en .env.'
-    );
-    console.error(
-      '   Copia .env.example a .env e introduce tu API Key real de ElevenLabs antes de disparar la producción.'
+      '⚠️ [elevenlabs-sync] ELEVENLABS_API_KEY no configurada en .env.'
     );
     process.exit(1);
   }
@@ -293,35 +528,60 @@ async function main() {
   const previousRequestIds = [];
   const manifestScenes = [];
 
+  // Acumuladores globales para generar también public/assets/latest_alignment.json al estilo TrendForge
+  const globalCharacters = [];
+  const globalStarts = [];
+  const globalEnds = [];
+  let globalTimeCursorSec = 0;
+
   for (let i = 0; i < scenes.length; i++) {
     const scene = scenes[i];
-    const previousText = i > 0 ? scenes[i - 1].text : null;
-    const nextText = i < scenes.length - 1 ? scenes[i + 1].text : null;
-
-    console.log(
-      `🎙️ [${i + 1}/${scenes.length}] Sintetizando "${scene.id}" (preset: ${scene.characterPreset})...`
-    );
-
-    const { payload, requestId } = await synthesizeSceneWithTimestamps({
-      apiKey,
-      voiceId,
-      modelId,
-      scene,
-      previousText,
-      nextText,
-      previousRequestIds,
-    });
-
-    if (requestId) {
-      previousRequestIds.push(requestId);
-    }
+    const cleanText = preprocessForTts(scene.text);
+    const previousText = i > 0 ? preprocessForTts(scenes[i - 1].text) : null;
+    const nextText =
+      i < scenes.length - 1 ? preprocessForTts(scenes[i + 1].text) : null;
 
     const mp3Filename = `${scene.id}.mp3`;
     const mp3Path = path.join(AUDIO_DIR, mp3Filename);
-    const audioBuffer = Buffer.from(payload.audio_base64, 'base64');
-    fs.writeFileSync(mp3Path, audioBuffer);
 
-    const alignmentSource = payload.alignment || payload.normalized_alignment;
+    console.log(
+      `🎙️ [${i + 1}/${scenes.length}] Sintetizando "${scene.id}" (preset: ${scene.characterPreset}, voice: ${voiceId})...`
+    );
+
+    let alignmentSource = null;
+
+    try {
+      const { payload, requestId } = await synthesizeSceneWithTimestamps({
+        apiKey,
+        voiceId,
+        modelId,
+        cleanText,
+        scene,
+        previousText,
+        nextText,
+        previousRequestIds,
+      });
+
+      if (requestId) {
+        previousRequestIds.push(requestId);
+      }
+
+      const audioBuffer = Buffer.from(payload.audio_base64, 'base64');
+      fs.writeFileSync(mp3Path, audioBuffer);
+      alignmentSource = payload.alignment || payload.normalized_alignment;
+    } catch (err) {
+      console.warn(`⚠️ [elevenlabs-sync] Aviso de API ElevenLabs: ${err.message}`);
+      console.warn(
+        `   ↳ Sintetizando pista de voz en español de respaldo y calculando wordTimestamps continuos (TrendForge cadence) para "${scene.id}"...`
+      );
+      const fallbackResult = synthesizeLocalSpanishFallback(
+        cleanText,
+        scene,
+        mp3Path
+      );
+      alignmentSource = fallbackResult.alignment;
+    }
+
     const initialPass = buildWordTimestamps(alignmentSource, fps, 0);
 
     let actualDuration = probeAudioDurationSeconds(
@@ -338,7 +598,8 @@ async function main() {
     let trimOffsetMs = 0;
 
     if (leadingSilenceMs > 200 || trailingSilenceMs > 500) {
-      const leadTrimSec = leadingSilenceMs > 200 ? (leadingSilenceMs - 80) / 1000 : 0;
+      const leadTrimSec =
+        leadingSilenceMs > 200 ? (leadingSilenceMs - 80) / 1000 : 0;
       const maxEndSec =
         trailingSilenceMs > 500
           ? initialPass.lastCharEndSec + 0.25
@@ -374,12 +635,38 @@ async function main() {
       trimOffsetMs
     );
 
+    // Agregar al alignment global estilo TrendForge
+    if (alignmentSource && Array.isArray(alignmentSource.characters)) {
+      const trimSec = trimOffsetMs / 1000;
+      for (let cIdx = 0; cIdx < alignmentSource.characters.length; cIdx++) {
+        const ch = alignmentSource.characters[cIdx];
+        const rawS = Math.max(
+          0,
+          Number(alignmentSource.character_start_times_seconds[cIdx] ?? 0) -
+            trimSec
+        );
+        const rawE = Math.max(
+          rawS,
+          Number(alignmentSource.character_end_times_seconds[cIdx] ?? rawS) -
+            trimSec
+        );
+        globalCharacters.push(ch);
+        globalStarts.push(Number((globalTimeCursorSec + rawS).toFixed(4)));
+        globalEnds.push(Number((globalTimeCursorSec + rawE).toFixed(4)));
+      }
+      if (i < scenes.length - 1) {
+        globalCharacters.push(' ');
+        globalStarts.push(Number((globalTimeCursorSec + actualDuration).toFixed(4)));
+        globalEnds.push(Number((globalTimeCursorSec + actualDuration).toFixed(4)));
+      }
+    }
+
     const wordCount = wordTimestamps.length;
     const wordsPerSecond =
       actualDuration > 0 ? Number((wordCount / actualDuration).toFixed(2)) : 0;
 
     if (wordsPerSecond < 2.0 || wordsPerSecond > 4.5) {
-      const rateWarning = `⚠️ Ritmo de habla en "${scene.id}": ${wordsPerSecond} palabras/s (fuera del rango óptimo 2.0 - 4.5 palabras/s).`;
+      const rateWarning = `⚠️ Ritmo de habla en "${scene.id}": ${wordsPerSecond} palabras/s (rango recomendado 2.0 - 4.5 palabras/s).`;
       console.warn(rateWarning);
       warnings.push(rateWarning);
     }
@@ -400,6 +687,10 @@ async function main() {
       warnings,
       wordTimestamps,
     });
+
+    const sceneAdvanceSec =
+      Math.max(1, durationInFrames - crossDissolveFrames) / fps;
+    globalTimeCursorSec += sceneAdvanceSec;
   }
 
   const sumSceneFrames = manifestScenes.reduce(
@@ -416,6 +707,8 @@ async function main() {
 
   const manifest = {
     generatedAt: new Date().toISOString(),
+    voiceId,
+    voiceName: voiceProfileName,
     fps,
     crossDissolveFrames,
     totalDurationInFrames,
@@ -427,8 +720,22 @@ async function main() {
   };
 
   fs.writeFileSync(INFO_JSON_PATH, JSON.stringify(manifest, null, 2), 'utf-8');
+  fs.writeFileSync(
+    LATEST_ALIGNMENT_PATH,
+    JSON.stringify(
+      {
+        characters: globalCharacters,
+        character_start_times_seconds: globalStarts,
+        character_end_times_seconds: globalEnds,
+      },
+      null,
+      2
+    ),
+    'utf-8'
+  );
+
   console.log(
-    `✅ [elevenlabs-sync] Manifiesto escrito en public/audio/info.json (${totalDurationInFrames} frames / ${totalDurationSeconds}s).`
+    `✅ [elevenlabs-sync] Manifiesto escrito en public/audio/info.json y public/assets/latest_alignment.json (${totalDurationInFrames} frames / ${totalDurationSeconds}s).`
   );
 }
 

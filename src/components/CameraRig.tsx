@@ -45,11 +45,10 @@ export const CameraRig: React.FC<CameraRigProps> = ({
   let currentRotate = keyframes[0]?.rotateDeg ?? 0;
 
   for (let i = 1; i < keyframes.length; i++) {
-    const prev = keyframes[i - 1];
     const next = keyframes[i];
-    if (frame >= prev.frame) {
+    if (frame >= next.frame) {
       const progress = spring({
-        frame: frame - prev.frame,
+        frame: frame - next.frame,
         fps,
         config: SPRING_CAMERA,
       });

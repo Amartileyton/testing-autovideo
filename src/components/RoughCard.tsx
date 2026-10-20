@@ -38,7 +38,7 @@ export const RoughCard: React.FC<RoughCardProps> = ({
   const { fps } = useVideoConfig();
 
   const entrance = spring({
-    frame: frame - enterFrame,
+    frame: Math.max(0, frame - enterFrame),
     fps,
     config: SPRING_SNAPPY,
   });

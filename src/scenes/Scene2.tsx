@@ -1,5 +1,5 @@
 import React from 'react';
-import { Compass, Layers, ShieldCheck } from 'lucide-react';
+import { Cpu, Radio, Waves } from 'lucide-react';
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import { RoughCard } from '../components/RoughCard';
 import {
@@ -11,19 +11,27 @@ import {
 
 export interface Scene2Props {
   headline?: string;
+  metricValue?: number;
+  metricUnit?: string;
+  metricLabel?: string;
+  canvasOffsetX?: number;
   canvasOffsetY?: number;
   enterFrame?: number;
 }
 
 /**
  * Scene2 — Escena Par (Slot 4)
- * Ubicada en el segundo cuadrante del lienzo continuo (offsetY = 980px)
- * para demostrar el movimiento panorámico con SPRING_CAMERA del CameraRig.
+ * Diagrama causal del módulo transductor piezoeléctrico (PMUT) bajo las capas
+ * de cristal y panel OLED emitiendo frentes de onda acústica a 20 MHz (1540 m/s).
  */
 export const Scene2: React.FC<Scene2Props> = ({
-  headline = 'LIENZO CONTINUO 9:16',
-  canvasOffsetY = 980,
-  enterFrame = 0,
+  headline = 'PULSO ACÚSTICO ULTRASÓNICO',
+  metricValue = 20,
+  metricUnit = 'MHz',
+  metricLabel = 'FRECUENCIA ACÚSTICA',
+  canvasOffsetX = 1100,
+  canvasOffsetY = 0,
+  enterFrame = 189,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -35,18 +43,44 @@ export const Scene2: React.FC<Scene2Props> = ({
     config: SPRING_SNAPPY,
   });
 
-  const safeRatio = Math.round(
-    interpolate(localFrame, [0, 45], [0, 85], CLAMP_EXTRAPOLATION)
+  const waveSpring1 = spring({
+    frame: Math.max(0, localFrame - 10),
+    fps,
+    config: SPRING_SNAPPY,
+  });
+
+  const waveSpring2 = spring({
+    frame: Math.max(0, localFrame - 18),
+    fps,
+    config: SPRING_SNAPPY,
+  });
+
+  const waveSpring3 = spring({
+    frame: Math.max(0, localFrame - 26),
+    fps,
+    config: SPRING_SNAPPY,
+  });
+
+  const animatedFreq = Math.round(
+    interpolate(localFrame, [0, 42], [0, metricValue], CLAMP_EXTRAPOLATION)
   );
-  const dampingMetric = Math.round(
-    interpolate(localFrame, [5, 50], [0, 30], CLAMP_EXTRAPOLATION)
+
+  const animatedSpeed = Math.round(
+    interpolate(localFrame, [6, 48], [0, 1540], CLAMP_EXTRAPOLATION)
+  );
+
+  const pulseProgress = interpolate(
+    localFrame,
+    [8, 55],
+    [0, 1],
+    CLAMP_EXTRAPOLATION
   );
 
   return (
     <div
       style={{
         position: 'absolute',
-        left: 0,
+        left: canvasOffsetX,
         top: canvasOffsetY,
         width: 1080,
         height: 1920,
@@ -70,7 +104,7 @@ export const Scene2: React.FC<Scene2Props> = ({
           transform: `scale(${interpolate(headerSpring, [0, 1], [0.9, 1], CLAMP_EXTRAPOLATION)})`,
         }}
       >
-        <Compass size={30} color={PALETTE.accentSecondary} strokeWidth={2.5} />
+        <Radio size={30} color={PALETTE.accentSecondary} strokeWidth={2.5} />
         <span
           style={{
             fontFamily: 'monospace',
@@ -80,7 +114,7 @@ export const Scene2: React.FC<Scene2Props> = ({
             letterSpacing: '0.06em',
           }}
         >
-          RIG DE CÁMARA · SPRING_CAMERA
+          TRANSDUCTOR PMUT · CAPA SUB-OLED
         </span>
       </div>
 
@@ -88,12 +122,12 @@ export const Scene2: React.FC<Scene2Props> = ({
       <h2
         style={{
           fontFamily: 'system-ui, -apple-system, sans-serif',
-          fontSize: 74,
+          fontSize: 72,
           fontWeight: 900,
           lineHeight: 1.04,
           letterSpacing: '-0.03em',
           color: PALETTE.ink,
-          margin: '0 0 42px 0',
+          margin: '0 0 36px 0',
           opacity: interpolate(headerSpring, [0, 1], [0, 1], CLAMP_EXTRAPOLATION),
         }}
       >
@@ -102,11 +136,12 @@ export const Scene2: React.FC<Scene2Props> = ({
 
       <RoughCard
         width={888}
-        height={640}
+        height={720}
         enterFrame={enterFrame + 6}
         accentColor={PALETTE.accentSecondary}
         seed={202}
       >
+        {/* Cabecera interna del diagrama */}
         <div
           style={{
             display: 'flex',
@@ -114,68 +149,143 @@ export const Scene2: React.FC<Scene2Props> = ({
             alignItems: 'center',
           }}
         >
-          <span
-            style={{
-              fontFamily: 'monospace',
-              fontSize: 28,
-              fontWeight: 700,
-              color: PALETTE.inkMuted,
-            }}
-          >
-            GEOMETRÍA DE ZONA SEGURA
-          </span>
-          <Layers size={38} color={PALETTE.accentPrimary} strokeWidth={2.4} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Waves size={36} color={PALETTE.accentSecondary} strokeWidth={2.5} />
+            <span
+              style={{
+                fontFamily: 'monospace',
+                fontSize: 28,
+                fontWeight: 700,
+                color: PALETTE.inkMuted,
+              }}
+            >
+              ARQUITECTURA PIEZOELÉCTRICA
+            </span>
+          </div>
+          <Cpu size={38} color={PALETTE.accentPrimary} strokeWidth={2.4} />
         </div>
 
-        {/* Diagrama de proporción 85% / 15% y curva de resorte */}
-        <svg width={810} height={270} viewBox="0 0 810 270">
+        {/* Diagrama causal vectorial: Capas Cristal + OLED + Emisor PMUT y ondas concéntricas */}
+        <svg width={816} height={380} viewBox="0 0 816 380">
+          {/* Capa 1: Cristal Protector */}
           <rect
             x={24}
-            y={24}
-            width={762}
-            height={160}
-            rx={14}
+            y={16}
+            width={768}
+            height={64}
+            rx={10}
             fill={PALETTE.surfaceMuted}
             stroke={PALETTE.border}
             strokeWidth={3}
           />
-          <rect
-            x={24}
-            y={24}
-            width={interpolate(localFrame, [0, 45], [80, 648], CLAMP_EXTRAPOLATION)}
-            height={160}
-            rx={14}
-            fill={PALETTE.accentSecondary}
-            opacity={0.18}
-          />
           <text
-            x={54}
-            y={116}
+            x={48}
+            y={58}
             fill={PALETTE.ink}
             fontFamily="monospace"
-            fontSize="34"
+            fontSize="28"
             fontWeight="700"
           >
-            85% LIENZO ACTIVO · 288PX RESERVADOS
+            CAPA 01 · CRISTAL TEMPLADO
           </text>
-          <line
-            x1={672}
-            y1={16}
-            x2={672}
-            y2={200}
+
+          {/* Capa 2: Panel OLED */}
+          <rect
+            x={24}
+            y={94}
+            width={768}
+            height={64}
+            rx={10}
+            fill={PALETTE.surface}
+            stroke={PALETTE.border}
+            strokeWidth={3}
+            strokeDasharray="10 6"
+          />
+          <text
+            x={48}
+            y={136}
+            fill={PALETTE.inkMuted}
+            fontFamily="monospace"
+            fontSize="28"
+            fontWeight="700"
+          >
+            CAPA 02 · MATRIZ OLED EMISIVA
+          </text>
+
+          {/* Zona de propagación de frentes de onda acústicos concéntricos hacia arriba */}
+          <path
+            d="M 278 272 A 140 95 0 0 1 538 272"
+            fill="none"
+            stroke={PALETTE.accentSecondary}
+            strokeWidth={4.5}
+            opacity={interpolate(waveSpring1, [0, 1], [0, 0.95], CLAMP_EXTRAPOLATION)}
+            transform={`translate(0, ${interpolate(waveSpring1, [0, 1], [24, 0], CLAMP_EXTRAPOLATION)})`}
+          />
+          <path
+            d="M 218 242 A 210 145 0 0 1 598 242"
+            fill="none"
+            stroke={PALETTE.accentSecondary}
+            strokeWidth={4}
+            strokeDasharray="12 8"
+            opacity={interpolate(waveSpring2, [0, 1], [0, 0.85], CLAMP_EXTRAPOLATION)}
+            transform={`translate(0, ${interpolate(waveSpring2, [0, 1], [30, 0], CLAMP_EXTRAPOLATION)})`}
+          />
+          <path
+            d="M 158 210 A 280 190 0 0 1 658 210"
+            fill="none"
             stroke={PALETTE.accentPrimary}
             strokeWidth={4}
-            strokeDasharray="10 8"
+            opacity={interpolate(waveSpring3, [0, 1], [0, 0.9], CLAMP_EXTRAPOLATION)}
+            transform={`translate(0, ${interpolate(waveSpring3, [0, 1], [36, 0], CLAMP_EXTRAPOLATION)})`}
           />
+
+          {/* Vectores de dirección axial hacia arriba */}
+          <line
+            x1={408}
+            y1={288}
+            x2={408}
+            y2={interpolate(pulseProgress, [0, 1], [260, 32], CLAMP_EXTRAPOLATION)}
+            stroke={PALETTE.accentPrimary}
+            strokeWidth={4}
+          />
+          <polygon
+            points={`408,${interpolate(pulseProgress, [0, 1], [248, 20], CLAMP_EXTRAPOLATION)} 394,${interpolate(pulseProgress, [0, 1], [270, 42], CLAMP_EXTRAPOLATION)} 422,${interpolate(pulseProgress, [0, 1], [270, 42], CLAMP_EXTRAPOLATION)}`}
+            fill={PALETTE.accentPrimary}
+            opacity={interpolate(pulseProgress, [0, 0.2, 1], [0, 1, 1], CLAMP_EXTRAPOLATION)}
+          />
+
+          {/* Capa 3: Módulo Transductor Piezoeléctrico PMUT */}
+          <rect
+            x={138}
+            y={294}
+            width={540}
+            height={72}
+            rx={12}
+            fill={PALETTE.surfaceMuted}
+            stroke={PALETTE.accentSecondary}
+            strokeWidth={4}
+          />
+          <text
+            x={408}
+            y={340}
+            textAnchor="middle"
+            fill={PALETTE.ink}
+            fontFamily="monospace"
+            fontSize="28"
+            fontWeight="700"
+          >
+            ARRAY PMUT · EMISOR PIEZOELÉCTRICO
+          </text>
         </svg>
 
+        {/* Contadores numéricos inferiores */}
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-end',
             borderTop: `2px solid ${PALETTE.gridLine}`,
-            paddingTop: 22,
+            paddingTop: 20,
           }}
         >
           <div>
@@ -185,20 +295,21 @@ export const Scene2: React.FC<Scene2Props> = ({
                 fontSize: 28,
                 fontWeight: 700,
                 color: PALETTE.inkMuted,
+                marginBottom: 4,
               }}
             >
-              ÁREA SEGURA VERTICAL
+              {metricLabel}
             </div>
             <div
               style={{
                 fontFamily: 'system-ui, sans-serif',
-                fontSize: 82,
+                fontSize: 78,
                 fontWeight: 900,
                 color: PALETTE.ink,
                 lineHeight: 1,
               }}
             >
-              {safeRatio}%
+              {animatedFreq} {metricUnit}
             </div>
           </div>
 
@@ -209,24 +320,21 @@ export const Scene2: React.FC<Scene2Props> = ({
                 fontSize: 28,
                 fontWeight: 700,
                 color: PALETTE.inkMuted,
+                marginBottom: 4,
               }}
             >
-              AMORTIGUACIÓN RIG
+              VELOCIDAD ACÚSTICA
             </div>
             <div
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
                 fontFamily: 'system-ui, sans-serif',
                 fontSize: 64,
                 fontWeight: 900,
-                color: PALETTE.accentSuccess,
+                color: PALETTE.accentSecondary,
                 lineHeight: 1,
               }}
             >
-              <ShieldCheck size={44} color={PALETTE.accentSuccess} />
-              D={dampingMetric}
+              {animatedSpeed} m/s
             </div>
           </div>
         </div>

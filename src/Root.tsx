@@ -9,7 +9,7 @@ const manifest = audioManifestJson as AudioManifest;
 
 /**
  * Calcula la duración total de la <Composition> como la suma exacta de los fotogramas
- * de las escenas en public/audio/info.json descontando los fotogramas de cross-dissolve (8-12 frames).
+ * de las escenas en public/audio/info.json descontando los fotogramas de cross-dissolve (10 frames).
  */
 const calculateTotalFrames = (audioManifest: AudioManifest): number => {
   if (!audioManifest.scenes || audioManifest.scenes.length === 0) {
@@ -41,7 +41,7 @@ export const RemotionRoot: React.FC = () => {
         height={VIDEO_CONFIG.height}
         schema={VideoPropsSchema}
         defaultProps={{
-          title: 'Diagnóstico Estudio Vectorial Antigravity',
+          title: 'Cómo Funciona el Lector de Huellas Ultrasónico 3D',
           surfaceColor: PALETTE.surface,
           enableCaptions: true,
           enableBackgroundMusic: false,

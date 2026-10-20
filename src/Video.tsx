@@ -14,6 +14,8 @@ import { CameraRig, type CameraKeyframe } from './components/CameraRig';
 import { DynamicCaptions } from './components/DynamicCaptions';
 import { Scene1 } from './scenes/Scene1';
 import { Scene2 } from './scenes/Scene2';
+import { Scene3 } from './scenes/Scene3';
+import { Scene4 } from './scenes/Scene4';
 import { CLAMP_EXTRAPOLATION, PALETTE, SAFE_ZONE } from './theme/motion';
 
 const manifest = audioManifestJson as AudioManifest;
@@ -29,7 +31,7 @@ export interface ComputedSceneWindow {
 
 /**
  * Calcula las ventanas de tiempo exactas por escena a partir de public/audio/info.json,
- * aplicando el solapamiento de cross-dissolve (8-12 fotogramas) entre escenas consecutivas.
+ * aplicando el solapamiento de cross-dissolve (10 fotogramas) entre escenas consecutivas.
  */
 export function computeSceneTimeline(
   audioManifest: AudioManifest
@@ -64,21 +66,27 @@ export const Video: React.FC<VideoProps> = ({
    * Keyframes de cámara continua sincronizados al fotograma de inicio de cada escena en info.json
    */
   const cameraKeyframes: CameraKeyframe[] = useMemo(() => {
+    const defaultCoords = [
+      { x: 0, y: 0, zoom: 1.0, rotateDeg: 0 },
+      { x: 1100, y: 0, zoom: 1.04, rotateDeg: 0 },
+      { x: 1100, y: 1980, zoom: 1.02, rotateDeg: 0 },
+      { x: 0, y: 1980, zoom: 1.0, rotateDeg: 0 },
+    ];
     return timeline.map((item, idx) => {
       const sceneMeta = scenesJson.scenes[idx];
+      const fallback = defaultCoords[idx] ?? { x: 0, y: idx * 1980, zoom: 1, rotateDeg: 0 };
       return {
         frame: item.from,
-        x: sceneMeta?.cameraTarget?.x ?? 0,
-        y: sceneMeta?.cameraTarget?.y ?? idx * 980,
-        zoom: sceneMeta?.cameraTarget?.zoom ?? 1,
-        rotateDeg: sceneMeta?.cameraTarget?.rotateDeg ?? 0,
+        x: sceneMeta?.cameraTarget?.x ?? fallback.x,
+        y: sceneMeta?.cameraTarget?.y ?? fallback.y,
+        zoom: sceneMeta?.cameraTarget?.zoom ?? fallback.zoom,
+        rotateDeg: sceneMeta?.cameraTarget?.rotateDeg ?? fallback.rotateDeg,
       };
     });
   }, [timeline]);
 
   /**
-   * Curva de Audio Ducking automática para la pista opcional de música de fondo:
-   * atenúa el volumen a 0.12 cuando hay palabras activas en la locución, y sube a 0.32 en pausas.
+   * Curva de Audio Ducking automática para la pista opcional de música de fondo
    */
   const isVoiceSpeaking = useMemo(() => {
     return timeline.some((sceneWin) => {
@@ -103,18 +111,86 @@ export const Video: React.FC<VideoProps> = ({
     <AbsoluteFill style={{ backgroundColor: surfaceColor }}>
       {/* Lienzo continuo gobernado por CameraRig (SPRING_CAMERA) */}
       <CameraRig keyframes={cameraKeyframes} surfaceColor={surfaceColor}>
+        {/* Conectores vectoriales entre cuadrantes del lienzo continuo */}
+        <svg
+          width={2400}
+          height={4000}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            pointerEvents: 'none',
+          }}
+        >
+          <path
+            d="M 984 520 L 1196 520"
+            stroke={PALETTE.border}
+            strokeWidth={3}
+            strokeDasharray="10 10"
+            fill="none"
+          />
+          <path
+            d="M 1640 1320 L 1640 2090"
+            stroke={PALETTE.border}
+            strokeWidth={3}
+            strokeDasharray="10 10"
+            fill="none"
+          />
+          <path
+            d="M 1196 2500 L 984 2500"
+            stroke={PALETTE.border}
+            strokeWidth={3}
+            strokeDasharray="10 10"
+            fill="none"
+          />
+        </svg>
+
         <Scene1
-          headline={scenesJson.scenes[0]?.title ?? 'ARQUITECTURA VECTORIAL'}
-          metricValue={scenesJson.scenes[0]?.metrics?.numericValue ?? 30}
-          metricUnit={scenesJson.scenes[0]?.metrics?.unit ?? 'FPS'}
+          headline={scenesJson.scenes[0]?.title ?? 'EL FALLO DEL SENSOR ÓPTICO'}
+          metricValue={scenesJson.scenes[0]?.metrics?.numericValue ?? 2}
+          metricUnit={scenesJson.scenes[0]?.metrics?.unit ?? 'D'}
           metricLabel={
-            scenesJson.scenes[0]?.metrics?.label ?? 'FRECUENCIA DE MUESTREO'
+            scenesJson.scenes[0]?.metrics?.label ?? 'CAPTURA ÓPTICA PLANA'
           }
+          canvasOffsetX={scenesJson.scenes[0]?.cameraTarget?.x ?? 0}
+          canvasOffsetY={scenesJson.scenes[0]?.cameraTarget?.y ?? 0}
+          enterFrame={timeline[0]?.from ?? 0}
         />
+
         <Scene2
-          headline={scenesJson.scenes[1]?.title ?? 'FÍSICA CONTINUA'}
-          canvasOffsetY={scenesJson.scenes[1]?.cameraTarget?.y ?? 980}
-          enterFrame={timeline[1]?.from ?? 120}
+          headline={scenesJson.scenes[1]?.title ?? 'PULSO ACÚSTICO ULTRASÓNICO'}
+          metricValue={scenesJson.scenes[1]?.metrics?.numericValue ?? 20}
+          metricUnit={scenesJson.scenes[1]?.metrics?.unit ?? 'MHz'}
+          metricLabel={
+            scenesJson.scenes[1]?.metrics?.label ?? 'FRECUENCIA ACÚSTICA'
+          }
+          canvasOffsetX={scenesJson.scenes[1]?.cameraTarget?.x ?? 1100}
+          canvasOffsetY={scenesJson.scenes[1]?.cameraTarget?.y ?? 0}
+          enterFrame={timeline[1]?.from ?? 189}
+        />
+
+        <Scene3
+          headline={scenesJson.scenes[2]?.title ?? 'RELIEVE EPIDÉRMICO EN 3D'}
+          metricValue={scenesJson.scenes[2]?.metrics?.numericValue ?? 400}
+          metricUnit={scenesJson.scenes[2]?.metrics?.unit ?? 'µm'}
+          metricLabel={
+            scenesJson.scenes[2]?.metrics?.label ?? 'PENETRACIÓN EPIDÉRMICA'
+          }
+          canvasOffsetX={scenesJson.scenes[2]?.cameraTarget?.x ?? 1100}
+          canvasOffsetY={scenesJson.scenes[2]?.cameraTarget?.y ?? 1980}
+          enterFrame={timeline[2]?.from ?? 389}
+        />
+
+        <Scene4
+          headline={scenesJson.scenes[3]?.title ?? 'DESBLOQUEO EN MILISEGUNDOS'}
+          metricValue={scenesJson.scenes[3]?.metrics?.numericValue ?? 25}
+          metricUnit={scenesJson.scenes[3]?.metrics?.unit ?? 'ms'}
+          metricLabel={
+            scenesJson.scenes[3]?.metrics?.label ?? 'TIEMPO DE RESPUESTA'
+          }
+          canvasOffsetX={scenesJson.scenes[3]?.cameraTarget?.x ?? 0}
+          canvasOffsetY={scenesJson.scenes[3]?.cameraTarget?.y ?? 1980}
+          enterFrame={timeline[3]?.from ?? 571}
         />
       </CameraRig>
 

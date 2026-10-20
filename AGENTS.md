@@ -30,7 +30,12 @@ Importadas exclusivamente desde `src/theme/motion.ts`:
   - **Titulares**: $\ge 64\text{px}$ y máximo **7 palabras** por plano.
   - **Etiquetas y Metadatos**: $\ge 28\text{px}$ y máximo **15–20 palabras** por plano.
 
-### 1.5 Regla de Locución y Complementariedad Visual
+### 1.5 Regla de Locución, Voz Canónica y Subtítulos Sin Fondo (TrendForge Sync)
+- **Voz Canónica Reciclada de TrendForge**: `ELEVENLABS_VOICE_ID = "RwzBDEn5f6FIgpAjH9YN"` (*"Gabriel Blanco — Voz Canónica de Leo"*), calibrada con `stability: 0.70`, `similarity_boost: 0.75`, `style: 0.05`, `use_speaker_boost: true`, modelo `eleven_multilingual_v2` y preprocesador `preprocessForTts`.
+- **Cadencia y Anti-Vibración de Subtítulos (`DynamicCaptions.tsx`)**:
+  - Ventana deslizante fija de **3 palabras** (`wordsPerWindow = 3`) y **tolerancia de retención de `0.45s` (`450ms`)** en pausas naturales.
+  - **Texto sin fondo (`backgroundColor: 'transparent'`)** y **fuente editorial seria** (`'IBM Plex Sans', 'Inter', 'Helvetica Neue', system-ui, sans-serif`, `fontWeight: 700`, `48px`).
+  - **Cero vibración**: Prohibido rebote vertical en el contenedor y prohibido cambiar el `padding`, `margin` o `fontWeight` entre la palabra activa y las inactivas; la escala de la palabra activa parte de `1.0` a `1.06` con `SPRING_SNAPPY`.
 - **Prohibido duplicar la voz en off**: Nunca repitas en los gráficos de pantalla las frases literales que pronuncia la locución (esa función ya la cumple `DynamicCaptions.tsx`).
 - **Mecanismo Causal**: Los vectores en pantalla deben representar diagramas de flujo, física causal, comparativas estructurales o contadores numéricos reales (`MHz`, `ms`, `%`, `FPS`).
 - **Dicción en ElevenLabs**: En `src/data/scenes.json`, los números dentro del campo `text` se escriben en letra (p. ej., `"veinticinco milisegundos"`) mientras que en el gráfico vectorial se renderiza el valor numérico (`"25 ms"`).
