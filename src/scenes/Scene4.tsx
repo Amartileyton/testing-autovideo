@@ -1,19 +1,11 @@
 import React from 'react';
 import {
-  interpolate,
+  spring,
   useCurrentFrame,
+  useVideoConfig,
 } from 'remotion';
-import {
-  CornerHudTelemetry,
-  DatasetTerminalDrawer,
-  HeroPropStage,
-  LeaderLineCallout,
-  VectorSelectionBox,
-} from '../components/blueprints/ResultaaqueeBlueprints';
-import {
-  CLAMP_EXTRAPOLATION,
-  SAFE_ZONE,
-} from '../theme/motion';
+import type { BookMetadata, BookVisualData } from '../data/schema';
+import { PALETTE, SPRING_SNAPPY } from '../theme/motion';
 
 export interface Scene4Props {
   headline?: string;
@@ -23,27 +15,71 @@ export interface Scene4Props {
   canvasOffsetX?: number;
   canvasOffsetY?: number;
   enterFrame?: number;
+  bookMetadata?: BookMetadata;
+  visualData?: BookVisualData;
 }
 
+const DEFAULT_LAWS = [
+  {
+    num: '01',
+    title: 'TRABAJA CON PROFUNDIDAD',
+    desc: 'Blinda bloques de 90 minutos sin notificaciones',
+    triggerFrame: 45,
+  },
+  {
+    num: '02',
+    title: 'ABRAZA EL ABURRIMIENTO',
+    desc: 'No mires el móvil al esperar: entrena tu foco',
+    triggerFrame: 105,
+  },
+  {
+    num: '03',
+    title: 'DEJA LAS REDES SOCIALES',
+    desc: 'Elimina apps que roban atención y aportan 0 valor',
+    triggerFrame: 165,
+  },
+  {
+    num: '04',
+    title: 'DRENA LO SUPERFICIAL',
+    desc: 'Planifica cada minuto y apaga el trabajo a las 18h',
+    triggerFrame: 225,
+  },
+];
+
 /**
- * Scene 4 — Desbloqueo en Milisegundos (Art-First + Estilo @resultaaquee Ref 2 Dataset Drawer + Malla 3D)
- * - HeroPropStage 3D CAD: Chip Secure Enclave proyectando un mapa topográfico holográfico 3D
- *   en verde esmeralda (#22C55E) y cian (#38BDF8).
- * - Cajón de telemetría monoespaciado en vivo (DatasetTerminalDrawer estilo es_50k.txt de Ref 2).
- * - Marco de selección vectorial azul sobre el hash 3D validado en 25 ms.
+ * Scene 4 — Las 4 Reglas Accionables en Cascada (@en1minuto.es):
+ * Cajón de 4 fichas en fondo bloc de notas ocre pálido (#FDF6DF), sin píldoras pequeñas de relleno.
  */
 export const Scene4: React.FC<Scene4Props> = ({
-  metricValue = 25,
+  headline = 'Las 4 Reglas de Céntrate',
   canvasOffsetX = 0,
   canvasOffsetY = 1980,
-  enterFrame = 628,
+  enterFrame = 1091,
+  visualData,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const localFrame = Math.max(0, frame - enterFrame);
 
-  const msCounter = Math.round(
-    interpolate(localFrame, [20, 140], [180, metricValue], CLAMP_EXTRAPOLATION)
-  );
+  // 1. Cabecera (frame 0)
+  const headerEntrance = spring({
+    frame: localFrame,
+    fps,
+    config: SPRING_SNAPPY,
+  });
+
+  const lawsToRender = React.useMemo(() => {
+    if (visualData?.actionableLaws && visualData.actionableLaws.length === 4) {
+      const triggers = [45, 105, 165, 225];
+      return visualData.actionableLaws.map((item, idx) => ({
+        num: item.index || `0${idx + 1}`,
+        title: item.title,
+        desc: item.rule,
+        triggerFrame: triggers[idx] ?? 50 + idx * 55,
+      }));
+    }
+    return DEFAULT_LAWS;
+  }, [visualData]);
 
   return (
     <div
@@ -54,104 +90,123 @@ export const Scene4: React.FC<Scene4Props> = ({
         width: 1080,
         height: 1920,
         pointerEvents: 'none',
+        padding: '0 96px',
+        boxSizing: 'border-box',
       }}
     >
-      {/* Telemetría de esquina superior */}
-      <CornerHudTelemetry
-        leftLabel="TIEMPO DE RESPUESTA"
-        leftValue={`${msCounter} ms`}
-        rightLabel="SECURE ENCLAVE 3D"
-        rightValue="VERIFICADO"
-        accentColor="#22C55E"
-        textColor="#38BDF8"
-      />
-
-      {/* Hero Prop 3D CAD: Procesador Secure Enclave proyectando Relieve Biométrico 3D */}
-      <HeroPropStage
-        src="assets/props/hero-scene4-biometric-chip.png"
-        x={540}
-        y={615}
-        size={560}
-        enterFrame={8}
-        localFrame={localFrame}
-        accentColor="#22C55E"
-        secondaryColor="#38BDF8"
-        scanBeam
-        pulseRings
-        noiseSeed="scene4-chip"
-        cadTag="FIG 04 · SECURE ENCLAVE 3D"
-      />
-
-      {/* Marco de Selección Vectorial sobre el mapa biométrico */}
+      {/* 1. Titular Limpio (Sin píldora superior) */}
       <div
         style={{
           position: 'absolute',
-          left: 365,
-          top: 905,
-          zIndex: 55,
+          top: 140,
+          left: 96,
+          right: 96,
+          opacity: headerEntrance,
+          transform: `translateY(${(1 - headerEntrance) * -20}px)`,
         }}
       >
-        <VectorSelectionBox color="#3B82F6" active={localFrame >= 40}>
-          <span
-            style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 27,
-              fontWeight: 700,
-              color: '#4ADE80',
-            }}
-          >
-            MAPA 3D VALIDADO · 25 ms
-          </span>
-        </VectorSelectionBox>
+        <h1
+          style={{
+            fontFamily: "'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif",
+            fontSize: 60,
+            fontWeight: 900,
+            color: '#141413',
+            margin: 0,
+            lineHeight: 1.06,
+            letterSpacing: '-0.035em',
+          }}
+        >
+          {visualData?.headlineTitle || headline}
+        </h1>
       </div>
 
-      {/* Línea guía hacia el núcleo biométrico */}
-      <LeaderLineCallout
-        anchorX={360}
-        anchorY={640}
-        elbowX={180}
-        elbowY={1010}
-        labelX={210}
-        labelY={1010}
-        title="hash topográfico 3D"
-        subtitle="compara crestas, poros y valles en 25 milisegundos"
-        color="#22C55E"
-        enterFrame={48}
-      />
-
-      {/* Cajón Monoespaciado de Telemetría en Vivo (Estilo es_50k.txt de Ref 2) */}
+      {/* 2. Cajón de las 4 Fichas Cinéticas en Cascada (Sin etiquetas pequeñas ni badges) */}
       <div
         style={{
           position: 'absolute',
-          left: SAFE_ZONE.minSafeX + 34,
-          top: 1125,
-          zIndex: 55,
+          top: 265,
+          left: 96,
+          right: 96,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 22,
         }}
       >
-        <DatasetTerminalDrawer
-          filename="biometric_3d_bench.log"
-          subtitle="comparativa de latencia y seguridad"
-          enterFrame={65}
-          rows={[
-            {
-              token: 'ultrasónico_3d (20 MHz)',
-              countLabel: '25 ms · RELIEVE 400 µm',
-              probabilityPct: 99,
-              highlight: true,
-            },
-            {
-              token: 'óptico_antiguo (luz 2D)',
-              countLabel: '180 ms · SUPERFICIE PLANA',
-              probabilityPct: 14,
-            },
-            {
-              token: 'foto_impresa_2d (spoof)',
-              countLabel: 'BLOQUEADO · 0 µm EJE Z',
-              probabilityPct: 0,
-              rejected: true,
-            },
-          ]}
-        />
+        {lawsToRender.map((law) => {
+          const isTriggered = localFrame >= law.triggerFrame;
+          const lawProgress = spring({
+            frame: Math.max(0, localFrame - law.triggerFrame),
+            fps,
+            config: SPRING_SNAPPY,
+          });
+
+          return (
+            <div
+              key={law.num}
+              style={{
+                position: 'relative',
+                backgroundColor: PALETTE.cardNotepad,
+                border: isTriggered
+                  ? '2.5px solid #D94E34'
+                  : `2px solid ${PALETTE.cardBorder}`,
+                borderLeft: isTriggered
+                  ? '10px solid #D94E34'
+                  : `2px solid ${PALETTE.cardBorder}`,
+                borderRadius: 20,
+                padding: '28px 34px',
+                boxShadow: isTriggered
+                  ? '0 16px 40px rgba(217, 78, 52, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04)'
+                  : '0 6px 18px rgba(45, 43, 40, 0.05)',
+                opacity: lawProgress,
+                transform: `translateX(${(1 - lawProgress) * 50}px) scale(${isTriggered ? 1.01 : 0.98})`,
+                transformOrigin: 'left center',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 28,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 38,
+                  fontWeight: 900,
+                  color: isTriggered ? '#D94E34' : '#78716C',
+                  minWidth: 54,
+                  lineHeight: 1,
+                }}
+              >
+                {law.num}
+              </div>
+
+              <div>
+                <div
+                  style={{
+                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                    fontSize: 31,
+                    fontWeight: 900,
+                    color: '#141413',
+                    letterSpacing: '-0.02em',
+                    marginBottom: 6,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {law.title}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 18,
+                    fontWeight: 600,
+                    color: '#575550',
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {law.desc}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -71,3 +71,57 @@ Cada vídeo selecciona un modo de laboratorio visual mediante `<BlueprintSurface
    - Aplica levitación orgánica determinista (`noise2D` de `@remotion/noise`), contorno CAD que muta continuamente con `flubber`, anillos acústicos concéntricos y barrido láser de Rayos X (`scanBeam`).
    - Alrededor del `HeroPropStage` se conectan las primitivas vectoriales en vivo: `LeaderLineCallout`, `DimensionRuler`, `HypothesisScoreboard`, `TargetReticle`, `LiveTelemetryGraph` y `DatasetTerminalDrawer`.
 
+
+
+---
+
+## 5. Reglas Estrictas de Motion Design (Haidrrrry Integration)
+
+1. **Entrada de 3 Propiedades Simultáneas (`threePropertyEntrance`)**:
+   - Prohibido entrar elementos visuales con una sola propiedad (solo opacidad o solo traslación).
+   - Todo titular, badge, tarjeta o vector secundario debe sincronizar:
+     - **Opacidad**: $0 \rightarrow 1$ (en 8–10 frames).
+     - **Elevación (Rise)**: `translateY: 36px` $\rightarrow$ `0px` con `SPRING_SNAPPY` o `MOTION_EASING.quartOut`.
+     - **Micro-Escala**: `scale: 0.92` $\rightarrow$ `1.0`.
+   - Helper en `src/theme/motion.ts`: `const { style } = threePropertyEntrance(frame, fps, { delayFrames: staggerDelay(index, 4) });`
+
+2. **Coreografía Escalonada (Stagger) de 3 a 6 Frames**:
+   - Las listas de leyes, chips métricos o nodos jamás aparecen en el mismo fotograma.
+   - Aplica `staggerDelay(i, 4)` sobre el inicio de la animación de cada hijo.
+
+3. **Prohibición de Elementos Estáticos Inertes (`<KenBurnsContainer />`)**:
+   - Todo asset estático (portadas de libros, capturas de pantalla, esquemas fijos) debe montarse dentro de `<KenBurnsContainer durationInFrames={dur} panDirection="subtle-drift">`.
+   - Aplica micro-paneo no lineal y zoom suave ($1.0 \rightarrow 1.07$) para mantener la escena visualmente viva sin distraer.
+
+4. **Acabado Analógico Cinemático (`<CinematicGrainOverlay />` y `<VignetteOverlay />`)**:
+   - Activados por defecto en `Video.tsx`. Proporcionan textura de grano procedural de 3 octavas (evitando la esterilidad del vector puro) y viñeteado periférico para enfocar la vista en el área activa superior.
+
+---
+
+## 6. Manual de Estilo Corporativo `@en1minuto.es` y Catálogo de 12 Arquetipos (`src/components/kinetic/`)
+
+Cuando el proyecto opera bajo la identidad corporativa de **`@en1minuto.es`** (`EDITORIAL_PAPER`), rigen las siguientes normas de estilo y selección de componentes:
+
+### 6.1 Reglas de Color, Superficie y Geometría Suavizada
+- **Fondo**: Papel técnico `#F6F2E8` con cuadrícula de ingeniería visible (`rgba(135, 118, 92, 0.42)` a `1.85px` / `rgba(135, 118, 92, 0.20)` a `1.15px`).
+- **Tarjetas Bloc de Notas**: Fondo ocre pálido `#FDF6DF` (`PALETTE.cardNotepad`), borde `#DECBA4` (`PALETTE.cardBorder`) y esquinas redondeadas suaves (`borderRadius: 24px–28px`, `strokeLinejoin="round"`, `strokeLinecap="round"`).
+- **Acentos Corporativos**: Terracota `#D94E34` (principal), Ámbar `#E08E26` (secundario), Verde Salvia `#3D6352` (terciario) y Tinta `#141413`.
+- **Cero Micro-Píldoras de Relleno**: Prohibido añadir píldoras sobre los titulares (`01 / ...`) o micro-etiquetas superfluas dentro de las tarjetas (`PASO 1`, `EFECTO VERIFICADO ✓`).
+- **Portada (Escena 1)**: Flanqueada por las 2 píldoras inclinadas (Ventas `🔥 +XM COPIAS` a `-4deg` y Goodreads con `public/assets/goodreads-logo.png` a `+3deg`).
+- **Reloj Inferior y Cierre**:
+  - Escenas 1–4: Solo `<OneMinuteStopwatch size={86} />` centrado abajo (`bottom: 36px`), sin faldón de texto.
+  - Escena 5 (`CtaEndCard.tsx`): Píldora dinámica **blanca (`#FFFFFF` con borde `#D94E34`)** con el reloj animado + `@en1minuto.es`.
+
+### 6.2 Tabla de Decisión de los 12 Arquetipos Visuales (`ArchetypeRenderer.tsx`)
+1. **`ComparisonBattle`** (*#01*): Contraste directo entre el error habitual (izquierda atenuada) y el método del libro (derecha terracota).
+2. **`ExponentialGrowthChart`** (*#02*): Interés compuesto, Valle de la Decepción y despegue exponencial.
+3. **`VectorLoopCircuit`** (*#03*): Sistema cíclico de 3 nodos con arco de retroalimentación inferior.
+4. **`StepCascadeList`** (*#04*): Escalera de 3 a 4 reglas prácticas con sangría progresiva.
+5. **`ParetoBarChart`** (*#05*): Desproporción 80/20 (20% de acciones críticas → 80% de resultados).
+6. **`IcebergDepthDiagram`** (*#06*): 15% de éxito visible en superficie vs. 85% de sistema sumergido en verde salvia.
+7. **`FunnelFilter`** (*#07*): Embudo esencialista que filtra 100 estímulos triviales hacia 1 meta única.
+8. **`PyramidHierarchy`** (*#08*): Pirámide de 3 niveles construida desde los cimientos hasta la cúspide.
+9. **`VennConvergence`** (*#09*): Intersección de 3 círculos que convergen en el núcleo de valor único.
+10. **`EisenhowerMatrix2x2`** (*#10*): Cuadrícula 2×2 de decisión estratégica con foco en el cuadrante ganador.
+11. **`CognitiveBatteryMeter`** (*#11*): Comparativa entre una batería mental drenada por interrupciones y un bloque blindado al 100%.
+12. **`BalanceScaleTradeoff`** (*#12*): Palanca de Arquímedes donde 1 hora de foco puro levanta 8 horas de multitarea.

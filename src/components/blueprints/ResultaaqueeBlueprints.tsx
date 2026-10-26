@@ -93,7 +93,7 @@ export const BlueprintSurface: React.FC<BlueprintSurfaceProps> = ({
               d="M 24 0 L 0 0 0 24"
               fill="none"
               stroke={theme.gridMinor}
-              strokeWidth={1}
+              strokeWidth={mode === 'EDITORIAL_PAPER' ? 1.15 : 1}
             />
           </pattern>
           <pattern
@@ -108,7 +108,7 @@ export const BlueprintSurface: React.FC<BlueprintSurfaceProps> = ({
               d="M 96 0 L 0 0 0 96"
               fill="none"
               stroke={theme.gridMajor}
-              strokeWidth={1.5}
+              strokeWidth={mode === 'EDITORIAL_PAPER' ? 1.85 : 1.5}
             />
           </pattern>
         </defs>
@@ -116,6 +116,7 @@ export const BlueprintSurface: React.FC<BlueprintSurfaceProps> = ({
 
         {/* Micropartículas en suspensión (Ref 2, Ref 3, Ref 4) */}
         {showParticles &&
+          mode !== 'EDITORIAL_PAPER' &&
           particles.map((p) => {
             const dx = noise2D(`px-${p.id}`, frame * 0.006, p.id) * 28;
             const dy = noise2D(`py-${p.id}`, p.id, frame * 0.006) * 28;

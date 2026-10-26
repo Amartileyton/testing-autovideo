@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { WordTimestamp } from '../data/schema';
 import {
@@ -10,10 +10,10 @@ import {
 import { VectorSelectionBox } from './blueprints/ResultaaqueeBlueprints';
 
 export type CaptionVariant =
-  | 'vector-box'      // Ref 2 & Ref 3: Marco de selección vectorial azul Figma (#3B82F6) con 4 nodos
+  | 'vector-box'      // Modo texto limpio con resaltado kinetic en amarillo ocre #FBBF24
   | 'ochre-blueprint' // Ref 1: Texto blanco con acento ocre (#FBBF24) sobre azul ingeniería
   | 'red-pill'        // Ref 5: Pastilla rectangular roja (#DC2626) sobre laboratorio oscuro
-  | 'editorial-clean'; // Modo papel técnico claro (#F8F7F4)
+  | 'editorial-clean'; // Modo papel técnico claro (#F8F7F4) sin caja de fondo
 
 export type CaptionPlacement = 'upper' | 'middle' | 'lower';
 
@@ -23,10 +23,12 @@ export interface DynamicCaptionsProps {
   sceneStartFrame?: number;
   /** Número de palabras por ventana deslizante (por defecto 5 en vector-box/ochre, 3 en red-pill/editorial) */
   wordsPerWindow?: number;
-  /** Variante estética extraída de los vídeos de referencia de @resultaaquee */
+  /** Variante estética */
   variant?: CaptionVariant;
-  /** Ubicación vertical en el lienzo 9:16 (upper = tercio superior Ref 2/3, middle = bajo raíl Ref 5, lower = tercio inferior Ref 1) */
+  /** Ubicación vertical en el lienzo 9:16 */
   placement?: CaptionPlacement;
+  /** Desactivado por defecto: si es true añade marco VectorSelectionBox */
+  showVectorBox?: boolean;
 }
 
 /**
@@ -46,35 +48,42 @@ function isSemanticKeyword(word: string): boolean {
     'diez',
     'mil',
     'millón',
-    'luz',
-    'eco',
-    'poro',
-    'piel',
-    'chip',
-    'mapa',
-    'onda',
-    'aire',
-    'ojo',
+    'meta',
+    'metas',
+    'hábito',
+    'sistema',
+    'año',
+    'día',
+    'voto',
+    'ley',
+    'leyes',
+    'regla',
+    'fases',
+    'obra',
+    'libro',
+    'clear',
+    'bucle',
+    'señal',
+    'anhelo',
+    'foco',
   ]);
   return hooks.has(clean);
 }
 
 /**
- * DynamicCaptions — Motor de Subtítulos @resultaaquee + TrendForge Sync:
+ * DynamicCaptions — Motor de Subtítulos @en1minuto.es + Leo Sync:
  * 1. Tolerancia de retención de 450ms (0.45s) en pausas naturales.
  * 2. Cero vibraciones y cero reflujo horizontal:
- *    - Todas las palabras (activas e inactivas) comparten exactamente el mismo box-model
- *      (padding: '2px 10px', border: '2.5px solid ...', fontWeight: 700).
- *    - Escala sobre-amortiguada (SPRING_SNAPPY) acotada de 1.0 a 1.05.
- * 3. Soporta los 4 modos visuales: 'vector-box' (Ref 2/3), 'ochre-blueprint' (Ref 1),
- *    'red-pill' (Ref 5) y 'editorial-clean'.
+ *    - En 'editorial-clean', texto Nunito 52px 800 sin fondo (backgroundColor: 'transparent'),
+ *      palabra activa en terracota #D94E34 e inactivas en carbón #141413 con halo #F8F7F4.
  */
 export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
   wordTimestamps = [],
   sceneStartFrame = 0,
   wordsPerWindow,
-  variant = 'vector-box',
+  variant = 'editorial-clean',
   placement = 'lower',
+  showVectorBox = false,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -82,40 +91,66 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
   const currentSec = localFrame / fps;
   const currentMs = currentSec * 1000;
 
+  // Normalizar y desinfectar timestamps para evitar tokens que sean exclusivamente signos de puntuación aislados o dobles (.,)
+  const sanitizedTimestamps = React.useMemo(() => {
+    const list: WordTimestamp[] = [];
+    for (const item of wordTimestamps) {
+      const cleanedWord = item.word.trim().replace(/([.!?¡¿:;]),+/g, '$1');
+      const isOnlyPunctuation = /^[.,;:¡!¿?«»"'\-–—\s]+$/.test(cleanedWord);
+      if (isOnlyPunctuation) {
+        if (list.length > 0) {
+          const prevWord = list[list.length - 1].word;
+          const mergedWord = `${prevWord}${cleanedWord}`.replace(/([.!?¡¿:;]),+/g, '$1');
+          list[list.length - 1] = {
+            ...list[list.length - 1],
+            word: mergedWord,
+            endMs: Math.max(list[list.length - 1].endMs, item.endMs),
+            endFrame: Math.max(list[list.length - 1].endFrame, item.endFrame),
+          };
+        }
+      } else {
+        list.push({ ...item, word: cleanedWord });
+      }
+    }
+    return list;
+  }, [wordTimestamps]);
+
   const effectiveWindowSize =
     wordsPerWindow ??
     (variant === 'vector-box' || variant === 'ochre-blueprint' ? 5 : 3);
 
   // Localizar palabra activa con margen de tolerancia de 450ms (0.45s)
-  const activeWordIdx = useMemo(() => {
-    if (!wordTimestamps.length) return -1;
-    const exact = wordTimestamps.findIndex(
+  let activeWordIdx = -1;
+  if (sanitizedTimestamps.length > 0) {
+    const exact = sanitizedTimestamps.findIndex(
       (w) => currentMs >= w.startMs && currentMs < w.endMs
     );
-    if (exact !== -1) return exact;
-
-    for (let i = wordTimestamps.length - 1; i >= 0; i--) {
-      if (
-        currentMs >= wordTimestamps[i].endMs &&
-        currentMs < wordTimestamps[i].endMs + 450
-      ) {
-        return i;
+    if (exact !== -1) {
+      activeWordIdx = exact;
+    } else {
+      for (let i = sanitizedTimestamps.length - 1; i >= 0; i--) {
+        if (
+          currentMs >= sanitizedTimestamps[i].endMs &&
+          currentMs < sanitizedTimestamps[i].endMs + 450
+        ) {
+          activeWordIdx = i;
+          break;
+        }
       }
     }
-    return -1;
-  }, [wordTimestamps, currentMs]);
+  }
 
-  if (wordTimestamps.length === 0 || activeWordIdx === -1) {
+  if (sanitizedTimestamps.length === 0 || activeWordIdx === -1) {
     return null;
   }
 
   const windowStart =
     Math.floor(activeWordIdx / effectiveWindowSize) * effectiveWindowSize;
   const windowEnd = Math.min(
-    wordTimestamps.length,
+    sanitizedTimestamps.length,
     windowStart + effectiveWindowSize
   );
-  const currentChunk = wordTimestamps.slice(windowStart, windowEnd);
+  const currentChunk = sanitizedTimestamps.slice(windowStart, windowEnd);
 
   const chunkStartMs = currentChunk[0]?.startMs ?? 0;
   const chunkFadeIn = interpolate(
@@ -125,39 +160,21 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
     CLAMP_EXTRAPOLATION
   );
 
-  // Determinar qué palabra del bloque lleva el VectorSelectionBox (nunca conectores/artículos)
-  const boxedGlobalIdx = useMemo(() => {
-    let candidate = -1;
-    for (let i = windowStart; i <= activeWordIdx && i < windowEnd; i++) {
-      if (isSemanticKeyword(wordTimestamps[i].word)) {
-        candidate = i;
-      }
-    }
-    if (candidate !== -1) return candidate;
-    for (let i = windowStart; i < windowEnd; i++) {
-      if (isSemanticKeyword(wordTimestamps[i].word)) {
-        return i;
-      }
-    }
-    return activeWordIdx;
-  }, [wordTimestamps, windowStart, windowEnd, activeWordIdx]);
-
-  // Posición vertical según placement (siempre dentro de SAFE_ZONE 85% superior)
-  const topPosition =
-    placement === 'upper'
-      ? SAFE_ZONE.upperThirdCaptionY
-      : placement === 'middle'
-        ? 1140
-        : SAFE_ZONE.maxSafeY - 180;
-
   return (
     <div
       style={{
         position: 'absolute',
         left: SAFE_ZONE.horizontalPaddingPx,
         right: SAFE_ZONE.horizontalPaddingPx,
-        top: topPosition,
-        minHeight: 132,
+        ...(placement === 'lower'
+          ? { bottom: 165 }
+          : {
+              top:
+                placement === 'upper'
+                  ? SAFE_ZONE.upperThirdCaptionY
+                  : 1140,
+            }),
+        minHeight: 110,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -196,10 +213,29 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
             ? interpolate(popSpring, [0, 1], [1.0, 1.05], CLAMP_EXTRAPOLATION)
             : 1.0;
 
-          // MODO 1: Vector Selection Box (Ref 2 Teclado iPhone & Ref 3 Gancho del Metro)
-          // Exactamente 1 marco de selección vectorial activo a la vez sobre la palabra clave pronunciada
           if (variant === 'vector-box') {
-            const showBox = globalIdx === boxedGlobalIdx;
+            const innerText = (
+              <span
+                style={{
+                  fontFamily:
+                    "'IBM Plex Sans', 'Inter', 'Helvetica Neue', system-ui, sans-serif",
+                  fontSize: 48,
+                  fontWeight: 800,
+                  letterSpacing: '-0.015em',
+                  lineHeight: 1.18,
+                  color: isActive
+                    ? '#FBBF24'
+                    : isPastOrCurrent
+                      ? '#FFFFFF'
+                      : 'rgba(255, 255, 255, 0.45)',
+                  textShadow:
+                    '0 4px 16px rgba(0, 0, 0, 0.95), 0 1px 3px rgba(0, 0, 0, 0.8)',
+                }}
+              >
+                {item.word}
+              </span>
+            );
+
             return (
               <span
                 key={`${globalIdx}-${item.word}-${item.startMs}`}
@@ -209,37 +245,17 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
                   display: 'inline-block',
                 }}
               >
-                <VectorSelectionBox
-                  active={showBox}
-                  color="#3B82F6"
-                  showRotationStem={true}
-                >
-                  <span
-                    style={{
-                      fontFamily:
-                        "'IBM Plex Sans', 'Inter', 'Helvetica Neue', system-ui, sans-serif",
-                      fontSize: 48,
-                      fontWeight: 700,
-                      letterSpacing: '-0.015em',
-                      lineHeight: 1.18,
-                      color: isActive
-                        ? '#FFFFFF'
-                        : isPastOrCurrent && isKeyword
-                          ? '#F8FAFC'
-                          : isPastOrCurrent
-                            ? '#CBD5E1'
-                            : '#8E8E93',
-                      textShadow: '0 2px 10px rgba(0, 0, 0, 0.65)',
-                    }}
-                  >
-                    {item.word}
-                  </span>
-                </VectorSelectionBox>
+                {showVectorBox ? (
+                  <VectorSelectionBox active={isActive} color="#3B82F6">
+                    {innerText}
+                  </VectorSelectionBox>
+                ) : (
+                  innerText
+                )}
               </span>
             );
           }
 
-          // MODO 2: Ochre Blueprint (Ref 1 — 1.000 botellas y 10 catadores)
           if (variant === 'ochre-blueprint') {
             const highlightOchre = isActive || (isPastOrCurrent && isKeyword);
             return (
@@ -269,7 +285,6 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
             );
           }
 
-          // MODO 3: Red Pill (Ref 5 — Las palomas y la cronofotografía)
           if (variant === 'red-pill') {
             return (
               <span
@@ -299,16 +314,15 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
             );
           }
 
-          // MODO 4: Editorial Clean (Papel técnico claro #F8F7F4)
           return (
             <span
               key={`${globalIdx}-${item.word}-${item.startMs}`}
               style={{
                 fontFamily:
-                  "'IBM Plex Sans', 'Inter', 'Helvetica Neue', -apple-system, system-ui, sans-serif",
-                fontSize: 50,
-                fontWeight: 700,
-                letterSpacing: '-0.015em',
+                  "'Nunito', 'Outfit', 'Poppins', -apple-system, system-ui, sans-serif",
+                fontSize: 52,
+                fontWeight: 800,
+                letterSpacing: '-0.01em',
                 lineHeight: 1.16,
                 color: isActive ? PALETTE.accentPrimary : PALETTE.ink,
                 backgroundColor: 'transparent',
@@ -317,7 +331,7 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
                 transform: `scale(${activeScale})`,
                 transformOrigin: 'center center',
                 display: 'inline-block',
-                margin: '0 3px',
+                margin: '0 4px',
               }}
             >
               {item.word}

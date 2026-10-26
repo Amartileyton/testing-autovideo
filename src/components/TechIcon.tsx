@@ -1,6 +1,6 @@
 /**
  * src/components/TechIcon.tsx
- * Selector e iconos vectoriales técnicos 100% offline reciclados de TrendForge,
+ * Selector e iconos vectoriales técnicos 100% offline,
  * adaptados a la paleta editorial Zero-Neon de nuestro estudio.
  */
 

@@ -1,16 +1,17 @@
 import React from 'react';
 import {
   interpolate,
+  spring,
   useCurrentFrame,
+  useVideoConfig,
 } from 'remotion';
+import type { BookMetadata, BookVisualData } from '../data/schema';
+import { CLAMP_EXTRAPOLATION, SPRING_SNAPPY } from '../theme/motion';
 import {
-  CornerHudTelemetry,
-  DimensionRuler,
-  HeroPropStage,
-  LeaderLineCallout,
-  VectorSelectionBox,
-} from '../components/blueprints/ResultaaqueeBlueprints';
-import { CLAMP_EXTRAPOLATION } from '../theme/motion';
+  ExponentialGrowthChart,
+  KineticCard,
+  LiveCounter,
+} from '../components/kinetic';
 
 export interface Scene2Props {
   headline?: string;
@@ -20,26 +21,41 @@ export interface Scene2Props {
   canvasOffsetX?: number;
   canvasOffsetY?: number;
   enterFrame?: number;
+  bookMetadata?: BookMetadata;
+  visualData?: BookVisualData;
 }
 
 /**
- * Scene 2 — Pulso Acústico Ultrasónico (Art-First + Estilo @resultaaquee Ref 3 Corte Rayos X CAD)
- * - HeroPropStage 3D CAD: Corte isométrico Rayos X del módulo transductor piezoeléctrico PMUT
- *   emitiendo ondas acústicas concéntricas a 20 MHz a través del OLED apagado y el cristal cian.
- * - Cotas ámbar (DimensionRuler), VectorSelectionBox y líneas guía quebradas (LeaderLineCallout).
+ * Scene 2 — Ecuación Cognitiva y Curva de Crecimiento Exponencial (@en1minuto.es):
+ * Sin píldoras pequeñas ni micro-títulos superfluos. Tarjetas en fondo ocre pálido bloc de notas (#FDF6DF).
  */
 export const Scene2: React.FC<Scene2Props> = ({
-  metricValue = 20,
-  canvasOffsetX = 1100,
+  headline = 'Ocupado ≠ Productivo',
+  canvasOffsetX = 1120,
   canvasOffsetY = 0,
-  enterFrame = 196,
+  enterFrame = 393,
+  visualData,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const localFrame = Math.max(0, frame - enterFrame);
 
-  const animatedFreq = Math.round(
-    interpolate(localFrame, [15, 110], [0, metricValue], CLAMP_EXTRAPOLATION)
-  );
+  // 1. Cabecera (frame 0)
+  const headerEntrance = spring({
+    frame: localFrame,
+    fps,
+    config: SPRING_SNAPPY,
+  });
+
+  // 2. Progreso de llenado de la barra reactiva
+  const fillProgress = spring({
+    frame: Math.max(0, localFrame - 180),
+    fps,
+    config: { damping: 22, stiffness: 100, mass: 0.9 },
+    durationInFrames: 50,
+  });
+
+  const targetVal = visualData?.targetCounterValue ?? 5.0;
 
   return (
     <div
@@ -50,95 +66,116 @@ export const Scene2: React.FC<Scene2Props> = ({
         width: 1080,
         height: 1920,
         pointerEvents: 'none',
+        padding: '0 96px',
+        boxSizing: 'border-box',
       }}
     >
-      {/* Telemetría de esquina superior */}
-      <CornerHudTelemetry
-        leftLabel="FRECUENCIA ACÚSTICA"
-        leftValue={`${animatedFreq} MHz`}
-        rightLabel="EMISIÓN DE LUZ OLED"
-        rightValue="0 LÚMENES"
-        accentColor="#F59E0B"
-        textColor="#38BDF8"
-      />
-
-      {/* Hero Prop 3D CAD: Corte Rayos X del Transductor Piezoeléctrico PMUT */}
-      <HeroPropStage
-        src="assets/props/hero-scene2-pmut-cutaway.png"
-        x={540}
-        y={705}
-        size={690}
-        enterFrame={8}
-        localFrame={localFrame}
-        accentColor="#F59E0B"
-        secondaryColor="#38BDF8"
-        scanBeam
-        pulseRings
-        noiseSeed="scene2-pmut"
-        cadTag="FIG 02 · PMUT X-RAY CUTAWAY"
-      />
-
-      {/* Marco de selección vectorial azul sobre el módulo transductor */}
+      {/* 1. Titular Limpio (Sin píldora superior) */}
       <div
         style={{
           position: 'absolute',
-          left: 365,
-          top: 1065,
-          zIndex: 55,
+          top: 140,
+          left: 96,
+          right: 96,
+          opacity: headerEntrance,
+          transform: `translateY(${(1 - headerEntrance) * -20}px)`,
         }}
       >
-        <VectorSelectionBox color="#3B82F6" active={localFrame > 35}>
-          <span
-            style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 28,
-              fontWeight: 700,
-              color: '#FFFFFF',
-            }}
-          >
-            PULSO MECÁNICO · 1.540 m/s
-          </span>
-        </VectorSelectionBox>
+        <h1
+          style={{
+            fontFamily: "'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif",
+            fontSize: 60,
+            fontWeight: 900,
+            color: '#141413',
+            margin: 0,
+            lineHeight: 1.06,
+            letterSpacing: '-0.035em',
+          }}
+        >
+          {visualData?.headlineTitle || headline}
+        </h1>
       </div>
 
-      {/* Líneas guía quebradas (LeaderLineCallout) */}
-      <LeaderLineCallout
-        anchorX={360}
-        anchorY={855}
-        elbowX={180}
-        elbowY={1220}
-        labelX={210}
-        labelY={1220}
-        title="transductor ultrasónico"
-        subtitle="Qualcomm 3D Sonic — vibra a 20 millones de Hz"
-        color="#F59E0B"
-        enterFrame={35}
-      />
+      {/* 2. Tarjeta Hero Integrada con LiveCounter (Sin píldoras pequeñas) */}
+      <div style={{ position: 'absolute', top: 265, left: 96, right: 96 }}>
+        <KineticCard
+          enterFrame={enterFrame + 10}
+          accentBorderColor="#141413"
+          padding="32px 36px"
+          style={{
+            borderTop: '8px solid #D94E34',
+            textAlign: 'center',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'baseline',
+              lineHeight: 1,
+            }}
+          >
+            <LiveCounter
+              from={1.0}
+              to={targetVal}
+              startFrame={enterFrame + 140}
+              durationFrames={45}
+              decimals={2}
+              suffix="x"
+              fontSize={112}
+              color="#141413"
+              fontFamily="'Plus Jakarta Sans', 'Inter', sans-serif"
+            />
+          </div>
 
-      <LeaderLineCallout
-        anchorX={730}
-        anchorY={580}
-        elbowX={860}
-        elbowY={1360}
-        labelX={760}
-        labelY={1360}
-        title="atraviesa el cristal sin luz"
-        subtitle="la onda mecánica cruza el OLED totalmente apagado"
-        color="#38BDF8"
-        enterFrame={90}
-        align="right"
-      />
+          <div
+            style={{
+              fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+              fontSize: 25,
+              fontWeight: 800,
+              color: '#141413',
+              marginTop: 14,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {visualData?.formulaLabel || 'Producción = Tiempo × Intensidad de Enfoque'}
+          </div>
 
-      {/* Regla de acotación del espesor atravesado */}
-      <DimensionRuler
-        x1={160}
-        y1={1520}
-        x2={920}
-        y2={1520}
-        label="FRECUENCIA: 20.000.000 Hz"
-        color="#38BDF8"
-        enterFrame={70}
-      />
+          {/* Barra reactiva */}
+          <div
+            style={{
+              marginTop: 18,
+              width: '100%',
+              height: 10,
+              backgroundColor: 'rgba(217, 78, 52, 0.14)',
+              borderRadius: 5,
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                width: `${interpolate(fillProgress, [0, 1], [3, 100], CLAMP_EXTRAPOLATION)}%`,
+                height: '100%',
+                backgroundColor: '#D94E34',
+                borderRadius: 5,
+              }}
+            />
+          </div>
+        </KineticCard>
+      </div>
+
+      {/* 3. Gráfico de Crecimiento Exponencial Animado debajo de la tarjeta */}
+      <div style={{ position: 'absolute', top: 610, left: 96, right: 96 }}>
+        <ExponentialGrowthChart
+          startFrame={enterFrame}
+          width={888}
+          height={520}
+          accentColor="#D94E34"
+          peakValue={targetVal}
+          xUnitLabel="HORA"
+          maxUnits={4}
+        />
+      </div>
     </div>
   );
 };

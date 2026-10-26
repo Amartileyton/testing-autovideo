@@ -1,0 +1,141 @@
+{
+  "projectTitle": "Clon Inverso de Vídeo — Arquitectura Vectorial",
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "crossDissolveFrames": 10,
+  "detectedStyleArchetype": "DARK_CAD_XRAY (High Density)",
+  "hookRetentionScore": 8.7,
+  "hookAnalysis": {
+    "hookText": "¡Atención a este patrón visual! [PAUSA 0.4s] Obser",
+    "visualDisruptor": "Cota de dimensión técnica en primeros 1.5s",
+    "pacingWordsPerSec": 2.8
+  },
+  "scenes": [
+    {
+      "id": "scene-1",
+      "title": "GANCHO DE APERTURA (REVERSE CLONE)",
+      "text": "¡Atención a este patrón visual! [PAUSA 0.4s] Observa cómo cada elemento entra con tres propiedades coordinadas y sin vibraciones.",
+      "characterPreset": "dramatic",
+      "blueprintMode": "DARK_CAD_XRAY",
+      "visualCue": "HeroPropStage en perspectiva isométrica con cota de ingeniería ámbar y pastilla de selección.",
+      "detectedPrimitive": "Book3DStage",
+      "cameraTarget": {
+        "x": 0,
+        "y": 0,
+        "zoom": 1,
+        "rotateDeg": 0
+      },
+      "metrics": {
+        "label": "RETENCIÓN INICIAL",
+        "numericValue": 98.4,
+        "unit": "%"
+      },
+      "motionDynamics": {
+        "entrance": "threePropertyEntrance",
+        "easing": "expoOut",
+        "staggerFrames": 4
+      }
+    },
+    {
+      "id": "scene-2",
+      "title": "BLOQUE VISUAL 2",
+      "text": "En este segundo segmento, la telemetría avanza a un ritmo constante de noventa y ocho coma cinco por ciento. [PAUSA 0.4s] El sistema vectorial sostiene el foco activo.",
+      "characterPreset": "narrator",
+      "blueprintMode": "CHRONO_OSCILLOSCOPE",
+      "visualCue": "Gráfica de telemetría en vivo unida con osciloscopio y tarjetas de datos.",
+      "detectedPrimitive": "LiveTelemetryGraph",
+      "cameraTarget": {
+        "x": 1120,
+        "y": 0,
+        "zoom": 1,
+        "rotateDeg": 0
+      },
+      "metrics": {
+        "label": "RENDIMIENTO",
+        "numericValue": 37.8,
+        "unit": "%"
+      },
+      "motionDynamics": {
+        "entrance": "threePropertyEntrance",
+        "easing": "expoOut",
+        "staggerFrames": 4
+      }
+    },
+    {
+      "id": "scene-3",
+      "title": "BLOQUE VISUAL 3",
+      "text": "En este segundo segmento, la telemetría avanza a un ritmo constante de noventa y ocho coma cinco por ciento. [PAUSA 0.4s] El sistema vectorial sostiene el foco activo.",
+      "characterPreset": "narrator",
+      "blueprintMode": "BLUEPRINT_BLUE",
+      "visualCue": "Gráfica de telemetría en vivo unida con osciloscopio y tarjetas de datos.",
+      "detectedPrimitive": "KenBurnsContainer",
+      "cameraTarget": {
+        "x": 1120,
+        "y": 1980,
+        "zoom": 1,
+        "rotateDeg": 0
+      },
+      "metrics": {
+        "label": "RENDIMIENTO",
+        "numericValue": 37.8,
+        "unit": "%"
+      },
+      "motionDynamics": {
+        "entrance": "threePropertyEntrance",
+        "easing": "expoOut",
+        "staggerFrames": 4
+      }
+    },
+    {
+      "id": "scene-4",
+      "title": "BLOQUE VISUAL 4",
+      "text": "En este segundo segmento, la telemetría avanza a un ritmo constante de noventa y ocho coma cinco por ciento. [PAUSA 0.4s] El sistema vectorial sostiene el foco activo.",
+      "characterPreset": "narrator",
+      "blueprintMode": "CHRONO_OSCILLOSCOPE",
+      "visualCue": "Gráfica de telemetría en vivo unida con osciloscopio y tarjetas de datos.",
+      "detectedPrimitive": "LiveTelemetryGraph",
+      "cameraTarget": {
+        "x": 0,
+        "y": 1980,
+        "zoom": 1,
+        "rotateDeg": 0
+      },
+      "metrics": {
+        "label": "RENDIMIENTO",
+        "numericValue": 37.8,
+        "unit": "%"
+      },
+      "motionDynamics": {
+        "entrance": "threePropertyEntrance",
+        "easing": "expoOut",
+        "staggerFrames": 4
+      }
+    },
+    {
+      "id": "scene-5",
+      "title": "BLOQUE VISUAL 5",
+      "text": "En este segundo segmento, la telemetría avanza a un ritmo constante de noventa y ocho coma cinco por ciento. [PAUSA 0.4s] El sistema vectorial sostiene el foco activo.",
+      "characterPreset": "narrator",
+      "blueprintMode": "BLUEPRINT_BLUE",
+      "visualCue": "Gráfica de telemetría en vivo unida con osciloscopio y tarjetas de datos.",
+      "detectedPrimitive": "KenBurnsContainer",
+      "cameraTarget": {
+        "x": 560,
+        "y": 3960,
+        "zoom": 1,
+        "rotateDeg": 0
+      },
+      "metrics": {
+        "label": "RENDIMIENTO",
+        "numericValue": 37.8,
+        "unit": "%"
+      },
+      "motionDynamics": {
+        "entrance": "threePropertyEntrance",
+        "easing": "expoOut",
+        "staggerFrames": 4
+      }
+    }
+  ]
+}

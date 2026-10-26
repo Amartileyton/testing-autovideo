@@ -48,6 +48,14 @@ If the official Remotion skill is installed, leverage it for API-specific detail
 
 ## Four-Phase Workflow
 
+> [!IMPORTANT]
+> ### Protocolo Canónico `@en1minuto.es` (Cuando se solicita un vídeo con enlace de Goodreads)
+> Si el usuario inicia un chat solicitando un vídeo de resumen de libro con su enlace de Goodreads, aplica automáticamente el flujo corporativo de **4 Pasos**:
+> 1. **Guion Primero (Sin generar audio aún)**: Extrae de Goodreads la portada, puntuación (`★ X.XX`), número de reseñas y ventas; redacta y muestra el **Guion de 5 Escenas** (`Scene1` a `Scene5`, cerrando siempre con el CTA a `en1minuto.es`).
+> 2. **Cuestionario Interactivo de Animaciones (`ask_question`)**: Antes de llamar a ElevenLabs, lanza `ask_question` preguntando para cada escena: *«¿Qué tipo de animaciones quieres ver?»*, ofreciendo 4 opciones del **Catálogo Modular de 12 Arquetipos** (`src/components/kinetic/ArchetypeRenderer.tsx`) y marcando en primera posición con `(Recommended)` la opción más acertada según la metáfora cognitiva de la escena.
+> 3. **Audio + Implementación Visual**: Una vez el usuario responde al cuestionario, genera los audios con `node scripts/elevenlabs-sync.mjs` y programa las escenas usando los arquetipos seleccionados y sus transiciones suaves.
+> 4. **Renderizado Final**: Exporta el MP4 final (`npx remotion render src/index.ts MainVideo out/<slug>-en1minuto.mp4`) a la espera de ajustes finos.
+
 ### Phase 1: Strategic Framing
 
 **Goal**: Understand what the user needs through conversation, then assemble expert perspectives.

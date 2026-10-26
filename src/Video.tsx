@@ -9,21 +9,32 @@ import {
   useVideoConfig,
 } from 'remotion';
 import audioManifestJson from '../public/audio/info.json';
-import scenesJson from './data/scenes.json';
-import type { AudioManifest, VideoProps, WordTimestamp } from './data/schema';
+import scenesJsonRaw from './data/scenes.json';
+import type {
+  AudioManifest,
+  BookMetadata,
+  BookVisualData,
+  ScenesFile,
+  VideoProps,
+  WordTimestamp,
+} from './data/schema';
 import { CameraRig, type CameraKeyframe } from './components/CameraRig';
 import { DynamicCaptions } from './components/DynamicCaptions';
+import { OneMinuteStopwatch } from './components/OneMinuteStopwatch';
 import { Scene1 } from './scenes/Scene1';
 import { Scene2 } from './scenes/Scene2';
 import { Scene3 } from './scenes/Scene3';
 import { Scene4 } from './scenes/Scene4';
+import { Scene5 } from './scenes/Scene5';
 import {
   BLUEPRINT_THEMES,
+  BRAND_CONFIG,
+  type BlueprintModeId,
   CLAMP_EXTRAPOLATION,
-  SAFE_ZONE,
 } from './theme/motion';
 
 const manifest = audioManifestJson as AudioManifest;
+const scenesJson = scenesJsonRaw as unknown as ScenesFile;
 
 export interface ComputedSceneWindow {
   id: string;
@@ -60,16 +71,17 @@ export function computeSceneTimeline(
 }
 
 export const Video: React.FC<VideoProps> = ({
-  surfaceColor = BLUEPRINT_THEMES.DARK_CAD_XRAY.surface,
+  surfaceColor = BLUEPRINT_THEMES.EDITORIAL_PAPER.surface,
   enableCaptions = true,
   enableBackgroundMusic = false,
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, durationInFrames: totalDurationFrames } = useVideoConfig();
   const timeline = useMemo(() => computeSceneTimeline(manifest), []);
+  const bookMetadata = scenesJson.bookMetadata as BookMetadata | undefined;
 
   /**
-   * Stream unificado de palabras a nivel global (arquitectura TrendForge + @resultaaquee):
+   * Stream unificado de palabras a nivel global (arquitectura Leo + @en1minuto.es):
    * evita cortes o solapamientos de subtítulos durante las transiciones entre escenas.
    */
   const globalWordTimestamps: WordTimestamp[] = useMemo(() => {
@@ -95,9 +107,10 @@ export const Video: React.FC<VideoProps> = ({
   const cameraKeyframes: CameraKeyframe[] = useMemo(() => {
     const defaultCoords = [
       { x: 0, y: 0, zoom: 1.0, rotateDeg: 0 },
-      { x: 1100, y: 0, zoom: 1.03, rotateDeg: 0 },
-      { x: 1100, y: 1980, zoom: 1.02, rotateDeg: 0 },
+      { x: 1120, y: 0, zoom: 1.0, rotateDeg: 0 },
+      { x: 1120, y: 1980, zoom: 1.0, rotateDeg: 0 },
       { x: 0, y: 1980, zoom: 1.0, rotateDeg: 0 },
+      { x: 560, y: 3960, zoom: 1.0, rotateDeg: 0 },
     ];
     return timeline.map((item, idx) => {
       const sceneMeta = scenesJson.scenes[idx];
@@ -118,6 +131,11 @@ export const Video: React.FC<VideoProps> = ({
   }, [timeline]);
 
   /**
+   * Modo de superficie editorial constante en todo el vídeo (cuadrícula marcada sobre papel cálido)
+   */
+  const activeBlueprintMode: BlueprintModeId = 'EDITORIAL_PAPER';
+
+  /**
    * Curva de Audio Ducking automática para la pista opcional de música de fondo
    */
   const isVoiceSpeaking = useMemo(() => {
@@ -135,97 +153,85 @@ export const Video: React.FC<VideoProps> = ({
 
   return (
     <AbsoluteFill style={{ backgroundColor: surfaceColor }}>
-      {/* Lienzo continuo @resultaaquee gobernado por CameraRig (DARK_CAD_XRAY + Rack-Focus Blur) */}
+      {/* Lienzo continuo de 5 escenas gobernado por CameraRig + Rack-Focus Blur */}
       <CameraRig
         keyframes={cameraKeyframes}
         surfaceColor={surfaceColor}
-        blueprintMode="DARK_CAD_XRAY"
+        blueprintMode={activeBlueprintMode}
         rackFocusBlur={true}
       >
-        {/* Conectores de ingeniería CAD entre cuadrantes del lienzo continuo */}
-        <svg
-          width={2400}
-          height={4000}
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            pointerEvents: 'none',
-          }}
-        >
-          <path
-            d="M 984 740 L 1196 740"
-            stroke="rgba(255, 255, 255, 0.14)"
-            strokeWidth={2}
-            strokeDasharray="10 10"
-            fill="none"
-          />
-          <path
-            d="M 1640 1520 L 1640 2090"
-            stroke="rgba(255, 255, 255, 0.14)"
-            strokeWidth={2}
-            strokeDasharray="10 10"
-            fill="none"
-          />
-          <path
-            d="M 1196 2700 L 984 2700"
-            stroke="rgba(255, 255, 255, 0.14)"
-            strokeWidth={2}
-            strokeDasharray="10 10"
-            fill="none"
-          />
-        </svg>
-
         <Scene1
-          headline={scenesJson.scenes[0]?.title ?? 'EL FALLO DEL SENSOR ÓPTICO'}
-          metricValue={scenesJson.scenes[0]?.metrics?.numericValue ?? 2}
-          metricUnit={scenesJson.scenes[0]?.metrics?.unit ?? 'D'}
-          metricLabel={
-            scenesJson.scenes[0]?.metrics?.label ?? 'CAPTURA ÓPTICA PLANA'
-          }
+          headline={scenesJson.scenes[0]?.title}
+          metricValue={scenesJson.scenes[0]?.metrics?.numericValue}
+          metricUnit={scenesJson.scenes[0]?.metrics?.unit}
+          metricLabel={scenesJson.scenes[0]?.metrics?.label}
           canvasOffsetX={scenesJson.scenes[0]?.cameraTarget?.x ?? 0}
           canvasOffsetY={scenesJson.scenes[0]?.cameraTarget?.y ?? 0}
           enterFrame={timeline[0]?.from ?? 0}
+          bookMetadata={bookMetadata}
+          visualData={
+            scenesJson.scenes[0]?.bookVisualData as BookVisualData | undefined
+          }
         />
 
         <Scene2
-          headline={scenesJson.scenes[1]?.title ?? 'PULSO ACÚSTICO ULTRASÓNICO'}
-          metricValue={scenesJson.scenes[1]?.metrics?.numericValue ?? 20}
-          metricUnit={scenesJson.scenes[1]?.metrics?.unit ?? 'MHz'}
-          metricLabel={
-            scenesJson.scenes[1]?.metrics?.label ?? 'FRECUENCIA ACÚSTICA'
-          }
-          canvasOffsetX={scenesJson.scenes[1]?.cameraTarget?.x ?? 1100}
+          headline={scenesJson.scenes[1]?.title}
+          metricValue={scenesJson.scenes[1]?.metrics?.numericValue}
+          metricUnit={scenesJson.scenes[1]?.metrics?.unit}
+          metricLabel={scenesJson.scenes[1]?.metrics?.label}
+          canvasOffsetX={scenesJson.scenes[1]?.cameraTarget?.x ?? 1120}
           canvasOffsetY={scenesJson.scenes[1]?.cameraTarget?.y ?? 0}
-          enterFrame={timeline[1]?.from ?? 196}
+          enterFrame={timeline[1]?.from ?? 340}
+          bookMetadata={bookMetadata}
+          visualData={
+            scenesJson.scenes[1]?.bookVisualData as BookVisualData | undefined
+          }
         />
 
         <Scene3
-          headline={scenesJson.scenes[2]?.title ?? 'RELIEVE EPIDÉRMICO EN 3D'}
-          metricValue={scenesJson.scenes[2]?.metrics?.numericValue ?? 400}
-          metricUnit={scenesJson.scenes[2]?.metrics?.unit ?? 'µm'}
-          metricLabel={
-            scenesJson.scenes[2]?.metrics?.label ?? 'PENETRACIÓN EPIDÉRMICA'
-          }
-          canvasOffsetX={scenesJson.scenes[2]?.cameraTarget?.x ?? 1100}
+          headline={scenesJson.scenes[2]?.title}
+          metricValue={scenesJson.scenes[2]?.metrics?.numericValue}
+          metricUnit={scenesJson.scenes[2]?.metrics?.unit}
+          metricLabel={scenesJson.scenes[2]?.metrics?.label}
+          canvasOffsetX={scenesJson.scenes[2]?.cameraTarget?.x ?? 1120}
           canvasOffsetY={scenesJson.scenes[2]?.cameraTarget?.y ?? 1980}
-          enterFrame={timeline[2]?.from ?? 423}
+          enterFrame={timeline[2]?.from ?? 700}
+          bookMetadata={bookMetadata}
+          visualData={
+            scenesJson.scenes[2]?.bookVisualData as BookVisualData | undefined
+          }
         />
 
         <Scene4
-          headline={scenesJson.scenes[3]?.title ?? 'DESBLOQUEO EN MILISEGUNDOS'}
-          metricValue={scenesJson.scenes[3]?.metrics?.numericValue ?? 25}
-          metricUnit={scenesJson.scenes[3]?.metrics?.unit ?? 'ms'}
-          metricLabel={
-            scenesJson.scenes[3]?.metrics?.label ?? 'TIEMPO DE RESPUESTA'
-          }
+          headline={scenesJson.scenes[3]?.title}
+          metricValue={scenesJson.scenes[3]?.metrics?.numericValue}
+          metricUnit={scenesJson.scenes[3]?.metrics?.unit}
+          metricLabel={scenesJson.scenes[3]?.metrics?.label}
           canvasOffsetX={scenesJson.scenes[3]?.cameraTarget?.x ?? 0}
           canvasOffsetY={scenesJson.scenes[3]?.cameraTarget?.y ?? 1980}
-          enterFrame={timeline[3]?.from ?? 628}
+          enterFrame={timeline[3]?.from ?? 1080}
+          bookMetadata={bookMetadata}
+          visualData={
+            scenesJson.scenes[3]?.bookVisualData as BookVisualData | undefined
+          }
+        />
+
+        <Scene5
+          headline={scenesJson.scenes[4]?.title}
+          metricValue={scenesJson.scenes[4]?.metrics?.numericValue}
+          metricUnit={scenesJson.scenes[4]?.metrics?.unit}
+          metricLabel={scenesJson.scenes[4]?.metrics?.label}
+          canvasOffsetX={scenesJson.scenes[4]?.cameraTarget?.x ?? 560}
+          canvasOffsetY={scenesJson.scenes[4]?.cameraTarget?.y ?? 3960}
+          enterFrame={timeline[4]?.from ?? 1480}
+          bookMetadata={bookMetadata}
+          visualData={
+            scenesJson.scenes[4]?.bookVisualData as BookVisualData | undefined
+          }
         />
       </CameraRig>
 
-      {/* Secuencias de audio sincronizadas al fotograma desde public/audio/info.json */}
+      {/* Secuencias de audio sincronizadas al fotograma desde public/audio/info.json (SIN pitido de alarma inicial) */}
       {timeline.map((sceneWin) => (
         <Sequence
           key={sceneWin.id}
@@ -239,14 +245,66 @@ export const Video: React.FC<VideoProps> = ({
         </Sequence>
       ))}
 
-      {/* Subtítulos @resultaaquee (Ref 2 & Ref 3): Tercio superior + Caja de Selección Vectorial Azul */}
+      {/* Barra de progreso de lectura (Top 60s Bar) en Terracota */}
+      {BRAND_CONFIG.showProgressBar && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: `${Math.min(100, Math.max(0, (frame / (totalDurationFrames || 1765)) * 100))}%`,
+            height: 8,
+            backgroundColor: BRAND_CONFIG.progressBarColor,
+            zIndex: 100,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      {/* Temporizador Inferior Limpio (SOLO el Reloj Cronómetro durante las escenas 1-4; en la escena 5 se convierte en la píldora dinámica con @en1minuto.es) */}
+      {(() => {
+        const ctaCardFrame = (timeline[4]?.from ?? 1400) + 155;
+        const bottomClockOpacity = interpolate(
+          frame,
+          [ctaCardFrame - 18, ctaCardFrame],
+          [1, 0],
+          CLAMP_EXTRAPOLATION
+        );
+
+        return (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 36,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 95,
+              pointerEvents: 'none',
+              opacity: bottomClockOpacity,
+              transform: `scale(${interpolate(bottomClockOpacity, [0, 1], [0.75, 1], CLAMP_EXTRAPOLATION)})`,
+            }}
+          >
+            <OneMinuteStopwatch
+              size={86}
+              currentFrame={frame}
+              totalDurationInFrames={totalDurationFrames}
+              mode="header"
+            />
+          </div>
+        );
+      })()}
+
+      {/* Subtítulos sin fondo en el tercio inferior (Nunito 52px 800) */}
       {enableCaptions ? (
         <DynamicCaptions
           wordTimestamps={globalWordTimestamps}
           sceneStartFrame={0}
           wordsPerWindow={5}
-          variant="vector-box"
-          placement="upper"
+          variant="editorial-clean"
+          placement="lower"
         />
       ) : null}
 
@@ -257,18 +315,6 @@ export const Video: React.FC<VideoProps> = ({
           volume={bgmVolume}
         />
       ) : null}
-
-      {/* Línea guía sutil de Zona Segura Vertical (288px inferiores reservados para UI 9:16) */}
-      <div
-        style={{
-          position: 'absolute',
-          left: SAFE_ZONE.horizontalPaddingPx,
-          right: SAFE_ZONE.horizontalPaddingPx,
-          top: SAFE_ZONE.maxSafeY,
-          borderTop: '1.5px dashed rgba(255, 255, 255, 0.10)',
-          pointerEvents: 'none',
-        }}
-      />
     </AbsoluteFill>
   );
 };

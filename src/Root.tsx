@@ -1,9 +1,23 @@
 import React from 'react';
 import { Composition } from 'remotion';
+import { loadFont as loadPlusJakartaSans } from '@remotion/google-fonts/PlusJakartaSans';
+import { loadFont as loadInter } from '@remotion/google-fonts/Inter';
+import { loadFont as loadNunito } from '@remotion/google-fonts/Nunito';
 import audioManifestJson from '../public/audio/info.json';
+import scenesJson from './data/scenes.json';
 import { VideoPropsSchema, type AudioManifest } from './data/schema';
 import { BLUEPRINT_THEMES, VIDEO_CONFIG } from './theme/motion';
 import { Video } from './Video';
+import {
+  CATALOG_SHOWCASE_DURATION,
+  CATALOG_SHOWCASE_FPS,
+  CatalogShowcaseVideo,
+} from './CatalogShowcaseVideo';
+
+// Cargar fuentes oficiales (titulares Plus Jakarta Sans, cuerpo Inter, subtítulos con Nunito sin aristas agudas)
+loadPlusJakartaSans();
+loadInter();
+loadNunito();
 
 const manifest = audioManifestJson as AudioManifest;
 
@@ -13,7 +27,7 @@ const manifest = audioManifestJson as AudioManifest;
  */
 const calculateTotalFrames = (audioManifest: AudioManifest): number => {
   if (!audioManifest.scenes || !audioManifest.scenes.length) {
-    return 180;
+    return 1920;
   }
   const crossDissolve =
     audioManifest.crossDissolveFrames ?? VIDEO_CONFIG.crossDissolveFrames;
@@ -41,11 +55,23 @@ export const RemotionRoot: React.FC = () => {
         height={VIDEO_CONFIG.height}
         schema={VideoPropsSchema}
         defaultProps={{
-          title: 'Cómo Funciona el Lector de Huellas Ultrasónico 3D',
-          surfaceColor: BLUEPRINT_THEMES.DARK_CAD_XRAY.surface,
+          title:
+            scenesJson.projectTitle ||
+            'Céntrate (Deep Work) — Cal Newport (Resumen 60s)',
+          surfaceColor: BLUEPRINT_THEMES.EDITORIAL_PAPER.surface,
           enableCaptions: true,
           enableBackgroundMusic: false,
+          enableGrain: true,
+          enableVignette: true,
         }}
+      />
+      <Composition
+        id="CatalogShowcase"
+        component={CatalogShowcaseVideo}
+        durationInFrames={CATALOG_SHOWCASE_DURATION}
+        fps={CATALOG_SHOWCASE_FPS}
+        width={VIDEO_CONFIG.width}
+        height={VIDEO_CONFIG.height}
       />
     </>
   );

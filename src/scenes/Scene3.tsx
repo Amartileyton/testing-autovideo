@@ -1,16 +1,12 @@
 import React from 'react';
 import {
-  interpolate,
+  spring,
   useCurrentFrame,
+  useVideoConfig,
 } from 'remotion';
-import {
-  CornerHudTelemetry,
-  DimensionRuler,
-  HeroPropStage,
-  LiveTelemetryGraph,
-  TargetReticle,
-} from '../components/blueprints/ResultaaqueeBlueprints';
-import { CLAMP_EXTRAPOLATION } from '../theme/motion';
+import type { BookMetadata, BookVisualData } from '../data/schema';
+import { SPRING_SNAPPY } from '../theme/motion';
+import { KineticCard, VectorLoopCircuit } from '../components/kinetic';
 
 export interface Scene3Props {
   headline?: string;
@@ -20,50 +16,34 @@ export interface Scene3Props {
   canvasOffsetX?: number;
   canvasOffsetY?: number;
   enterFrame?: number;
+  bookMetadata?: BookMetadata;
+  visualData?: BookVisualData;
 }
 
 /**
- * Scene 3 — Relieve Epidérmico en 3D (Art-First + Estilo @resultaaquee Ref 5 Cronofotografía + Osciloscopio)
- * - Mitad superior: HeroPropStage macro de las crestas, poros y valles de la epidermis sobre el cristal
- *   con dianas rojas (TargetReticle) en Cresta, Poro y Valle.
- * - Raíl calibrado divisorio blanco y negro.
- * - Mitad inferior: Gráfica posición-tiempo en vivo (LiveTelemetryGraph) conectada mediante
- *   línea punteada vertical roja desde el valle epidérmico hasta el escalón de la gráfica.
+ * Scene 3 — Circuito Neurológico + Cita Subrayada (@en1minuto.es):
+ * Sin píldoras pequeñas ni micro-etiquetas. Tarjetas en fondo ocre pálido bloc de notas (#FDF6DF).
  */
 export const Scene3: React.FC<Scene3Props> = ({
-  metricValue = 400,
-  canvasOffsetX = 1100,
+  headline = 'La fórmula del éxito',
+  canvasOffsetX = 1120,
   canvasOffsetY = 1980,
-  enterFrame = 423,
+  enterFrame = 725,
+  bookMetadata,
+  visualData,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const localFrame = Math.max(0, frame - enterFrame);
 
-  const depthCounter = Math.round(
-    interpolate(localFrame, [15, 130], [0, metricValue], CLAMP_EXTRAPOLATION)
-  );
+  // 1. Cabecera (frame 0)
+  const headerEntrance = spring({
+    frame: localFrame,
+    fps,
+    config: SPRING_SNAPPY,
+  });
 
-  // Progreso del escaneo horizontal y de la gráfica inferior (0 -> 1)
-  const scanProgress = interpolate(
-    localFrame,
-    [10, 175],
-    [0.05, 1],
-    CLAMP_EXTRAPOLATION
-  );
-
-  // Coordenada X del escáner sincronizada con la gráfica inferior
-  const trackerX = interpolate(
-    scanProgress,
-    [0.05, 1],
-    [220, 860],
-    CLAMP_EXTRAPOLATION
-  );
-
-  // Escalones de altura según si el escáner pasa por Cresta (x < 430), Poro (430..650) o Valle (> 650)
-  const trackerTopY =
-    trackerX < 430 ? 730 : trackerX < 650 ? 635 : 545;
-  const trackerBottomY =
-    trackerX < 430 ? 1390 : trackerX < 650 ? 1255 : 1125;
+  const authorName = bookMetadata?.author || visualData?.quoteAuthor || 'Cal Newport';
 
   return (
     <div
@@ -74,135 +54,131 @@ export const Scene3: React.FC<Scene3Props> = ({
         width: 1080,
         height: 1920,
         pointerEvents: 'none',
+        padding: '0 96px',
+        boxSizing: 'border-box',
       }}
     >
-      {/* Telemetría de esquina superior */}
-      <CornerHudTelemetry
-        leftLabel="PENETRACIÓN EPIDÉRMICA"
-        leftValue={`${depthCounter} µm`}
-        rightLabel="RESOLUCIÓN TOPOGRÁFICA"
-        rightValue="CRESTA · PORO · VALLE"
-        accentColor="#EF4444"
-        textColor="#FACC15"
-      />
-
-      {/* Encabezado editorial en cursiva serif (Estilo Ref 5: "una placa, muchas exposiciones") */}
+      {/* 1. Titular Limpio (Sin píldora superior) */}
       <div
         style={{
           position: 'absolute',
+          top: 140,
           left: 96,
-          top: 345,
-          pointerEvents: 'none',
-          zIndex: 60,
+          right: 96,
+          opacity: headerEntrance,
+          transform: `translateY(${(1 - headerEntrance) * -20}px)`,
         }}
       >
-        <div
+        <h1
           style={{
-            fontFamily: "Georgia, 'Times New Roman', serif",
-            fontSize: 36,
-            fontWeight: 700,
-            color: '#F5F5F4',
+            fontFamily: "'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif",
+            fontSize: 60,
+            fontWeight: 900,
+            color: '#141413',
+            margin: 0,
+            lineHeight: 1.06,
+            letterSpacing: '-0.035em',
           }}
         >
-          epidermis, en corte acústico
-        </div>
-        <div
-          style={{
-            fontFamily: "Georgia, 'Times New Roman', serif",
-            fontStyle: 'italic',
-            fontSize: 26,
-            color: '#A8A29E',
-          }}
-        >
-          un pulso, tres tiempos de eco distintos
-        </div>
+          {headline}
+        </h1>
       </div>
 
-      {/* Hero Prop 3D CAD: Corte Macro de Crestas, Poros y Valles Epidérmicos */}
-      <HeroPropStage
-        src="assets/props/hero-scene3-epidermis-macro.png"
-        x={520}
-        y={675}
-        size={490}
-        enterFrame={6}
-        localFrame={localFrame}
-        accentColor="#38BDF8"
-        secondaryColor="#F59E0B"
-        scanBeam
-        pulseRings={false}
-        noiseSeed="scene3-epidermis"
-      />
-
-      {/* Escenario dividido: Dianas estroboscópicas + Raíl calibrado divisorio */}
-      <svg
-        width={1080}
-        height={1920}
-        style={{ position: 'absolute', inset: 0, overflow: 'visible', zIndex: 45 }}
+      {/* 2. Circuito Vectorial Animado (VectorLoopCircuit) */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 265,
+          left: 96,
+          right: 96,
+        }}
       >
-        {/* Dianas estroboscópicas (TargetReticle estilo Ref 5) clavadas en Cresta, Poro y Valle */}
-        <TargetReticle
-          x={310}
-          y={730}
-          opacity={0.75}
-          color="#EF4444"
-          label="CRESTA (0 µm)"
+        <VectorLoopCircuit
+          startFrame={enterFrame}
+          accentColor="#D94E34"
+          width={888}
+          height={480}
         />
-        <TargetReticle
-          x={535}
-          y={635}
-          opacity={localFrame >= 55 ? 0.85 : 0.35}
-          color="#EF4444"
-          label="PORO (220 µm)"
-        />
-        <TargetReticle
-          x={745}
-          y={545}
-          opacity={localFrame >= 100 ? 1 : 0.35}
-          color="#EF4444"
-          label="VALLE (400 µm)"
-        />
+      </div>
 
-        {/* Diana móvil activa siguiendo el frente de eco */}
-        <TargetReticle x={trackerX} y={trackerTopY} opacity={1} color="#EF4444" />
+      {/* 3. Tarjeta Cita Célebre Subrayada en KineticCard (Sin píldoras pequeñas) */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 790,
+          left: 96,
+          right: 96,
+        }}
+      >
+        <KineticCard
+          enterFrame={enterFrame + 180}
+          accentBorderColor="#141413"
+          padding="36px 38px"
+          style={{
+            borderLeft: '8px solid #D94E34',
+          }}
+        >
+          <blockquote
+            style={{
+              margin: 0,
+              fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+              fontSize: 36,
+              fontWeight: 800,
+              fontStyle: 'normal',
+              lineHeight: 1.3,
+              letterSpacing: '-0.02em',
+              color: '#141413',
+            }}
+          >
+            «El{' '}
+            <span
+              style={{
+                backgroundColor: 'rgba(217, 78, 52, 0.20)',
+                padding: '2px 8px',
+                borderRadius: 6,
+                color: '#D94E34',
+                fontWeight: 900,
+              }}
+            >
+              trabajo profundo
+            </span>{' '}
+            es el superpoder del siglo XXI: concentrarse{' '}
+            <span
+              style={{
+                backgroundColor: 'rgba(217, 78, 52, 0.20)',
+                padding: '2px 8px',
+                borderRadius: 6,
+                color: '#D94E34',
+                fontWeight: 900,
+              }}
+            >
+              sin distracción
+            </span>
+            .»
+          </blockquote>
 
-        {/* Raíl calibrado divisorio blanco y negro (Idéntico a Ref 5 Palomas) */}
-        <g transform="translate(0, 925)">
-          <rect x={96} y={0} width={888} height={24} fill="#E7E5E4" rx={4} />
-          {Array.from({ length: 12 }, (_, idx) => (
-            <rect
-              key={idx}
-              x={112 + idx * 72}
-              y={5}
-              width={36}
-              height={14}
-              fill="#1C1917"
-            />
-          ))}
-        </g>
-      </svg>
-
-      {/* Regla de acotación vertical de los 400 micrómetros */}
-      <DimensionRuler
-        x1={920}
-        y1={510}
-        x2={920}
-        y2={770}
-        label="400 µm"
-        color="#F59E0B"
-        enterFrame={75}
-      />
-
-      {/* Gráfica de Telemetría en Tiempo Real (Mitad inferior conectada por línea punteada vertical) */}
-      <LiveTelemetryGraph
-        progress={scanProgress}
-        continuousPathD="M 220 1420 L 860 1090"
-        steppedPathD="M 220 1390 L 430 1390 L 430 1255 L 650 1255 L 650 1125 L 860 1125"
-        trackerX={trackerX}
-        trackerTopY={trackerTopY}
-        trackerBottomY={trackerBottomY}
-        primaryLabel="ECO ULTRASÓNICO 3D (ESCALONES Z)"
-        secondaryLabel="SENSOR ÓPTICO 2D (PLANO)"
-      />
+          <div
+            style={{
+              marginTop: 22,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+            }}
+          >
+            <div style={{ width: 36, height: 3, backgroundColor: '#D94E34' }} />
+            <span
+              style={{
+                fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                fontSize: 20,
+                fontWeight: 800,
+                color: '#141413',
+              }}
+            >
+              {authorName}
+            </span>
+          </div>
+        </KineticCard>
+      </div>
     </div>
   );
 };

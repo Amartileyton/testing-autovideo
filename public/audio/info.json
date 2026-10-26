@@ -1,164 +1,276 @@
 {
-  "generatedAt": "2026-10-20T09:12:10.841Z",
+  "generatedAt": "2026-10-26T07:09:38.940Z",
   "voiceId": "RwzBDEn5f6FIgpAjH9YN",
   "voiceName": "Gabriel Blanco (Voz Canónica de Leo)",
   "fps": 30,
   "crossDissolveFrames": 10,
-  "totalDurationInFrames": 865,
-  "totalDurationSeconds": 28.833,
+  "totalDurationInFrames": 2052,
+  "totalDurationSeconds": 68.4,
   "backgroundMusicFile": null,
   "scenes": [
     {
       "id": "scene-1",
       "audioFile": "audio/scene-1.mp3",
       "characterPreset": "dramatic",
-      "actualDuration": 6.504,
-      "durationInFrames": 206,
-      "wordsPerSecond": 3.07,
+      "actualDuration": 14.393,
+      "durationInFrames": 442,
+      "wordsPerSecond": 2.5,
       "leadingSilenceMs": 0,
-      "trailingSilenceMs": 49,
+      "trailingSilenceMs": 43,
       "trimOffsetMs": 0,
       "warnings": [],
       "wordTimestamps": [
         {
-          "word": "Tu",
+          "word": "El",
           "startMs": 0,
-          "endMs": 209,
+          "endMs": 186,
           "startFrame": 0,
-          "endFrame": 7
+          "endFrame": 6
         },
         {
-          "word": "móvil",
-          "startMs": 209,
-          "endMs": 546,
-          "startFrame": 6,
+          "word": "trabajo",
+          "startMs": 186,
+          "endMs": 534,
+          "startFrame": 5,
           "endFrame": 17
         },
         {
-          "word": "no",
-          "startMs": 546,
-          "endMs": 673,
+          "word": "profundo",
+          "startMs": 534,
+          "endMs": 1045,
           "startFrame": 16,
-          "endFrame": 21
+          "endFrame": 32
         },
         {
-          "word": "hace",
-          "startMs": 673,
-          "endMs": 848,
-          "startFrame": 20,
-          "endFrame": 26
+          "word": "es",
+          "startMs": 1045,
+          "endMs": 1231,
+          "startFrame": 31,
+          "endFrame": 37
         },
         {
-          "word": "una",
-          "startMs": 848,
-          "endMs": 1022,
-          "startFrame": 25,
-          "endFrame": 31
+          "word": "el",
+          "startMs": 1231,
+          "endMs": 1358,
+          "startFrame": 36,
+          "endFrame": 41
         },
         {
-          "word": "foto",
-          "startMs": 1022,
-          "endMs": 1277,
-          "startFrame": 30,
-          "endFrame": 39
+          "word": "superpoder",
+          "startMs": 1358,
+          "endMs": 2009,
+          "startFrame": 40,
+          "endFrame": 61
         },
         {
-          "word": "de",
-          "startMs": 1277,
-          "endMs": 1370,
-          "startFrame": 38,
-          "endFrame": 42
-        },
-        {
-          "word": "tu",
-          "startMs": 1370,
-          "endMs": 1509,
-          "startFrame": 41,
-          "endFrame": 46
-        },
-        {
-          "word": "dedo:",
-          "startMs": 1509,
-          "endMs": 1962,
-          "startFrame": 45,
-          "endFrame": 59
-        },
-        {
-          "word": "los",
-          "startMs": 1962,
-          "endMs": 2171,
-          "startFrame": 58,
+          "word": "del",
+          "startMs": 2009,
+          "endMs": 2194,
+          "startFrame": 60,
           "endFrame": 66
         },
         {
-          "word": "antiguos",
-          "startMs": 2171,
-          "endMs": 2659,
+          "word": "siglo",
+          "startMs": 2194,
+          "endMs": 2485,
           "startFrame": 65,
-          "endFrame": 80
+          "endFrame": 75
         },
         {
-          "word": "lectores",
-          "startMs": 2659,
-          "endMs": 3111,
-          "startFrame": 79,
-          "endFrame": 94
+          "word": "veintiuno.",
+          "startMs": 2485,
+          "endMs": 3158,
+          "startFrame": 74,
+          "endFrame": 95
         },
         {
-          "word": "ópticos",
-          "startMs": 3111,
+          "word": ",",
+          "startMs": 3541,
           "endMs": 3669,
-          "startFrame": 93,
+          "startFrame": 106,
           "endFrame": 111
         },
         {
-          "word": "solo",
+          "word": "Cal",
           "startMs": 3669,
-          "endMs": 3959,
+          "endMs": 3971,
           "startFrame": 110,
-          "endFrame": 119
+          "endFrame": 120
         },
         {
-          "word": "proyectaban",
-          "startMs": 3959,
-          "endMs": 4528,
-          "startFrame": 118,
-          "endFrame": 136
-        },
-        {
-          "word": "luz",
-          "startMs": 4528,
-          "endMs": 4772,
-          "startFrame": 135,
+          "word": "Newport",
+          "startMs": 3971,
+          "endMs": 4783,
+          "startFrame": 119,
           "endFrame": 144
         },
         {
-          "word": "plana",
-          "startMs": 4772,
-          "endMs": 5074,
+          "word": "revela",
+          "startMs": 4783,
+          "endMs": 5097,
           "startFrame": 143,
           "endFrame": 153
         },
         {
-          "word": "en",
-          "startMs": 5074,
-          "endMs": 5213,
+          "word": "que",
+          "startMs": 5097,
+          "endMs": 5224,
           "startFrame": 152,
           "endFrame": 157
         },
         {
-          "word": "dos",
-          "startMs": 5213,
-          "endMs": 5410,
+          "word": "concentrarse",
+          "startMs": 5224,
+          "endMs": 5909,
           "startFrame": 156,
-          "endFrame": 163
+          "endFrame": 178
         },
         {
-          "word": "dimensiones.",
-          "startMs": 5410,
-          "endMs": 6455,
-          "startFrame": 162,
-          "endFrame": 194
+          "word": "sin",
+          "startMs": 5909,
+          "endMs": 6084,
+          "startFrame": 177,
+          "endFrame": 183
+        },
+        {
+          "word": "distracciones",
+          "startMs": 6084,
+          "endMs": 6780,
+          "startFrame": 182,
+          "endFrame": 204
+        },
+        {
+          "word": "en",
+          "startMs": 6780,
+          "endMs": 6896,
+          "startFrame": 203,
+          "endFrame": 207
+        },
+        {
+          "word": "tareas",
+          "startMs": 6896,
+          "endMs": 7256,
+          "startFrame": 206,
+          "endFrame": 218
+        },
+        {
+          "word": "exigentes",
+          "startMs": 7256,
+          "endMs": 8104,
+          "startFrame": 217,
+          "endFrame": 244
+        },
+        {
+          "word": "es",
+          "startMs": 8104,
+          "endMs": 8359,
+          "startFrame": 243,
+          "endFrame": 251
+        },
+        {
+          "word": "hoy",
+          "startMs": 8359,
+          "endMs": 8835,
+          "startFrame": 250,
+          "endFrame": 266
+        },
+        {
+          "word": "un",
+          "startMs": 8835,
+          "endMs": 9044,
+          "startFrame": 265,
+          "endFrame": 272
+        },
+        {
+          "word": "activo",
+          "startMs": 9044,
+          "endMs": 9392,
+          "startFrame": 271,
+          "endFrame": 282
+        },
+        {
+          "word": "escaso.",
+          "startMs": 9392,
+          "endMs": 10019,
+          "startFrame": 281,
+          "endFrame": 301
+        },
+        {
+          "word": ",",
+          "startMs": 10716,
+          "endMs": 10867,
+          "startFrame": 321,
+          "endFrame": 327
+        },
+        {
+          "word": "Es",
+          "startMs": 10867,
+          "endMs": 11088,
+          "startFrame": 326,
+          "endFrame": 333
+        },
+        {
+          "word": "la",
+          "startMs": 11088,
+          "endMs": 11192,
+          "startFrame": 332,
+          "endFrame": 336
+        },
+        {
+          "word": "clave",
+          "startMs": 11192,
+          "endMs": 11482,
+          "startFrame": 335,
+          "endFrame": 345
+        },
+        {
+          "word": "para",
+          "startMs": 11482,
+          "endMs": 11668,
+          "startFrame": 344,
+          "endFrame": 351
+        },
+        {
+          "word": "destacar",
+          "startMs": 11668,
+          "endMs": 12144,
+          "startFrame": 350,
+          "endFrame": 365
+        },
+        {
+          "word": "en",
+          "startMs": 12144,
+          "endMs": 12225,
+          "startFrame": 364,
+          "endFrame": 367
+        },
+        {
+          "word": "nuestra",
+          "startMs": 12225,
+          "endMs": 12574,
+          "startFrame": 366,
+          "endFrame": 378
+        },
+        {
+          "word": "economía",
+          "startMs": 12574,
+          "endMs": 13038,
+          "startFrame": 377,
+          "endFrame": 392
+        },
+        {
+          "word": "digital",
+          "startMs": 13038,
+          "endMs": 13456,
+          "startFrame": 391,
+          "endFrame": 404
+        },
+        {
+          "word": "actual.",
+          "startMs": 13456,
+          "endMs": 14350,
+          "startFrame": 403,
+          "endFrame": 431
         }
       ]
     },
@@ -166,265 +278,531 @@
       "id": "scene-2",
       "audioFile": "audio/scene-2.mp3",
       "characterPreset": "narrator",
-      "actualDuration": 7.549,
-      "durationInFrames": 237,
-      "wordsPerSecond": 2.38,
+      "actualDuration": 13.505,
+      "durationInFrames": 416,
+      "wordsPerSecond": 2.67,
       "leadingSilenceMs": 0,
-      "trailingSilenceMs": 26,
+      "trailingSilenceMs": 37,
       "trimOffsetMs": 0,
       "warnings": [],
       "wordTimestamps": [
         {
-          "word": "Bajo",
+          "word": "Mirar",
           "startMs": 0,
-          "endMs": 325,
+          "endMs": 302,
           "startFrame": 0,
           "endFrame": 10
         },
         {
           "word": "el",
-          "startMs": 325,
+          "startMs": 302,
           "endMs": 430,
           "startFrame": 9,
           "endFrame": 13
         },
         {
-          "word": "cristal,",
+          "word": "móvil",
           "startMs": 430,
-          "endMs": 1207,
+          "endMs": 778,
           "startFrame": 12,
-          "endFrame": 37
+          "endFrame": 24
+        },
+        {
+          "word": "solo",
+          "startMs": 778,
+          "endMs": 1022,
+          "startFrame": 23,
+          "endFrame": 31
+        },
+        {
+          "word": "una",
+          "startMs": 1022,
+          "endMs": 1184,
+          "startFrame": 30,
+          "endFrame": 36
+        },
+        {
+          "word": "vez",
+          "startMs": 1184,
+          "endMs": 1591,
+          "startFrame": 35,
+          "endFrame": 48
+        },
+        {
+          "word": "genera",
+          "startMs": 1591,
+          "endMs": 1974,
+          "startFrame": 47,
+          "endFrame": 60
         },
         {
           "word": "un",
-          "startMs": 1207,
-          "endMs": 1358,
-          "startFrame": 36,
-          "endFrame": 41
+          "startMs": 1974,
+          "endMs": 2136,
+          "startFrame": 59,
+          "endFrame": 65
         },
         {
-          "word": "transductor",
-          "startMs": 1358,
-          "endMs": 1916,
-          "startFrame": 40,
-          "endFrame": 58
+          "word": "residuo",
+          "startMs": 2136,
+          "endMs": 2577,
+          "startFrame": 64,
+          "endFrame": 78
         },
         {
-          "word": "dispara",
-          "startMs": 1916,
-          "endMs": 2403,
-          "startFrame": 57,
-          "endFrame": 73
+          "word": "de",
+          "startMs": 2577,
+          "endMs": 2670,
+          "startFrame": 77,
+          "endFrame": 81
         },
         {
-          "word": "ondas",
-          "startMs": 2403,
-          "endMs": 2798,
-          "startFrame": 72,
-          "endFrame": 84
-        },
-        {
-          "word": "ultrasónicas",
-          "startMs": 2798,
-          "endMs": 3599,
-          "startFrame": 83,
-          "endFrame": 108
-        },
-        {
-          "word": "a",
-          "startMs": 3599,
-          "endMs": 3727,
-          "startFrame": 107,
-          "endFrame": 112
-        },
-        {
-          "word": "veinte",
-          "startMs": 3727,
-          "endMs": 4052,
-          "startFrame": 111,
-          "endFrame": 122
-        },
-        {
-          "word": "megahercios",
-          "startMs": 4052,
-          "endMs": 4934,
-          "startFrame": 121,
-          "endFrame": 149
+          "word": "atención",
+          "startMs": 2670,
+          "endMs": 3413,
+          "startFrame": 80,
+          "endFrame": 103
         },
         {
           "word": "que",
-          "startMs": 4934,
-          "endMs": 5074,
-          "startFrame": 148,
-          "endFrame": 153
+          "startMs": 3413,
+          "endMs": 3599,
+          "startFrame": 102,
+          "endFrame": 108
         },
         {
-          "word": "atraviesan",
-          "startMs": 5074,
-          "endMs": 5550,
-          "startFrame": 152,
-          "endFrame": 167
+          "word": "reduce",
+          "startMs": 3599,
+          "endMs": 3994,
+          "startFrame": 107,
+          "endFrame": 120
         },
         {
-          "word": "la",
-          "startMs": 5550,
-          "endMs": 5666,
-          "startFrame": 166,
-          "endFrame": 170
+          "word": "tu",
+          "startMs": 3994,
+          "endMs": 4122,
+          "startFrame": 119,
+          "endFrame": 124
         },
         {
-          "word": "pantalla",
-          "startMs": 5666,
-          "endMs": 6130,
-          "startFrame": 169,
-          "endFrame": 184
+          "word": "coeficiente",
+          "startMs": 4122,
+          "endMs": 4690,
+          "startFrame": 123,
+          "endFrame": 141
         },
         {
-          "word": "sin",
-          "startMs": 6130,
-          "endMs": 6316,
-          "startFrame": 183,
-          "endFrame": 190
+          "word": "intelectual",
+          "startMs": 4690,
+          "endMs": 5399,
+          "startFrame": 140,
+          "endFrame": 162
         },
         {
-          "word": "usar",
-          "startMs": 6316,
-          "endMs": 6606,
-          "startFrame": 189,
-          "endFrame": 199
+          "word": "en",
+          "startMs": 5399,
+          "endMs": 5619,
+          "startFrame": 161,
+          "endFrame": 169
         },
         {
-          "word": "luz.",
-          "startMs": 6606,
-          "endMs": 7523,
-          "startFrame": 198,
-          "endFrame": 226
+          "word": "un",
+          "startMs": 5619,
+          "endMs": 5724,
+          "startFrame": 168,
+          "endFrame": 172
+        },
+        {
+          "word": "cuarenta",
+          "startMs": 5724,
+          "endMs": 6165,
+          "startFrame": 171,
+          "endFrame": 185
+        },
+        {
+          "word": "por",
+          "startMs": 6165,
+          "endMs": 6339,
+          "startFrame": 184,
+          "endFrame": 191
+        },
+        {
+          "word": "ciento.",
+          "startMs": 6339,
+          "endMs": 6978,
+          "startFrame": 190,
+          "endFrame": 210
+        },
+        {
+          "word": ",",
+          "startMs": 7419,
+          "endMs": 7558,
+          "startFrame": 222,
+          "endFrame": 227
+        },
+        {
+          "word": "La",
+          "startMs": 7558,
+          "endMs": 7721,
+          "startFrame": 226,
+          "endFrame": 232
+        },
+        {
+          "word": "multitarea",
+          "startMs": 7721,
+          "endMs": 8290,
+          "startFrame": 231,
+          "endFrame": 249
+        },
+        {
+          "word": "constante",
+          "startMs": 8290,
+          "endMs": 8847,
+          "startFrame": 248,
+          "endFrame": 266
+        },
+        {
+          "word": "fragmenta",
+          "startMs": 8847,
+          "endMs": 9358,
+          "startFrame": 265,
+          "endFrame": 281
+        },
+        {
+          "word": "tus",
+          "startMs": 9358,
+          "endMs": 9578,
+          "startFrame": 280,
+          "endFrame": 288
+        },
+        {
+          "word": "neuronas",
+          "startMs": 9578,
+          "endMs": 10298,
+          "startFrame": 287,
+          "endFrame": 309
+        },
+        {
+          "word": "y",
+          "startMs": 10298,
+          "endMs": 10449,
+          "startFrame": 308,
+          "endFrame": 314
+        },
+        {
+          "word": "destruye",
+          "startMs": 10449,
+          "endMs": 10902,
+          "startFrame": 313,
+          "endFrame": 328
+        },
+        {
+          "word": "tu",
+          "startMs": 10902,
+          "endMs": 11018,
+          "startFrame": 327,
+          "endFrame": 331
+        },
+        {
+          "word": "capacidad",
+          "startMs": 11018,
+          "endMs": 11517,
+          "startFrame": 330,
+          "endFrame": 346
+        },
+        {
+          "word": "de",
+          "startMs": 11517,
+          "endMs": 11622,
+          "startFrame": 345,
+          "endFrame": 349
+        },
+        {
+          "word": "crear",
+          "startMs": 11622,
+          "endMs": 11935,
+          "startFrame": 348,
+          "endFrame": 359
+        },
+        {
+          "word": "valor",
+          "startMs": 11935,
+          "endMs": 12260,
+          "startFrame": 358,
+          "endFrame": 368
+        },
+        {
+          "word": "real.",
+          "startMs": 12260,
+          "endMs": 13468,
+          "startFrame": 367,
+          "endFrame": 405
         }
       ]
     },
     {
       "id": "scene-3",
       "audioFile": "audio/scene-3.mp3",
-      "characterPreset": "narrator",
-      "actualDuration": 6.818,
-      "durationInFrames": 215,
-      "wordsPerSecond": 2.35,
+      "characterPreset": "expert",
+      "actualDuration": 14.237,
+      "durationInFrames": 438,
+      "wordsPerSecond": 2.53,
       "leadingSilenceMs": 0,
-      "trailingSilenceMs": 38,
+      "trailingSilenceMs": 27,
       "trimOffsetMs": 0,
       "warnings": [],
       "wordTimestamps": [
         {
-          "word": "El",
+          "word": "Tu",
           "startMs": 0,
-          "endMs": 197,
+          "endMs": 163,
           "startFrame": 0,
-          "endFrame": 6
+          "endFrame": 5
         },
         {
-          "word": "eco",
-          "startMs": 197,
-          "endMs": 395,
-          "startFrame": 5,
-          "endFrame": 12
+          "word": "producción",
+          "startMs": 163,
+          "endMs": 778,
+          "startFrame": 4,
+          "endFrame": 24
         },
         {
-          "word": "rebota",
-          "startMs": 395,
-          "endMs": 743,
-          "startFrame": 11,
-          "endFrame": 23
+          "word": "es",
+          "startMs": 778,
+          "endMs": 975,
+          "startFrame": 23,
+          "endFrame": 30
         },
         {
-          "word": "distinto",
-          "startMs": 743,
-          "endMs": 1219,
-          "startFrame": 22,
-          "endFrame": 37
+          "word": "igual",
+          "startMs": 975,
+          "endMs": 1242,
+          "startFrame": 29,
+          "endFrame": 38
         },
         {
-          "word": "en",
-          "startMs": 1219,
-          "endMs": 1324,
-          "startFrame": 36,
-          "endFrame": 40
+          "word": "al",
+          "startMs": 1242,
+          "endMs": 1335,
+          "startFrame": 37,
+          "endFrame": 41
         },
         {
-          "word": "cada",
-          "startMs": 1324,
-          "endMs": 1556,
-          "startFrame": 39,
-          "endFrame": 47
+          "word": "tiempo",
+          "startMs": 1335,
+          "endMs": 1672,
+          "startFrame": 40,
+          "endFrame": 51
         },
         {
-          "word": "cresta,",
-          "startMs": 1556,
-          "endMs": 2101,
-          "startFrame": 46,
-          "endFrame": 64
-        },
-        {
-          "word": "poro",
-          "startMs": 2101,
+          "word": "multiplicado",
+          "startMs": 1672,
           "endMs": 2426,
-          "startFrame": 63,
+          "startFrame": 50,
           "endFrame": 73
         },
         {
-          "word": "y",
+          "word": "por",
           "startMs": 2426,
-          "endMs": 2519,
+          "endMs": 2612,
           "startFrame": 72,
-          "endFrame": 76
+          "endFrame": 79
         },
         {
-          "word": "valle",
-          "startMs": 2519,
-          "endMs": 2763,
-          "startFrame": 75,
-          "endFrame": 83
+          "word": "la",
+          "startMs": 2612,
+          "endMs": 2717,
+          "startFrame": 78,
+          "endFrame": 82
         },
         {
-          "word": "epidérmico",
-          "startMs": 2763,
-          "endMs": 3576,
-          "startFrame": 82,
-          "endFrame": 108
-        },
-        {
-          "word": "hasta",
-          "startMs": 3576,
-          "endMs": 3947,
-          "startFrame": 107,
-          "endFrame": 119
-        },
-        {
-          "word": "cuatrocientos",
-          "startMs": 3947,
-          "endMs": 4679,
-          "startFrame": 118,
-          "endFrame": 141
-        },
-        {
-          "word": "micrómetros",
-          "startMs": 4679,
-          "endMs": 5294,
-          "startFrame": 140,
-          "endFrame": 159
+          "word": "intensidad",
+          "startMs": 2717,
+          "endMs": 3320,
+          "startFrame": 81,
+          "endFrame": 100
         },
         {
           "word": "de",
-          "startMs": 5294,
-          "endMs": 5399,
-          "startFrame": 158,
-          "endFrame": 162
+          "startMs": 3320,
+          "endMs": 3390,
+          "startFrame": 99,
+          "endFrame": 102
         },
         {
-          "word": "profundidad.",
-          "startMs": 5399,
-          "endMs": 6780,
-          "startFrame": 161,
-          "endFrame": 204
+          "word": "enfoque.",
+          "startMs": 3390,
+          "endMs": 4412,
+          "startFrame": 101,
+          "endFrame": 133
+        },
+        {
+          "word": ",",
+          "startMs": 4412,
+          "endMs": 4586,
+          "startFrame": 132,
+          "endFrame": 138
+        },
+        {
+          "word": "Con",
+          "startMs": 4586,
+          "endMs": 4830,
+          "startFrame": 137,
+          "endFrame": 145
+        },
+        {
+          "word": "cuatro",
+          "startMs": 4830,
+          "endMs": 5178,
+          "startFrame": 144,
+          "endFrame": 156
+        },
+        {
+          "word": "horas",
+          "startMs": 5178,
+          "endMs": 5538,
+          "startFrame": 155,
+          "endFrame": 167
+        },
+        {
+          "word": "reales",
+          "startMs": 5538,
+          "endMs": 5909,
+          "startFrame": 166,
+          "endFrame": 178
+        },
+        {
+          "word": "de",
+          "startMs": 5909,
+          "endMs": 6002,
+          "startFrame": 177,
+          "endFrame": 181
+        },
+        {
+          "word": "trabajo",
+          "startMs": 6002,
+          "endMs": 6397,
+          "startFrame": 180,
+          "endFrame": 192
+        },
+        {
+          "word": "profundo,",
+          "startMs": 6397,
+          "endMs": 7117,
+          "startFrame": 191,
+          "endFrame": 214
+        },
+        {
+          "word": "puedes",
+          "startMs": 7117,
+          "endMs": 7442,
+          "startFrame": 213,
+          "endFrame": 224
+        },
+        {
+          "word": "multiplicar",
+          "startMs": 7442,
+          "endMs": 8069,
+          "startFrame": 223,
+          "endFrame": 243
+        },
+        {
+          "word": "tu",
+          "startMs": 8069,
+          "endMs": 8208,
+          "startFrame": 242,
+          "endFrame": 247
+        },
+        {
+          "word": "rendimiento",
+          "startMs": 8208,
+          "endMs": 8916,
+          "startFrame": 246,
+          "endFrame": 268
+        },
+        {
+          "word": "hasta",
+          "startMs": 8916,
+          "endMs": 9253,
+          "startFrame": 267,
+          "endFrame": 278
+        },
+        {
+          "word": "cinco",
+          "startMs": 9253,
+          "endMs": 9601,
+          "startFrame": 277,
+          "endFrame": 289
+        },
+        {
+          "word": "veces.",
+          "startMs": 9601,
+          "endMs": 10217,
+          "startFrame": 288,
+          "endFrame": 307
+        },
+        {
+          "word": ",",
+          "startMs": 10913,
+          "endMs": 11064,
+          "startFrame": 327,
+          "endFrame": 332
+        },
+        {
+          "word": "Es",
+          "startMs": 11064,
+          "endMs": 11285,
+          "startFrame": 331,
+          "endFrame": 339
+        },
+        {
+          "word": "la",
+          "startMs": 11285,
+          "endMs": 11389,
+          "startFrame": 338,
+          "endFrame": 342
+        },
+        {
+          "word": "diferencia",
+          "startMs": 11389,
+          "endMs": 11912,
+          "startFrame": 341,
+          "endFrame": 358
+        },
+        {
+          "word": "entre",
+          "startMs": 11912,
+          "endMs": 12190,
+          "startFrame": 357,
+          "endFrame": 366
+        },
+        {
+          "word": "ser",
+          "startMs": 12190,
+          "endMs": 12423,
+          "startFrame": 365,
+          "endFrame": 373
+        },
+        {
+          "word": "promedio",
+          "startMs": 12423,
+          "endMs": 12980,
+          "startFrame": 372,
+          "endFrame": 390
+        },
+        {
+          "word": "o",
+          "startMs": 12980,
+          "endMs": 13096,
+          "startFrame": 389,
+          "endFrame": 393
+        },
+        {
+          "word": "extraordinario.",
+          "startMs": 13096,
+          "endMs": 14210,
+          "startFrame": 392,
+          "endFrame": 427
         }
       ]
     },
@@ -432,120 +810,524 @@
       "id": "scene-4",
       "audioFile": "audio/scene-4.mp3",
       "characterPreset": "narrator",
-      "actualDuration": 7.549,
-      "durationInFrames": 237,
-      "wordsPerSecond": 1.99,
+      "actualDuration": 13.819,
+      "durationInFrames": 425,
+      "wordsPerSecond": 2.53,
       "leadingSilenceMs": 0,
-      "trailingSilenceMs": 26,
+      "trailingSilenceMs": 27,
       "trimOffsetMs": 0,
-      "warnings": [
-        "⚠️ Ritmo de habla en \"scene-4\": 1.99 palabras/s (rango recomendado 2.0 - 4.5 palabras/s)."
-      ],
+      "warnings": [],
       "wordTimestamps": [
         {
-          "word": "El",
+          "word": "Primero,",
           "startMs": 0,
-          "endMs": 221,
+          "endMs": 731,
           "startFrame": 0,
-          "endFrame": 7
+          "endFrame": 22
         },
         {
-          "word": "procesador",
-          "startMs": 221,
-          "endMs": 1080,
-          "startFrame": 6,
-          "endFrame": 33
+          "word": "blinda",
+          "startMs": 731,
+          "endMs": 1103,
+          "startFrame": 21,
+          "endFrame": 34
         },
         {
-          "word": "reconstruye",
-          "startMs": 1080,
-          "endMs": 1707,
-          "startFrame": 32,
-          "endFrame": 52
+          "word": "bloques",
+          "startMs": 1103,
+          "endMs": 1463,
+          "startFrame": 33,
+          "endFrame": 44
         },
         {
-          "word": "tu",
-          "startMs": 1707,
-          "endMs": 1834,
-          "startFrame": 51,
-          "endFrame": 56
+          "word": "de",
+          "startMs": 1463,
+          "endMs": 1556,
+          "startFrame": 43,
+          "endFrame": 47
         },
         {
-          "word": "mapa",
-          "startMs": 1834,
-          "endMs": 2101,
-          "startFrame": 55,
-          "endFrame": 64
+          "word": "noventa",
+          "startMs": 1556,
+          "endMs": 1916,
+          "startFrame": 46,
+          "endFrame": 58
         },
         {
-          "word": "biométrico",
-          "startMs": 2101,
-          "endMs": 2717,
-          "startFrame": 63,
-          "endFrame": 82
+          "word": "minutos",
+          "startMs": 1916,
+          "endMs": 2322,
+          "startFrame": 57,
+          "endFrame": 70
         },
         {
-          "word": "tridimensional",
-          "startMs": 2717,
-          "endMs": 3692,
-          "startFrame": 81,
-          "endFrame": 111
+          "word": "sin",
+          "startMs": 2322,
+          "endMs": 2496,
+          "startFrame": 69,
+          "endFrame": 75
         },
         {
-          "word": "y",
-          "startMs": 3692,
-          "endMs": 3855,
-          "startFrame": 110,
-          "endFrame": 116
+          "word": "notificaciones.",
+          "startMs": 2496,
+          "endMs": 3646,
+          "startFrame": 74,
+          "endFrame": 110
         },
         {
-          "word": "desbloquea",
-          "startMs": 3855,
-          "endMs": 4365,
-          "startFrame": 115,
-          "endFrame": 131
+          "word": ",",
+          "startMs": 3646,
+          "endMs": 3796,
+          "startFrame": 109,
+          "endFrame": 114
+        },
+        {
+          "word": "Segundo,",
+          "startMs": 3796,
+          "endMs": 4609,
+          "startFrame": 113,
+          "endFrame": 139
+        },
+        {
+          "word": "abraza",
+          "startMs": 4609,
+          "endMs": 4981,
+          "startFrame": 138,
+          "endFrame": 150
         },
         {
           "word": "el",
-          "startMs": 4365,
-          "endMs": 4493,
-          "startFrame": 130,
-          "endFrame": 135
+          "startMs": 4981,
+          "endMs": 5074,
+          "startFrame": 149,
+          "endFrame": 153
         },
         {
-          "word": "sistema",
-          "startMs": 4493,
-          "endMs": 5004,
-          "startFrame": 134,
-          "endFrame": 151
+          "word": "aburrimiento",
+          "startMs": 5074,
+          "endMs": 5759,
+          "startFrame": 152,
+          "endFrame": 173
+        },
+        {
+          "word": "y",
+          "startMs": 5759,
+          "endMs": 5898,
+          "startFrame": 172,
+          "endFrame": 177
+        },
+        {
+          "word": "no",
+          "startMs": 5898,
+          "endMs": 6037,
+          "startFrame": 176,
+          "endFrame": 182
+        },
+        {
+          "word": "mires",
+          "startMs": 6037,
+          "endMs": 6316,
+          "startFrame": 181,
+          "endFrame": 190
+        },
+        {
+          "word": "el",
+          "startMs": 6316,
+          "endMs": 6455,
+          "startFrame": 189,
+          "endFrame": 194
+        },
+        {
+          "word": "móvil",
+          "startMs": 6455,
+          "endMs": 6757,
+          "startFrame": 193,
+          "endFrame": 203
+        },
+        {
+          "word": "al",
+          "startMs": 6757,
+          "endMs": 6861,
+          "startFrame": 202,
+          "endFrame": 206
+        },
+        {
+          "word": "esperar.",
+          "startMs": 6861,
+          "endMs": 7616,
+          "startFrame": 205,
+          "endFrame": 229
+        },
+        {
+          "word": ",",
+          "startMs": 7616,
+          "endMs": 7755,
+          "startFrame": 228,
+          "endFrame": 233
+        },
+        {
+          "word": "Tercero,",
+          "startMs": 7755,
+          "endMs": 8464,
+          "startFrame": 232,
+          "endFrame": 254
+        },
+        {
+          "word": "elimina",
+          "startMs": 8464,
+          "endMs": 8916,
+          "startFrame": 253,
+          "endFrame": 268
+        },
+        {
+          "word": "redes",
+          "startMs": 8916,
+          "endMs": 9183,
+          "startFrame": 267,
+          "endFrame": 276
+        },
+        {
+          "word": "sociales",
+          "startMs": 9183,
+          "endMs": 9683,
+          "startFrame": 275,
+          "endFrame": 291
+        },
+        {
+          "word": "que",
+          "startMs": 9683,
+          "endMs": 9845,
+          "startFrame": 290,
+          "endFrame": 296
+        },
+        {
+          "word": "roban",
+          "startMs": 9845,
+          "endMs": 10170,
+          "startFrame": 295,
+          "endFrame": 306
+        },
+        {
+          "word": "tu",
+          "startMs": 10170,
+          "endMs": 10286,
+          "startFrame": 305,
+          "endFrame": 309
+        },
+        {
+          "word": "atención",
+          "startMs": 10286,
+          "endMs": 10902,
+          "startFrame": 308,
+          "endFrame": 328
+        },
+        {
+          "word": "y",
+          "startMs": 10902,
+          "endMs": 11053,
+          "startFrame": 327,
+          "endFrame": 332
+        },
+        {
+          "word": "finalmente,",
+          "startMs": 11053,
+          "endMs": 11970,
+          "startFrame": 331,
+          "endFrame": 360
+        },
+        {
+          "word": "drena",
+          "startMs": 11970,
+          "endMs": 12388,
+          "startFrame": 359,
+          "endFrame": 372
+        },
+        {
+          "word": "todo",
+          "startMs": 12388,
+          "endMs": 12666,
+          "startFrame": 371,
+          "endFrame": 380
+        },
+        {
+          "word": "lo",
+          "startMs": 12666,
+          "endMs": 12771,
+          "startFrame": 379,
+          "endFrame": 384
+        },
+        {
+          "word": "superficial.",
+          "startMs": 12771,
+          "endMs": 13792,
+          "startFrame": 383,
+          "endFrame": 414
+        }
+      ]
+    },
+    {
+      "id": "scene-5",
+      "audioFile": "audio/scene-5.mp3",
+      "characterPreset": "conversational",
+      "actualDuration": 12.016,
+      "durationInFrames": 371,
+      "wordsPerSecond": 3,
+      "leadingSilenceMs": 0,
+      "trailingSilenceMs": 35,
+      "trimOffsetMs": 0,
+      "warnings": [],
+      "wordTimestamps": [
+        {
+          "word": "Quien",
+          "startMs": 0,
+          "endMs": 267,
+          "startFrame": 0,
+          "endFrame": 9
+        },
+        {
+          "word": "eres",
+          "startMs": 267,
+          "endMs": 511,
+          "startFrame": 8,
+          "endFrame": 16
+        },
+        {
+          "word": "y",
+          "startMs": 511,
+          "endMs": 580,
+          "startFrame": 15,
+          "endFrame": 18
+        },
+        {
+          "word": "lo",
+          "startMs": 580,
+          "endMs": 685,
+          "startFrame": 17,
+          "endFrame": 21
+        },
+        {
+          "word": "que",
+          "startMs": 685,
+          "endMs": 789,
+          "startFrame": 20,
+          "endFrame": 24
+        },
+        {
+          "word": "logras",
+          "startMs": 789,
+          "endMs": 1184,
+          "startFrame": 23,
+          "endFrame": 36
+        },
+        {
+          "word": "es",
+          "startMs": 1184,
+          "endMs": 1370,
+          "startFrame": 35,
+          "endFrame": 42
+        },
+        {
+          "word": "la",
+          "startMs": 1370,
+          "endMs": 1498,
+          "startFrame": 41,
+          "endFrame": 45
+        },
+        {
+          "word": "suma",
+          "startMs": 1498,
+          "endMs": 1765,
+          "startFrame": 44,
+          "endFrame": 53
+        },
+        {
+          "word": "de",
+          "startMs": 1765,
+          "endMs": 1869,
+          "startFrame": 52,
+          "endFrame": 57
+        },
+        {
+          "word": "aquello",
+          "startMs": 1869,
+          "endMs": 2229,
+          "startFrame": 56,
+          "endFrame": 67
         },
         {
           "word": "en",
-          "startMs": 5004,
-          "endMs": 5166,
-          "startFrame": 150,
-          "endFrame": 155
+          "startMs": 2229,
+          "endMs": 2310,
+          "startFrame": 66,
+          "endFrame": 70
         },
         {
-          "word": "apenas",
-          "startMs": 5166,
-          "endMs": 5642,
-          "startFrame": 154,
-          "endFrame": 170
+          "word": "lo",
+          "startMs": 2310,
+          "endMs": 2426,
+          "startFrame": 69,
+          "endFrame": 73
         },
         {
-          "word": "veinticinco",
-          "startMs": 5642,
-          "endMs": 6397,
-          "startFrame": 169,
-          "endFrame": 192
+          "word": "que",
+          "startMs": 2426,
+          "endMs": 2543,
+          "startFrame": 72,
+          "endFrame": 77
         },
         {
-          "word": "milisegundos.",
-          "startMs": 6397,
-          "endMs": 7523,
-          "startFrame": 191,
-          "endFrame": 226
+          "word": "decides",
+          "startMs": 2543,
+          "endMs": 2984,
+          "startFrame": 76,
+          "endFrame": 90
+        },
+        {
+          "word": "concentrarte.",
+          "startMs": 2984,
+          "endMs": 3901,
+          "startFrame": 89,
+          "endFrame": 118
+        },
+        {
+          "word": ",",
+          "startMs": 4714,
+          "endMs": 4841,
+          "startFrame": 141,
+          "endFrame": 146
+        },
+        {
+          "word": "Destierra",
+          "startMs": 4841,
+          "endMs": 5375,
+          "startFrame": 145,
+          "endFrame": 162
+        },
+        {
+          "word": "tu",
+          "startMs": 5375,
+          "endMs": 5480,
+          "startFrame": 161,
+          "endFrame": 165
+        },
+        {
+          "word": "adicción",
+          "startMs": 5480,
+          "endMs": 5909,
+          "startFrame": 164,
+          "endFrame": 178
+        },
+        {
+          "word": "a",
+          "startMs": 5909,
+          "endMs": 5968,
+          "startFrame": 177,
+          "endFrame": 180
+        },
+        {
+          "word": "la",
+          "startMs": 5968,
+          "endMs": 6072,
+          "startFrame": 179,
+          "endFrame": 183
+        },
+        {
+          "word": "distracción",
+          "startMs": 6072,
+          "endMs": 6745,
+          "startFrame": 182,
+          "endFrame": 203
+        },
+        {
+          "word": "hoy",
+          "startMs": 6745,
+          "endMs": 6966,
+          "startFrame": 202,
+          "endFrame": 209
+        },
+        {
+          "word": "mismo.",
+          "startMs": 6966,
+          "endMs": 7500,
+          "startFrame": 208,
+          "endFrame": 225
+        },
+        {
+          "word": ",",
+          "startMs": 8197,
+          "endMs": 8382,
+          "startFrame": 245,
+          "endFrame": 252
+        },
+        {
+          "word": "Aplica",
+          "startMs": 8382,
+          "endMs": 8835,
+          "startFrame": 251,
+          "endFrame": 266
+        },
+        {
+          "word": "estas",
+          "startMs": 8835,
+          "endMs": 9114,
+          "startFrame": 265,
+          "endFrame": 274
+        },
+        {
+          "word": "reglas",
+          "startMs": 9114,
+          "endMs": 9509,
+          "startFrame": 273,
+          "endFrame": 286
+        },
+        {
+          "word": "y",
+          "startMs": 9509,
+          "endMs": 9578,
+          "startFrame": 285,
+          "endFrame": 288
+        },
+        {
+          "word": "transforma",
+          "startMs": 9578,
+          "endMs": 10136,
+          "startFrame": 287,
+          "endFrame": 305
+        },
+        {
+          "word": "tu",
+          "startMs": 10136,
+          "endMs": 10240,
+          "startFrame": 304,
+          "endFrame": 308
+        },
+        {
+          "word": "vida",
+          "startMs": 10240,
+          "endMs": 10449,
+          "startFrame": 307,
+          "endFrame": 314
+        },
+        {
+          "word": "profesional",
+          "startMs": 10449,
+          "endMs": 11029,
+          "startFrame": 313,
+          "endFrame": 331
+        },
+        {
+          "word": "para",
+          "startMs": 11029,
+          "endMs": 11250,
+          "startFrame": 330,
+          "endFrame": 338
+        },
+        {
+          "word": "siempre.",
+          "startMs": 11250,
+          "endMs": 11981,
+          "startFrame": 337,
+          "endFrame": 360
         }
       ]
     }

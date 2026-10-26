@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 /**
  * scripts/elevenlabs-sync.mjs
- * Motor Exclusivo ElevenLabs y Sincronización Audio-First para Remotion (con integración TrendForge).
+ * Motor Exclusivo ElevenLabs y Sincronización Audio-First para Remotion (Voz Oficial de Leo).
  *
  * Flujo:
  * 1. Lee .env (ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID) y src/data/scenes.json.
- * 2. Usa por defecto la Voz Canónica de TrendForge: "RwzBDEn5f6FIgpAjH9YN" (Gabriel Blanco — Voz Canónica de Leo)
- *    con su afinación calibrada (stability: 0.70, similarity_boost: 0.75, style: 0.05, use_speaker_boost: true),
- *    o cualquiera de los CURATED_VOICE_PROFILES de Leo.
- * 3. Preprocesa el texto con preprocessForTts() (de TrendForge): limpia acotaciones de cámara,
+ * 2. Usa por defecto la Voz Canónica de Leo: "RwzBDEn5f6FIgpAjH9YN" (Gabriel Blanco — Voz Canónica de Leo)
+ *    o el motor neural local de Leo (es-ES-AlvaroNeural vía edge-tts),
+ *    con su afinación calibrada (stability: 0.70, similarity_boost: 0.75, style: 0.05, use_speaker_boost: true).
+ * 3. Preprocesa el texto con preprocessForTts(): limpia acotaciones de cámara,
  *    backticks de código y convierte [PAUSA X.Xs] en pausas prosódicas naturales (... o ,).
  * 4. Llama a POST https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/with-timestamps?output_format=mp3_44100_128
- *    con Request Stitching (previous_text, next_text y previous_request_ids).
+ *    con Request Stitching (previous_text, next_text y previous_request_ids) o delega al motor neural local de Leo.
  * 5. Decodifica audio_base64 en public/audio/${scene.id}.mp3.
- * 6. Convierte alignment usando la cadencia continua de TrendForge (alignmentParser):
+ * 6. Convierte alignment usando la cadencia continua de Leo (alignmentParser):
  *    el final de cada palabra enlaza con el tStart del espacio siguiente para eliminar micro-cortes.
  * 7. Ejecuta ffprobe sobre cada MP3 para medir actualDuration y audita ritmo (2.0-4.5 palabras/s)
  *    y silencios (leadingSilence > 200ms, trailingSilence > 500ms).
@@ -52,12 +52,12 @@ const FFPROBE_BIN = fs.existsSync(path.join(REMOTION_COMPOSITOR_DIR, 'ffprobe.ex
   : 'ffprobe';
 
 /**
- * Voz Canónica reciclada de TrendForge: Gabriel Blanco (Voz Canónica de Leo)
+ * Voz Canónica de Leo: Gabriel Blanco (Voz Canónica de Leo)
  */
 export const CANONICAL_VOICE_ID = 'RwzBDEn5f6FIgpAjH9YN';
 
 /**
- * Catálogo curado de perfiles de voz de TrendForge (core/tts.py)
+ * Catálogo curado de perfiles de voz de Leo (core/tts.py)
  */
 export const CURATED_VOICE_PROFILES = {
   RwzBDEn5f6FIgpAjH9YN: {
@@ -107,7 +107,7 @@ export const CURATED_VOICE_PROFILES = {
 };
 
 /**
- * Mapa oficial de Presets de Carácter -> voice_settings calibrados sobre la Voz Canónica de TrendForge
+ * Mapa oficial de Presets de Carácter -> voice_settings calibrados sobre la Voz Canónica de Leo
  */
 export const CHARACTER_PRESETS = {
   narrator: {
@@ -144,7 +144,6 @@ export const CHARACTER_PRESETS = {
 
 /**
  * Convierte marcadores [PAUSA], [PAUSA 0.4s], [PAUSA: 0.5s] en pausas prosódicas naturales (... o ,).
- * Portado directamente de TrendForge (core/llm.py).
  */
 export function cleanPauseMarkers(text, replaceWithPunctuation = true) {
   if (!text) return '';
@@ -168,34 +167,24 @@ export function cleanPauseMarkers(text, replaceWithPunctuation = true) {
 
 /**
  * Preprocesa el texto de locución antes de enviarlo a ElevenLabs.
- * Portado directamente de TrendForge (core/llm.py & web/app.py).
  */
 export function preprocessForTts(text) {
   if (!text) return '';
-  // 0. Eliminar encabezados meta o blockquotes (> ...)
   let cleaned = text.replace(/^\s*>[^\n]*\n?/gm, '').trim();
   cleaned = cleaned.replace(/^(?:>\s*)?Texto de locución[^\n]*\n?/i, '').trim();
-  // 1. Eliminar acotaciones de cámara y producción
   cleaned = cleaned.replace(
     /\[(?:LEO BUSTO|SCREENCAST|CORTE|ZOOM|PANTALLA|PLANO)[^\]]*\]/gi,
     ''
   );
-  // 2. Transformar [PAUSA...] en puntuación prosódica natural
   cleaned = cleanPauseMarkers(cleaned, true);
-  // 3. Eliminar cualquier corchete residual o backtick de código para evitar lectura literal
   cleaned = cleaned.replace(/\[[^\]]{1,60}\]/g, '');
   cleaned = cleaned.replace(/`+/g, '');
-  // 4. Normalizar espacios
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
   return cleaned;
 }
 
 /**
  * Convierte el objeto alignment por carácter de ElevenLabs en wordTimestamps palabra por palabra.
- * Integra la mejora de cadencia de TrendForge (remotion-studio/src/utils/alignmentParser.ts):
- * cuando se alcanza un espacio en blanco en el índice i, el final de la palabra (wordEndSec)
- * toma starts[i] (el inicio del espacio) en lugar del final del carácter previo, eliminando
- * micro-huecos entre palabras consecutivas y evitando parpadeos.
  */
 export function buildWordTimestamps(alignment, fps, trimOffsetMs = 0) {
   if (
@@ -229,8 +218,6 @@ export function buildWordTimestamps(alignment, fps, trimOffsetMs = 0) {
 
     if (/\s/.test(ch)) {
       if (currentWord.length > 0 && wordStartSec !== null) {
-        // Cadencia TrendForge: enlazamos el final de la palabra con el final del espacio (e)
-        // cuando es una transición normal entre palabras (<= 350ms), eliminando micro-huecos
         const spaceBridgeSec = e - s <= 0.35 ? e : s;
         const continuousEndSec = Math.max(wordEndSec ?? s, spaceBridgeSec);
         const startMs = Math.max(0, Math.round(wordStartSec * 1000 - trimOffsetMs));
@@ -345,13 +332,14 @@ function trimSilenceIfPossible(mp3Path, leadingTrimSec, maxEndSec) {
 }
 
 /**
- * Sintetizador acústico local de respaldo (solo se activa si ElevenLabs devuelve error de Key/Cuota)
- * generando tiempos continuos compatibles con el parser de TrendForge.
+ * Sintetizador acústico local de respaldo (se activa si ElevenLabs no tiene Key configurada o sin cuota)
+ * calibrado a cadencia documental de resúmenes de libros (~2.8 palabras/s -> 62-65s para 5 escenas).
  */
 function synthesizeLocalSpanishFallback(cleanText, scene, mp3Path) {
   const wavPath = `${mp3Path}.temp.wav`;
   const escapedText = cleanText.replace(/'/g, "''");
-  const rate = 1;
+  // Rate = -1 + atempo=1.275 produce ~2.85 palabras/s, clavando 5 escenas (~180 palabras) en 64.5 segundos
+  const rate = -1;
 
   try {
     const psScript = `
@@ -374,6 +362,8 @@ function synthesizeLocalSpanishFallback(cleanText, scene, mp3Path) {
         '-y',
         '-i',
         wavPath,
+        '-af',
+        'atempo=1.275,apad=pad_dur=0.25',
         '-codec:a',
         'libmp3lame',
         '-b:a',
@@ -390,11 +380,11 @@ function synthesizeLocalSpanishFallback(cleanText, scene, mp3Path) {
     }
   }
 
-  const durationSec = probeAudioDurationSeconds(mp3Path, 4.5);
+  const durationSec = probeAudioDurationSeconds(mp3Path, 12.6);
   const rawWords = cleanText.trim().split(/\s+/);
   const totalWeight = rawWords.reduce((acc, w) => acc + Math.max(2, w.length), 0);
   const startPadSec = 0.06;
-  const usableSec = Math.max(1.0, durationSec - startPadSec - 0.14);
+  const usableSec = Math.max(1.0, durationSec - startPadSec - 0.18);
 
   const characters = [];
   const charStarts = [];
@@ -438,7 +428,6 @@ async function synthesizeSceneWithTimestamps({
   nextText,
   previousRequestIds,
 }) {
-  // Si el voiceId pertenece a CURATED_VOICE_PROFILES de TrendForge, priorizamos su calibración exacta
   const profileSettings = CURATED_VOICE_PROFILES[voiceId];
   const presetSettings =
     CHARACTER_PRESETS[scene.characterPreset] || CHARACTER_PRESETS.narrator;
@@ -493,7 +482,9 @@ async function synthesizeSceneWithTimestamps({
 }
 
 async function main() {
-  const apiKey = process.env.ELEVENLABS_API_KEY;
+  const apiKey = (process.env.ELEVENLABS_API_KEY || '').trim();
+  const hasRealElevenLabsKey =
+    Boolean(apiKey) && apiKey !== 'tu_api_key_aqui';
   let voiceId = (process.env.ELEVENLABS_VOICE_ID || '').trim();
 
   if (!voiceId || voiceId === 'random') {
@@ -503,7 +494,7 @@ async function main() {
   const voiceProfileName =
     CURATED_VOICE_PROFILES[voiceId]?.name || `Custom Voice (${voiceId})`;
   console.log(
-    `🎙️ [elevenlabs-sync] Voz activa (TrendForge Canonical): ${voiceProfileName} [${voiceId}]`
+    `🎙️ [elevenlabs-sync] Voz activa: Leo (${voiceProfileName}) [${voiceId}]`
   );
 
   const modelId = process.env.ELEVENLABS_MODEL_ID || 'eleven_multilingual_v2';
@@ -520,17 +511,21 @@ async function main() {
   const crossDissolveFrames = Number(scenesData.crossDissolveFrames || 10);
   const scenes = scenesData.scenes || [];
 
-  if (!apiKey || apiKey === 'tu_api_key_aqui') {
-    console.error(
-      '⚠️ [elevenlabs-sync] ELEVENLABS_API_KEY no configurada en .env.'
+  if (!hasRealElevenLabsKey) {
+    console.log(
+      '🎙️ [elevenlabs-sync] Usando Motor Neural de Leo (Voz Oficial - es-ES-AlvaroNeural)...'
     );
-    process.exit(1);
+    const pythonBin = process.platform === 'win32' ? 'python' : 'python3';
+    execFileSync(pythonBin, [path.join(ROOT_DIR, 'scripts', 'generate-leo-audio.py')], {
+      stdio: 'inherit',
+    });
+    console.log('✅ [elevenlabs-sync] Síntesis con la voz de Leo completada con éxito.');
+    return;
   }
 
   const previousRequestIds = [];
   const manifestScenes = [];
 
-  // Acumuladores globales para generar también public/assets/latest_alignment.json al estilo TrendForge
   const globalCharacters = [];
   const globalStarts = [];
   const globalEnds = [];
@@ -552,30 +547,39 @@ async function main() {
 
     let alignmentSource = null;
 
-    try {
-      const { payload, requestId } = await synthesizeSceneWithTimestamps({
-        apiKey,
-        voiceId,
-        modelId,
-        cleanText,
-        scene,
-        previousText,
-        nextText,
-        previousRequestIds,
-      });
+    if (hasRealElevenLabsKey) {
+      try {
+        const { payload, requestId } = await synthesizeSceneWithTimestamps({
+          apiKey,
+          voiceId,
+          modelId,
+          cleanText,
+          scene,
+          previousText,
+          nextText,
+          previousRequestIds,
+        });
 
-      if (requestId) {
-        previousRequestIds.push(requestId);
+        if (requestId) {
+          previousRequestIds.push(requestId);
+        }
+
+        const audioBuffer = Buffer.from(payload.audio_base64, 'base64');
+        fs.writeFileSync(mp3Path, audioBuffer);
+        alignmentSource = payload.alignment || payload.normalized_alignment;
+      } catch (err) {
+        console.warn(`⚠️ [elevenlabs-sync] Aviso de API ElevenLabs: ${err.message}`);
+        console.warn(
+          `   ↳ Sintetizando pista de voz en español de respaldo y calculando wordTimestamps continuos (cadencia de Leo) para "${scene.id}"...`
+        );
+        const fallbackResult = synthesizeLocalSpanishFallback(
+          cleanText,
+          scene,
+          mp3Path
+        );
+        alignmentSource = fallbackResult.alignment;
       }
-
-      const audioBuffer = Buffer.from(payload.audio_base64, 'base64');
-      fs.writeFileSync(mp3Path, audioBuffer);
-      alignmentSource = payload.alignment || payload.normalized_alignment;
-    } catch (err) {
-      console.warn(`⚠️ [elevenlabs-sync] Aviso de API ElevenLabs: ${err.message}`);
-      console.warn(
-        `   ↳ Sintetizando pista de voz en español de respaldo y calculando wordTimestamps continuos (TrendForge cadence) para "${scene.id}"...`
-      );
+    } else {
       const fallbackResult = synthesizeLocalSpanishFallback(
         cleanText,
         scene,
@@ -599,12 +603,12 @@ async function main() {
     const warnings = [];
     let trimOffsetMs = 0;
 
-    if (leadingSilenceMs > 200 || trailingSilenceMs > 500) {
+    if (leadingSilenceMs > 200 || trailingSilenceMs > 600) {
       const leadTrimSec =
         leadingSilenceMs > 200 ? (leadingSilenceMs - 80) / 1000 : 0;
       const maxEndSec =
-        trailingSilenceMs > 500
-          ? initialPass.lastCharEndSec + 0.25
+        trailingSilenceMs > 600
+          ? initialPass.lastCharEndSec + 0.35
           : actualDuration;
 
       warnings.push(
@@ -637,7 +641,6 @@ async function main() {
       trimOffsetMs
     );
 
-    // Agregar al alignment global estilo TrendForge
     if (alignmentSource && Array.isArray(alignmentSource.characters)) {
       const trimSec = trimOffsetMs / 1000;
       for (let cIdx = 0; cIdx < alignmentSource.characters.length; cIdx++) {

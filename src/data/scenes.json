@@ -1,80 +1,185 @@
 {
-  "projectTitle": "Cómo Funciona el Lector de Huellas Ultrasónico 3D",
+  "projectTitle": "Céntrate (Deep Work) — Cal Newport (Resumen 65s)",
   "fps": 30,
   "width": 1080,
   "height": 1920,
   "crossDissolveFrames": 10,
+  "bookMetadata": {
+    "title": "Céntrate (Deep Work)",
+    "originalTitle": "Deep Work: Rules for Focused Success in a Distracted World",
+    "author": "Cal Newport",
+    "publishYear": 2016,
+    "pages": 296,
+    "readingTimeHours": 3.8,
+    "rating": 4.15,
+    "ratingsCount": "190K",
+    "salesCopies": "+3M COPIAS",
+    "coverImage": "assets/books/centrate-deep-work-cover.jpg",
+    "categoryTag": "PRODUCTIVIDAD COGNITIVA · ENFOQUE",
+    "goodreadsUrl": "https://www.goodreads.com/book/show/60055273-c-ntrate-deep-work-las-cuatro-reglas-para-el-xito-en-la-era-de-la-di"
+  },
   "scenes": [
     {
       "id": "scene-1",
-      "title": "EL FALLO DEL SENSOR ÓPTICO",
-      "text": "Tu móvil no hace una foto de tu dedo: los antiguos lectores ópticos solo proyectaban luz plana en dos dimensiones.",
+      "title": "El superpoder perdido",
+      "text": "El trabajo profundo es el superpoder del siglo veintiuno. [PAUSA 0.4s] Cal Newport revela que concentrarse sin distracciones en tareas exigentes es hoy un activo escaso. [PAUSA 0.4s] Es la clave para destacar en nuestra economía digital actual.",
       "characterPreset": "dramatic",
-      "visualCue": "Comparativa de haz de luz 2D rebotando en superficie plana frente a relieve epidérmico real.",
+      "blueprintMode": "DARK_CAD_XRAY",
+      "visualCue": "Señal de alerta parpadeante, portada oficial de Céntrate (Deep Work) y pop-ups de ventas (+3M copias) y Goodreads (★ 4.15).",
       "cameraTarget": {
         "x": 0,
         "y": 0,
-        "zoom": 1.0,
+        "zoom": 1,
         "rotateDeg": 0
       },
       "metrics": {
-        "label": "CAPTURA ÓPTICA PLANA",
-        "numericValue": 2,
-        "unit": "D"
+        "label": "RATING GOODREADS",
+        "numericValue": 4.15,
+        "unit": "★"
+      },
+      "bookVisualData": {
+        "badgeVentas": "+3M COPIAS",
+        "goodreadsRating": "★ 4.15",
+        "goodreadsReviews": "190K reseñas"
       }
     },
     {
       "id": "scene-2",
-      "title": "PULSO ACÚSTICO ULTRASÓNICO",
-      "text": "Bajo el cristal, un transductor dispara ondas ultrasónicas a veinte megahercios que atraviesan la pantalla sin usar luz.",
+      "title": "La trampa de la atención",
+      "text": "Mirar el móvil solo una vez genera un residuo de atención que reduce tu coeficiente intelectual en un cuarenta por ciento. [PAUSA 0.4s] La multitarea constante fragmenta tus neuronas y destruye tu capacidad de crear valor real.",
       "characterPreset": "narrator",
-      "visualCue": "Transductor piezoeléctrico bajo el panel OLED emitiendo ondas mecánicas concéntricas a 20 MHz.",
+      "blueprintMode": "DARK_CAD_XRAY",
+      "visualCue": "Tarjeta comparativa entre Trabajo Superficial (fragmentación) y Trabajo Profundo (foco extremo) con cita de Cal Newport.",
       "cameraTarget": {
-        "x": 1100,
+        "x": 1120,
         "y": 0,
-        "zoom": 1.04,
+        "zoom": 1,
         "rotateDeg": 0
       },
       "metrics": {
-        "label": "FRECUENCIA ACÚSTICA",
-        "numericValue": 20,
-        "unit": "MHz"
+        "label": "VALOR COGNITIVO",
+        "numericValue": 100,
+        "unit": "% ENFOQUE"
+      },
+      "bookVisualData": {
+        "sectionBadge": "PUNTO 01 · LA GRAN PARADOJA",
+        "headlineTitle": "OCUPADO ≠ PRODUCTIVO",
+        "mythLabel": "TRABAJO SUPERFICIAL",
+        "mythText": "Responder correos, chats y reuniones constantes que fragmentan tus neuronas y no crean valor.",
+        "realityLabel": "TRABAJO PROFUNDO",
+        "realityText": "Bloques de concentración extrema sin distracciones que multiplican tu velocidad y maestría.",
+        "quote": "El trabajo profundo es el superpoder del siglo veintiuno: enfocar sin distracción en una tarea exigente.",
+        "quoteAuthor": "Cal Newport"
       }
     },
     {
       "id": "scene-3",
-      "title": "RELIEVE EPIDÉRMICO EN 3D",
-      "text": "El eco rebota distinto en cada cresta, poro y valle epidérmico hasta cuatrocientos micrómetros de profundidad.",
-      "characterPreset": "narrator",
-      "visualCue": "Malla topográfica tridimensional midiendo crestas y valles de la piel con penetración de 400 micrómetros.",
+      "title": "La fórmula del éxito",
+      "text": "Tu producción es igual al tiempo multiplicado por la intensidad de enfoque. [PAUSA 0.4s] Con cuatro horas reales de trabajo profundo, puedes multiplicar tu rendimiento hasta cinco veces. [PAUSA 0.4s] Es la diferencia entre ser promedio o extraordinario.",
+      "characterPreset": "expert",
+      "blueprintMode": "CHRONO_OSCILLOSCOPE",
+      "visualCue": "Tarjeta matemática de Cal Newport: Producción = Tiempo × Intensidad (5.00x) frente al Residuo de Atención (-40% IQ).",
       "cameraTarget": {
-        "x": 1100,
+        "x": 1120,
         "y": 1980,
-        "zoom": 1.02,
+        "zoom": 1,
         "rotateDeg": 0
       },
       "metrics": {
-        "label": "PENETRACIÓN EPIDÉRMICA",
-        "numericValue": 400,
-        "unit": "µm"
+        "label": "RENDIMIENTO COGNITIVO",
+        "numericValue": 5,
+        "unit": "x"
+      },
+      "bookVisualData": {
+        "sectionBadge": "PUNTO 02 · LEY MATEMÁTICA",
+        "headlineTitle": "LA ECUACIÓN DEL FOCO",
+        "primaryBadge": "TRABAJO PROFUNDO",
+        "primaryRightBadge": "4 HORAS REALES",
+        "targetCounterValue": 5,
+        "formulaLabel": "Producción = Tiempo × Intensidad de Enfoque",
+        "secondaryTitle": "RESIDUO DE ATENCIÓN",
+        "secondarySub": "Mirar el móvil 1 vez tarda 23 min en recuperar el foco",
+        "secondaryValue": "-40% IQ"
       }
     },
     {
       "id": "scene-4",
-      "title": "DESBLOQUEO EN MILISEGUNDOS",
-      "text": "El procesador reconstruye tu mapa biométrico tridimensional y desbloquea el sistema en apenas veinticinco milisegundos.",
+      "title": "Reglas para dominar",
+      "text": "Primero, blinda bloques de noventa minutos sin notificaciones. [PAUSA 0.4s] Segundo, abraza el aburrimiento y no mires el móvil al esperar. [PAUSA 0.4s] Tercero, elimina redes sociales que roban tu atención y finalmente, drena todo lo superficial.",
       "characterPreset": "narrator",
-      "visualCue": "Reconstrucción vectorial final validada por el chip de seguridad con latencia de 25 ms.",
+      "blueprintMode": "BLUEPRINT_BLUE",
+      "visualCue": "Despliegue en cascada de las 4 Reglas para el Éxito en la Era de la Distracción.",
       "cameraTarget": {
         "x": 0,
         "y": 1980,
-        "zoom": 1.0,
+        "zoom": 1,
         "rotateDeg": 0
       },
       "metrics": {
-        "label": "TIEMPO DE RESPUESTA",
-        "numericValue": 25,
-        "unit": "ms"
+        "label": "BLOQUE MÍNIMO",
+        "numericValue": 90,
+        "unit": "MIN"
+      },
+      "bookVisualData": {
+        "sectionBadge": "PUNTO 03 · PROTOCOLO PRÁCTICO",
+        "headlineTitle": "LAS 4 REGLAS DE CÉNTRATE",
+        "actionableLaws": [
+          {
+            "index": "01",
+            "title": "TRABAJA CON PROFUNDIDAD",
+            "rule": "Bloques blindados de 90 min sin notificaciones",
+            "impactPct": 96,
+            "highlight": true
+          },
+          {
+            "index": "02",
+            "title": "ABRAZA EL ABURRIMIENTO",
+            "rule": "No mires el móvil al esperar: entrena tu foco",
+            "impactPct": 91,
+            "highlight": false
+          },
+          {
+            "index": "03",
+            "title": "DEJA LAS REDES SOCIALES",
+            "rule": "Elimina apps que roban atención y aportan 0 valor",
+            "impactPct": 88,
+            "highlight": true
+          },
+          {
+            "index": "04",
+            "title": "DRENA LO SUPERFICIAL",
+            "rule": "Planifica cada minuto y apaga el trabajo a las 18h",
+            "impactPct": 94,
+            "highlight": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "scene-5",
+      "title": "Tu decisión final",
+      "text": "Quien eres y lo que logras es la suma de aquello en lo que decides concentrarte. [PAUSA 0.4s] Destierra tu adicción a la distracción hoy mismo. [PAUSA 0.4s] Aplica estas reglas y transforma tu vida profesional para siempre.",
+      "characterPreset": "conversational",
+      "blueprintMode": "TOPOLOGY_WIREFRAME",
+      "visualCue": "Tarjeta de tesis central sobre la atención y panel animado de CTA con portada de Céntrate.",
+      "cameraTarget": {
+        "x": 560,
+        "y": 3960,
+        "zoom": 1,
+        "rotateDeg": 0
+      },
+      "metrics": {
+        "label": "LECTURA ESTIMADA",
+        "numericValue": 3.8,
+        "unit": "HORAS"
+      },
+      "bookVisualData": {
+        "sectionBadge": "LA REGLA DE ORO",
+        "headlineTitle": "PROTEGE TU ATENCIÓN",
+        "identityQuote": "Quien eres, qué piensas, sientes y haces es la suma de aquello en lo que decides concentrarte.",
+        "identitySub": "Tu atención es el activo más escaso y valioso de esta década.",
+        "ctaMain": "¿Quieres más libros en 60 segundos?",
+        "ctaSub": "¡Síguenos y comenta tu opinión!"
       }
     }
   ]

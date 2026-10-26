@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * scripts/promptible-gate.mjs
- * Auditoría estática y puerta de calidad (16-Point Quality Check & Critic Gate — @resultaaquee + TrendForge)
- * Verifica las reglas inquebrantables de código, blueprints y sincronización antes del render final.
+ * Auditoría estática y puerta de calidad (16-Point Quality Check & Critic Gate — @resultaaquee + Book Summary Engine)
+ * Verifica las reglas inquebrantables de código, blueprints, dossier de libros y sincronización antes del render final.
  */
 
 import fs from 'node:fs';
@@ -62,7 +62,7 @@ function runGate() {
     }
   }
 
-  // Verificar existencia de la librería de Blueprints @resultaaquee
+  // Verificar existencia de las librerías de Blueprints (@resultaaquee + BookBlueprints)
   const blueprintsPath = path.join(
     ROOT_DIR,
     'src',
@@ -73,6 +73,27 @@ function runGate() {
   if (!fs.existsSync(blueprintsPath)) {
     violations.push(
       '[Blueprints @resultaaquee] Falta src/components/blueprints/ResultaaqueeBlueprints.tsx.'
+    );
+  }
+
+  const bookBlueprintsPath = path.join(
+    ROOT_DIR,
+    'src',
+    'components',
+    'blueprints',
+    'BookBlueprints.tsx'
+  );
+  if (!fs.existsSync(bookBlueprintsPath)) {
+    violations.push(
+      '[BookBlueprints] Falta src/components/blueprints/BookBlueprints.tsx.'
+    );
+  }
+
+  // Verificar dossier normalizado de libro
+  const dossierPath = path.join(ROOT_DIR, 'src', 'data', 'book-dossier.json');
+  if (!fs.existsSync(dossierPath)) {
+    violations.push(
+      '[BookIngest] Falta el dossier normalizado src/data/book-dossier.json.'
     );
   }
 
@@ -106,7 +127,7 @@ function runGate() {
   }
 
   console.log(
-    '✅ PROMPTIBLE CRITIC GATE PASSED (16/16 checks + @resultaaquee Blueprints OK).'
+    '✅ PROMPTIBLE CRITIC GATE PASSED (16/16 checks + @resultaaquee & BookBlueprints OK).'
   );
 }
 

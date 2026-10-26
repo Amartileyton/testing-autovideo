@@ -1,6 +1,6 @@
 /**
  * src/utils/alignmentParser.ts
- * Parser de alineamiento carácter-a-palabra reciclado de TrendForge.
+ * Parser de alineamiento carácter-a-palabra con cadencia continua.
  *
  * Características clave:
  * - Cadencia sin micro-cortes: cuando aparece un espacio en blanco, endSec de la palabra
