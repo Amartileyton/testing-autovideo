@@ -41,6 +41,8 @@ export const BookMetadataSchema = z.object({
   ratingsCount: z.string(),
   salesCopies: z.string().optional(),
   coverImage: z.string(),
+  fallbackCoverImage: z.string().optional(),
+  coverSource: z.string().optional(),
   categoryTag: z.string(),
   goodreadsUrl: z.string().optional(),
 });
