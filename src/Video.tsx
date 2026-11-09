@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import {
   AbsoluteFill,
   Audio,
   Sequence,
   interpolate,
+  spring,
   staticFile,
   useCurrentFrame,
   useVideoConfig,
@@ -31,7 +32,9 @@ import {
   BRAND_CONFIG,
   type BlueprintModeId,
   CLAMP_EXTRAPOLATION,
+  SAFE_ZONE,
 } from './theme/motion';
+import { CTA_LAYOUT } from './components/big';
 
 const manifest = audioManifestJson as AudioManifest;
 const scenesJson = scenesJsonRaw as unknown as ScenesFile;
@@ -53,7 +56,8 @@ export function computeSceneTimeline(
   audioManifest: AudioManifest
 ): ComputedSceneWindow[] {
   const overlap = audioManifest.crossDissolveFrames || 10;
-  let cursor = 0;
+  // 12 fotogramas (400ms) de pre-roll inicial para evitar que se corte la primera sÃ­laba ("Â¿Por...")
+  let cursor = 12;
 
   return audioManifest.scenes.map((scene, index) => {
     const from = cursor;
@@ -73,7 +77,7 @@ export function computeSceneTimeline(
 export const Video: React.FC<VideoProps> = ({
   surfaceColor = BLUEPRINT_THEMES.EDITORIAL_PAPER.surface,
   enableCaptions = true,
-  enableBackgroundMusic = false,
+  enableBackgroundMusic = true,
 }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames: totalDurationFrames } = useVideoConfig();
@@ -81,8 +85,8 @@ export const Video: React.FC<VideoProps> = ({
   const bookMetadata = scenesJson.bookMetadata as BookMetadata | undefined;
 
   /**
-   * Stream unificado de palabras a nivel global (arquitectura Leo + @en1minuto.es):
-   * evita cortes o solapamientos de subtítulos durante las transiciones entre escenas.
+   * Stream unificado de palabras a nivel global (arquitectura Leo + @resultaaquee):
+   * evita cortes o solapamientos de subtÃ­tulos durante las transiciones entre escenas.
    */
   const globalWordTimestamps: WordTimestamp[] = useMemo(() => {
     const merged: WordTimestamp[] = [];
@@ -102,7 +106,7 @@ export const Video: React.FC<VideoProps> = ({
   }, [timeline, fps]);
 
   /**
-   * Keyframes de cámara continua sincronizados al fotograma de inicio de cada escena en info.json
+   * Keyframes de cÃ¡mara continua sincronizados al fotograma de inicio de cada escena en info.json
    */
   const cameraKeyframes: CameraKeyframe[] = useMemo(() => {
     const defaultCoords = [
@@ -131,28 +135,93 @@ export const Video: React.FC<VideoProps> = ({
   }, [timeline]);
 
   /**
-   * Modo de superficie editorial constante en todo el vídeo (cuadrícula marcada sobre papel cálido)
+   * Modo de superficie editorial constante en todo el vÃ­deo (sin cambios de color de fondo)
    */
   const activeBlueprintMode: BlueprintModeId = 'EDITORIAL_PAPER';
 
   /**
-   * Curva de Audio Ducking automática para la pista opcional de música de fondo
+   * Intervalos de voz continua (agrupando palabras separadas por menos de 10 fotogramas / 0.33s).
+   * Evita el efecto "bombeo" (pumping) indeseado en la música entre palabras de una misma frase.
    */
-  const isVoiceSpeaking = useMemo(() => {
-    return globalWordTimestamps.some(
-      (w) => frame >= w.startFrame - 3 && frame <= w.endFrame + 4
-    );
-  }, [globalWordTimestamps, frame]);
+  const speechIntervals = useMemo(() => {
+    if (!globalWordTimestamps || globalWordTimestamps.length === 0) return [];
+    const sorted = [...globalWordTimestamps].sort((a, b) => a.startFrame - b.startFrame);
+    const intervals: Array<{ startFrame: number; endFrame: number }> = [];
 
-  const bgmVolume = interpolate(
-    isVoiceSpeaking ? 1 : 0,
-    [0, 1],
-    [0.32, 0.12],
-    CLAMP_EXTRAPOLATION
-  );
+    let current = { startFrame: sorted[0].startFrame, endFrame: sorted[0].endFrame };
+    for (let i = 1; i < sorted.length; i++) {
+      const next = sorted[i];
+      if (next.startFrame - current.endFrame <= 10) {
+        current.endFrame = Math.max(current.endFrame, next.endFrame);
+      } else {
+        intervals.push(current);
+        current = { startFrame: next.startFrame, endFrame: next.endFrame };
+      }
+    }
+    intervals.push(current);
+    return intervals;
+  }, [globalWordTimestamps]);
+
+  /**
+   * Curva de Audio Ducking suave con fisica de ataque y descompresion:
+   * - Attack: 6 frames antes del inicio de la voz (bajada suave a duckedVolume)
+   * - Hold: duckedVolume constante durante la locucion continua
+   * - Release: 10 frames despues de concluir el bloque de voz (subida suave a volume)
+   */
+  const bgmVolume = useMemo(() => {
+    const maxVol = scenesJson.music?.volume ?? 0.55;
+    const duckedVol = scenesJson.music?.duckedVolume ?? 0.28;
+
+    if (speechIntervals.length === 0) return maxVol;
+
+    for (const block of speechIntervals) {
+      if (frame >= block.startFrame && frame <= block.endFrame) {
+        return duckedVol;
+      }
+      if (frame >= block.startFrame - 6 && frame < block.startFrame) {
+        const progress = (frame - (block.startFrame - 6)) / 6;
+        return maxVol - progress * (maxVol - duckedVol);
+      }
+      if (frame > block.endFrame && frame <= block.endFrame + 10) {
+        const progress = (frame - block.endFrame) / 10;
+        return duckedVol + progress * (maxVol - duckedVol);
+      }
+    }
+
+    return maxVol;
+  }, [speechIntervals, frame, scenesJson.music]);
+
 
   return (
     <AbsoluteFill style={{ backgroundColor: surfaceColor }}>
+      {/* Fuentes oficiales cargadas desde almacenamiento estático local para renderizado offline */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700 900;
+  font-display: swap;
+  src: url('${staticFile('fonts/plusjakartasans-800.woff2')}') format('woff2');
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 700 900;
+  font-display: swap;
+  src: url('${staticFile('fonts/nunito-800.woff2')}') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500 800;
+  font-display: swap;
+  src: url('${staticFile('fonts/inter-700.woff2')}') format('woff2');
+}
+          `,
+        }}
+      />
       {/* Lienzo continuo de 5 escenas gobernado por CameraRig + Rack-Focus Blur */}
       <CameraRig
         keyframes={cameraKeyframes}
@@ -160,6 +229,47 @@ export const Video: React.FC<VideoProps> = ({
         blueprintMode={activeBlueprintMode}
         rackFocusBlur={true}
       >
+        {/* Conectores de ingenierÃ­a editorial entre los 5 cuadrantes del lienzo continuo */}
+        <svg
+          width={2400}
+          height={6000}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            pointerEvents: 'none',
+          }}
+        >
+          <path
+            d="M 984 740 L 1216 740"
+            stroke="rgba(217, 78, 52, 0.25)"
+            strokeWidth={2}
+            strokeDasharray="8 8"
+            fill="none"
+          />
+          <path
+            d="M 1660 1520 L 1660 2090"
+            stroke="rgba(217, 78, 52, 0.25)"
+            strokeWidth={2}
+            strokeDasharray="8 8"
+            fill="none"
+          />
+          <path
+            d="M 1216 2700 L 984 2700"
+            stroke="rgba(217, 78, 52, 0.25)"
+            strokeWidth={2}
+            strokeDasharray="8 8"
+            fill="none"
+          />
+          <path
+            d="M 540 3520 L 1100 4060"
+            stroke="rgba(217, 78, 52, 0.25)"
+            strokeWidth={2}
+            strokeDasharray="8 8"
+            fill="none"
+          />
+        </svg>
+
         <Scene1
           headline={scenesJson.scenes[0]?.title}
           metricValue={scenesJson.scenes[0]?.metrics?.numericValue}
@@ -172,6 +282,8 @@ export const Video: React.FC<VideoProps> = ({
           visualData={
             scenesJson.scenes[0]?.bookVisualData as BookVisualData | undefined
           }
+          layoutPreset={scenesJson.scenes[0]?.layoutPreset}
+          wordTimestamps={timeline[0]?.wordTimestamps}
         />
 
         <Scene2
@@ -181,11 +293,13 @@ export const Video: React.FC<VideoProps> = ({
           metricLabel={scenesJson.scenes[1]?.metrics?.label}
           canvasOffsetX={scenesJson.scenes[1]?.cameraTarget?.x ?? 1120}
           canvasOffsetY={scenesJson.scenes[1]?.cameraTarget?.y ?? 0}
-          enterFrame={timeline[1]?.from ?? 340}
+          enterFrame={timeline[1]?.from ?? 428}
           bookMetadata={bookMetadata}
           visualData={
             scenesJson.scenes[1]?.bookVisualData as BookVisualData | undefined
           }
+          layoutPreset={scenesJson.scenes[1]?.layoutPreset}
+          wordTimestamps={timeline[1]?.wordTimestamps}
         />
 
         <Scene3
@@ -195,11 +309,13 @@ export const Video: React.FC<VideoProps> = ({
           metricLabel={scenesJson.scenes[2]?.metrics?.label}
           canvasOffsetX={scenesJson.scenes[2]?.cameraTarget?.x ?? 1120}
           canvasOffsetY={scenesJson.scenes[2]?.cameraTarget?.y ?? 1980}
-          enterFrame={timeline[2]?.from ?? 700}
+          enterFrame={timeline[2]?.from ?? 824}
           bookMetadata={bookMetadata}
           visualData={
             scenesJson.scenes[2]?.bookVisualData as BookVisualData | undefined
           }
+          layoutPreset={scenesJson.scenes[2]?.layoutPreset}
+          wordTimestamps={timeline[2]?.wordTimestamps}
         />
 
         <Scene4
@@ -209,11 +325,13 @@ export const Video: React.FC<VideoProps> = ({
           metricLabel={scenesJson.scenes[3]?.metrics?.label}
           canvasOffsetX={scenesJson.scenes[3]?.cameraTarget?.x ?? 0}
           canvasOffsetY={scenesJson.scenes[3]?.cameraTarget?.y ?? 1980}
-          enterFrame={timeline[3]?.from ?? 1080}
+          enterFrame={timeline[3]?.from ?? 1231}
           bookMetadata={bookMetadata}
           visualData={
             scenesJson.scenes[3]?.bookVisualData as BookVisualData | undefined
           }
+          layoutPreset={scenesJson.scenes[3]?.layoutPreset}
+          wordTimestamps={timeline[3]?.wordTimestamps}
         />
 
         <Scene5
@@ -223,15 +341,17 @@ export const Video: React.FC<VideoProps> = ({
           metricLabel={scenesJson.scenes[4]?.metrics?.label}
           canvasOffsetX={scenesJson.scenes[4]?.cameraTarget?.x ?? 560}
           canvasOffsetY={scenesJson.scenes[4]?.cameraTarget?.y ?? 3960}
-          enterFrame={timeline[4]?.from ?? 1480}
+          enterFrame={timeline[4]?.from ?? 1655}
           bookMetadata={bookMetadata}
           visualData={
             scenesJson.scenes[4]?.bookVisualData as BookVisualData | undefined
           }
+          layoutPreset={scenesJson.scenes[4]?.layoutPreset}
+          wordTimestamps={timeline[4]?.wordTimestamps}
         />
       </CameraRig>
 
-      {/* Secuencias de audio sincronizadas al fotograma desde public/audio/info.json (SIN pitido de alarma inicial) */}
+      {/* Secuencias de audio sincronizadas al fotograma desde public/audio/info.json */}
       {timeline.map((sceneWin) => (
         <Sequence
           key={sceneWin.id}
@@ -252,8 +372,8 @@ export const Video: React.FC<VideoProps> = ({
             position: 'absolute',
             top: 0,
             left: 0,
-            width: `${Math.min(100, Math.max(0, (frame / (totalDurationFrames || 1765)) * 100))}%`,
-            height: 8,
+            width: `${Math.min(100, Math.max(0, (frame / (useVideoConfig().durationInFrames || 1677)) * 100))}%`,
+            height: BRAND_CONFIG.progressBarHeight,
             backgroundColor: BRAND_CONFIG.progressBarColor,
             zIndex: 100,
             pointerEvents: 'none',
@@ -261,43 +381,76 @@ export const Video: React.FC<VideoProps> = ({
         />
       )}
 
-      {/* Temporizador Inferior Limpio (SOLO el Reloj Cronómetro durante las escenas 1-4; en la escena 5 se convierte en la píldora dinámica con @en1minuto.es) */}
+      {/* Reloj de 1 Minuto: Corre en el footer y asciende suave y tempranamente acoplÃ¡ndose a CtaEndCard */}
       {(() => {
-        const ctaCardFrame = (timeline[4]?.from ?? 1400) + 155;
-        const bottomClockOpacity = interpolate(
+        const scene5Start = timeline[4]?.from ?? 1508;
+        // Comienza la transiciÃ³n del reloj con anticipaciÃ³n suficiente (frame +170 de escena 5)
+        // para un vuelo ultra suave de 82 frames (~2.7 segundos) que concluye exactamente cuando
+        // entra la locuciÃ³n "Guarda este resumen" en frame +252.
+        const ctaFlightTrigger = scene5Start + 170;
+
+        // Suavizado cÃºbico continuo para mÃ¡xima fluidez orgÃ¡nica
+        const flightRaw = interpolate(
           frame,
-          [ctaCardFrame - 18, ctaCardFrame],
-          [1, 0],
+          [ctaFlightTrigger, ctaFlightTrigger + 82],
+          [0, 1],
           CLAMP_EXTRAPOLATION
         );
+        const smoothFlight =
+          flightRaw < 0.5
+            ? 4 * flightRaw * flightRaw * flightRaw
+            : 1 - Math.pow(-2 * flightRaw + 2, 3) / 2;
+
+        // Coordenada Y: desde el footer (top: 1788px) hasta la ranura de CtaEndCard (top: 798px)
+        const clockY = interpolate(
+          smoothFlight,
+          [0, 1],
+          [1788, CTA_LAYOUT.clockTop],
+          CLAMP_EXTRAPOLATION
+        );
+
+        // TamaÃ±o del reloj: se expande con calma de 84px a 110px hero
+        const clockSize = interpolate(
+          smoothFlight,
+          [0, 1],
+          [84, CTA_LAYOUT.clockSize],
+          CLAMP_EXTRAPOLATION
+        );
+
+        // Modo: transiciona de 'header' a 'hero' cuando la animaciÃ³n supera el 35%
+        const clockMode = smoothFlight > 0.35 ? 'hero' : 'header';
 
         return (
           <div
             style={{
               position: 'absolute',
-              bottom: 36,
+              top: clockY,
               left: 0,
               right: 0,
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              zIndex: 95,
+              zIndex: 100,
               pointerEvents: 'none',
-              opacity: bottomClockOpacity,
-              transform: `scale(${interpolate(bottomClockOpacity, [0, 1], [0.75, 1], CLAMP_EXTRAPOLATION)})`,
             }}
           >
             <OneMinuteStopwatch
-              size={86}
+              size={Math.round(clockSize)}
               currentFrame={frame}
               totalDurationInFrames={totalDurationFrames}
-              mode="header"
+              mode={clockMode}
+              style={{
+                filter:
+                  smoothFlight > 0.05
+                    ? 'drop-shadow(0 12px 28px rgba(217, 78, 52, 0.38))'
+                    : undefined,
+              }}
             />
           </div>
         );
       })()}
 
-      {/* Subtítulos sin fondo en el tercio inferior (Nunito 52px 800) */}
+      {/* SubtÃ­tulos en el tercio inferior para no interferir con titulares ni animaciones */}
       {enableCaptions ? (
         <DynamicCaptions
           wordTimestamps={globalWordTimestamps}
@@ -308,13 +461,25 @@ export const Video: React.FC<VideoProps> = ({
         />
       ) : null}
 
-      {/* Pista opcional de música de fondo con curva de audio ducking automática */}
-      {enableBackgroundMusic && manifest.backgroundMusicFile ? (
+      {/* Pista opcional de mÃºsica de fondo con curva de audio ducking automÃ¡tica */}
+      {enableBackgroundMusic && (manifest.backgroundMusicFile || scenesJson.music?.file || true) ? (
         <Audio
-          src={staticFile(manifest.backgroundMusicFile)}
+          src={staticFile(manifest.backgroundMusicFile || scenesJson.music?.file || 'audio/music/vibing-over-venus.mp3')}
           volume={bgmVolume}
         />
       ) : null}
+
+      {/* LÃ­nea guÃ­a sutil de Zona Segura Vertical (288px inferiores reservados para UI 9:16) */}
+      <div
+        style={{
+          position: 'absolute',
+          left: SAFE_ZONE.horizontalPaddingPx,
+          right: SAFE_ZONE.horizontalPaddingPx,
+          top: SAFE_ZONE.maxSafeY,
+          borderTop: '1.5px dashed rgba(45, 43, 40, 0.12)',
+          pointerEvents: 'none',
+        }}
+      />
     </AbsoluteFill>
   );
 };

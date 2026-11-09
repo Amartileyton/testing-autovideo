@@ -1,56 +1,63 @@
 import React from 'react';
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { CLAMP_EXTRAPOLATION, PALETTE, SPRING_SNAPPY } from '../../theme/motion';
+import { CLAMP_EXTRAPOLATION, SPRING_SNAPPY } from '../../theme/motion';
 import { OneMinuteStopwatch } from '../OneMinuteStopwatch';
 
 export interface CtaEndCardProps {
   enterFrame?: number;
   handle?: string;
   questionText?: string;
+  /** Llamada a la acción del final del vídeo hablada por el locutor */
+  ctaText?: string;
+  /** Acción principal destacada que coincide literalmente con el audio */
+  ctaActionLabel?: string;
+  /** Promesa de valor recurrente del canal */
+  brandPromise?: string;
+  /** Si se muestra o no la tarjeta interactiva de pregunta a la comunidad */
+  showCommunityQuestion?: boolean;
+  /** Si la tarjeta dibuja su propio reloj interno (false cuando Video.tsx orquesta el reloj volador) */
+  showInternalStopwatch?: boolean;
 }
 
 /**
- * CtaEndCard — Tarjeta Final de Conversión (@en1minuto.es)
- * Incluye:
- * 1. Píldora Corporativa Dinámica con el Reloj Cronómetro + @en1minuto.es que se despliega con animación elástica.
- * 2. Fondo bloc de notas ocre pálido (#FDF6DF) sin micro-etiquetas superfluas.
- * 3. Caja de pregunta a la comunidad y acciones de guardar/compartir.
+ * CtaEndCard — Tarjeta Final de Llamada a la Acción y Comunidad (@en1minuto.es)
+ *
+ * Características consolidadas:
+ * 1. Espacio superior reservado (120px) para el aterrizaje del reloj volador desde el bottom.
+ * 2. Cero badges redundantes de "TIEMPO CUMPLIDO".
+ * 3. Titular contundente alineado al audio.
+ * 4. Botón de alto contraste con pulso en Terracota.
+ * 5. Caja de pregunta limpia sin la etiqueta "Vínculo CTA".
+ * 6. Acción principal destacada que coincide exactamente con la locución del audio.
+ * 7. Ocupación vertical dominante en el tercio inferior del lienzo (hasta Y = 1540px).
  */
 export const CtaEndCard: React.FC<CtaEndCardProps> = ({
   enterFrame = 0,
   handle = '@en1minuto.es',
-  questionText = '¿Cuántas horas de concentración real logras al día? Comenta abajo',
+  questionText = 'Para empezar hoy mismo tras guardar el resumen: ¿cuál es el rincón de tu vida que vas a poner en orden?',
+  ctaText = 'Guarda este resumen para cuando el caos apriete',
+  ctaActionLabel = 'GUARDA ESTE RESUMEN',
+  brandPromise = '1 libro clave cada día en 60s',
+  showCommunityQuestion = true,
+  showInternalStopwatch = false,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const localFrame = Math.max(0, frame - enterFrame);
 
-  // 1. Entrada de la tarjeta con resorte snappy
+  // 1. Entrada de la tarjeta con resorte elástico
   const cardSpring = spring({
     frame: localFrame,
     fps,
-    config: SPRING_SNAPPY,
+    config: { damping: 18, stiffness: 140, mass: 0.9 },
   });
 
-  // 2. Despliegue elástico de la píldora corporativa (Reloj + @en1minuto.es)
-  const pillExpandSpring = spring({
-    frame: Math.max(0, localFrame - 6),
-    fps,
-    config: { damping: 16, stiffness: 180, mass: 0.8 },
-  });
-
-  const handleRevealSpring = spring({
-    frame: Math.max(0, localFrame - 14),
-    fps,
-    config: SPRING_SNAPPY,
-  });
-
-  // 3. Pulso constante en la píldora principal y botón de seguir
+  // 2. Pulso constante en el botón de Seguir (animación en bucle)
   const pulseLoop = (localFrame % 30) / 30;
   const pulseScale = interpolate(
     pulseLoop,
     [0, 0.5, 1],
-    [1.0, 1.035, 1.0],
+    [1.0, 1.03, 1.0],
     CLAMP_EXTRAPOLATION
   );
 
@@ -58,13 +65,13 @@ export const CtaEndCard: React.FC<CtaEndCardProps> = ({
     <div
       style={{
         position: 'relative',
-        width: 888,
-        backgroundColor: PALETTE.cardNotepad,
+        width: '100%',
+        backgroundColor: '#FEF9C3',
         border: '3px solid #D94E34',
-        borderRadius: 26,
-        padding: '36px 40px 30px',
+        borderRadius: 28,
+        padding: '36px 40px 38px',
         boxShadow:
-          '0 24px 60px rgba(217, 78, 52, 0.18), 0 4px 14px rgba(0,0,0,0.05)',
+          '0 28px 70px rgba(217, 78, 52, 0.20), 0 4px 16px rgba(0,0,0,0.04)',
         boxSizing: 'border-box',
         textAlign: 'center',
         opacity: cardSpring,
@@ -76,134 +83,161 @@ export const CtaEndCard: React.FC<CtaEndCardProps> = ({
         )})`,
       }}
     >
-      {/* 1. PÍLDORA DINÁMICA EN BLANCO CON EL RELOJ + @EN1MINUTO.ES */}
+      {/* 1. Ranura reservada para el Cronómetro Hero (el reloj del bottom sube y se acopla aquí) */}
       <div
         style={{
-          display: 'inline-flex',
-          alignItems: 'center',
+          display: 'flex',
           justifyContent: 'center',
-          gap: 18,
-          backgroundColor: '#FFFFFF',
-          border: '3px solid #D94E34',
-          borderRadius: 999,
-          padding: '12px 34px 12px 16px',
-          marginBottom: 22,
-          boxShadow: '0 16px 38px rgba(217, 78, 52, 0.18), 0 4px 12px rgba(20, 20, 19, 0.08)',
-          transform: `scale(${interpolate(pillExpandSpring, [0, 1], [0.65, pulseScale], CLAMP_EXTRAPOLATION)})`,
-          transformOrigin: 'center center',
+          alignItems: 'center',
+          height: 120,
+          marginBottom: 18,
         }}
       >
-        <OneMinuteStopwatch
-          size={78}
-          mode="hero"
-          currentFrame={localFrame}
-        />
-
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            opacity: handleRevealSpring,
-            transform: `translateX(${(1 - handleRevealSpring) * -18}px)`,
-          }}
-        >
-          <span
+        {showInternalStopwatch && (
+          <OneMinuteStopwatch
+            size={115}
+            mode="hero"
+            currentFrame={localFrame}
             style={{
-              fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-              fontSize: 40,
-              fontWeight: 900,
-              color: '#141413',
-              letterSpacing: '-0.02em',
-              lineHeight: 1.05,
+              filter: 'drop-shadow(0 8px 24px rgba(217, 78, 52, 0.30))',
             }}
-          >
-            {handle}
-          </span>
-          <span
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 16,
-              fontWeight: 800,
-              color: '#D94E34',
-              marginTop: 2,
-            }}
-          >
-            🔔 Síguenos para 1 libro al día en 60s
-          </span>
-        </div>
+          />
+        )}
       </div>
 
-      {/* 2. Titular de Alto Impacto */}
+      {/* Titular de Alto Impacto vinculado al CTA */}
       <h3
         style={{
           fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-          fontSize: 36,
+          fontSize: 38,
           fontWeight: 900,
           color: '#141413',
-          margin: '0 0 20px 0',
+          margin: '0 0 16px 0',
           letterSpacing: '-0.03em',
           lineHeight: 1.15,
         }}
       >
-        Aprende 1 libro al día en 60 segundos
+        {ctaText}
       </h3>
 
-      {/* 3. Caja Interactiva de Pregunta para Comentarios */}
+      {/* Botón Principal de Seguir a @en1minuto.es con Pulso y Promesa de Valor */}
       <div
         style={{
-          backgroundColor: '#FFFDF7',
-          border: '2px dashed rgba(217, 78, 52, 0.50)',
-          borderRadius: 16,
-          padding: '16px 22px',
-          marginBottom: 20,
-          display: 'flex',
+          display: 'inline-flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          gap: 14,
-          textAlign: 'left',
+          justifyContent: 'center',
+          gap: 6,
+          backgroundColor: '#D94E34',
+          color: '#FFFFFF',
+          padding: '16px 42px 14px',
+          borderRadius: 22,
+          boxShadow: '0 12px 32px rgba(217, 78, 52, 0.40)',
+          transform: `scale(${pulseScale})`,
+          transformOrigin: 'center center',
+          margin: '8px auto 22px',
         }}
       >
-        <span style={{ fontSize: 30, flexShrink: 0 }}>💬</span>
-        <div
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 26 }}>🔔</span>
+          <span
+            style={{
+              fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+              fontSize: 24,
+              fontWeight: 900,
+              letterSpacing: 0.5,
+            }}
+          >
+            SÍGUENOS EN {handle.toUpperCase()}
+          </span>
+        </div>
+        <span
           style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 19,
+            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+            fontSize: 13,
             fontWeight: 800,
-            color: '#141413',
-            lineHeight: 1.3,
+            color: '#FEF9C3',
+            letterSpacing: 1.0,
+            textTransform: 'uppercase',
           }}
         >
-          {questionText}
-        </div>
+          {brandPromise}
+        </span>
       </div>
 
-      {/* 4. Fila de Acciones (Guardar y Compartir) */}
+      {/* Caja Interactiva de Pregunta a la Comunidad limpia (sin Vínculo CTA) */}
+      {showCommunityQuestion && questionText ? (
+        <div
+          style={{
+            backgroundColor: '#F8F7F4',
+            border: '2px dashed rgba(217, 78, 52, 0.45)',
+            borderRadius: 20,
+            padding: '20px 28px',
+            marginBottom: 24,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 18,
+            textAlign: 'left',
+          }}
+        >
+          <span style={{ fontSize: 34, flexShrink: 0 }}>💬</span>
+          <div style={{ flex: 1 }}>
+            <div
+              style={{
+                fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                fontSize: 15,
+                fontWeight: 900,
+                color: '#D94E34',
+                letterSpacing: 0.8,
+                textTransform: 'uppercase',
+              }}
+            >
+              Pregunta a la comunidad
+            </div>
+            <div
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 21,
+                fontWeight: 700,
+                color: '#141413',
+                lineHeight: 1.35,
+                marginTop: 4,
+              }}
+            >
+              {questionText}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Fila de Micro-acciones con el CTA textual coincidente al 100% con el audio */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'center',
           gap: 18,
-          borderTop: `1.5px solid ${PALETTE.cardBorder}`,
-          paddingTop: 16,
+          borderTop: '1.5px solid #E5E2DC',
+          paddingTop: 22,
         }}
       >
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 8,
+            gap: 10,
             fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-            fontSize: 15,
-            fontWeight: 800,
-            color: '#141413',
-            backgroundColor: '#FFFDF7',
-            border: `1.5px solid ${PALETTE.cardBorder}`,
-            padding: '10px 18px',
-            borderRadius: 12,
+            fontSize: 17,
+            fontWeight: 900,
+            color: '#FFFFFF',
+            backgroundColor: '#D94E34',
+            padding: '14px 28px',
+            borderRadius: 14,
+            boxShadow: '0 6px 18px rgba(217, 78, 52, 0.30)',
+            letterSpacing: 0.3,
           }}
         >
           <span>🔖</span>
-          <span>GUARDA ESTE RESUMEN</span>
+          <span>{ctaActionLabel}</span>
         </div>
 
         <div
@@ -212,17 +246,17 @@ export const CtaEndCard: React.FC<CtaEndCardProps> = ({
             alignItems: 'center',
             gap: 8,
             fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-            fontSize: 15,
+            fontSize: 16,
             fontWeight: 800,
             color: '#141413',
-            backgroundColor: '#FFFDF7',
-            border: `1.5px solid ${PALETTE.cardBorder}`,
-            padding: '10px 18px',
-            borderRadius: 12,
+            backgroundColor: '#F8F7F4',
+            padding: '14px 22px',
+            borderRadius: 14,
+            border: '1.5px solid #141413',
           }}
         >
           <span>↗️</span>
-          <span>COMPARTE CON UN AMIGO</span>
+          <span>COMPARTIR</span>
         </div>
       </div>
     </div>

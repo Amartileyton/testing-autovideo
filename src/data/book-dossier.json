@@ -1,98 +1,65 @@
 {
-  "generatedAt": "2026-10-26T06:51:12.284Z",
-  "query": "https://www.goodreads.com/book/show/60055273-c-ntrate-deep-work-las-cuatro-reglas-para-el-xito-en-la-era-de-la-di",
-  "slug": "centrate-deep-work",
+  "generatedAt": "2026-10-28T13:25:00.000Z",
+  "query": "El arte de gastar dinero",
+  "slug": "el-arte-de-gastar-dinero",
   "bookMetadata": {
-    "title": "Céntrate (Deep Work)",
-    "originalTitle": "Deep Work: Rules for Focused Success in a Distracted World",
-    "author": "Cal Newport",
-    "publishYear": 2016,
-    "pages": 296,
+    "title": "El arte de gastar dinero",
+    "originalTitle": "The Art of Spending Money: Simple Choices for a Richer Life",
+    "author": "Morgan Housel",
+    "publishYear": 2025,
+    "pages": 256,
     "readingTimeHours": 3.8,
     "rating": 4.15,
-    "ratingsCount": "190K",
-    "salesCopies": "+3M COPIAS",
-    "coverImage": "assets/books/centrate-deep-work-cover.jpg",
-    "categoryTag": "PRODUCTIVIDAD COGNITIVA · ENFOQUE",
-    "goodreadsUrl": "https://www.goodreads.com/book/show/60055273-c-ntrate-deep-work-las-cuatro-reglas-para-el-xito-en-la-era-de-la-di"
+    "ratingsCount": "+45K",
+    "coverImage": "assets/books/el-arte-de-gastar-dinero-cover.jpg",
+    "fallbackCoverImage": "assets/books/el-arte-de-gastar-dinero-cover.svg",
+    "coverSource": "penguinrandomhouse-hd",
+    "categoryTag": "FINANZAS · PSICOLOGÍA",
+    "goodreadsUrl": "https://www.goodreads.com/book/show/231148075-the-art-of-spending-money"
   },
-  "synopsisCondensed": "A partir de cuatro reglas prácticas, Carl Newport demuestra que reforzar nuestra capacidad de concentración y saber alejarse de las distracciones tecnológicas son los primeros pasos para lograr la felicidad y el éxito profesional.. La capacidad de realizar Trabajo Profundo (Deep Work) se está volviendo cada vez más rara exactamente al mismo tiempo que se vuelve cada vez más valiosa en nuestra economía. El «Deep Work» es la capacidad de concentrarse sin distracciones en una tarea cognitivamente exigente. En un mundo altamente competitivo que además incentiva la hiperconexión y la multitarea, la atención se ha convertido en un activo extremadamente valioso. He is known for his writings about attention management in the digital age.",
+  "synopsisCondensed": "Morgan Housel desmantela la obsesión exclusiva por acumular para abordar la gran paradoja financiera: ganar dinero es una habilidad técnica, pero gastarlo para conseguir verdadera felicidad, autonomía y serenidad es un arte psicológico que casi nadie domina.",
   "mythVsReality": {
-    "mythLabel": "TRABAJO SUPERFICIAL",
-    "realityLabel": "TRABAJO PROFUNDO",
-    "mythExplanation": "Responder correos, chats y reuniones constantes que fragmentan tus neuronas y no crean valor.",
-    "realityExplanation": "Bloques de concentración extrema sin distracciones que multiplican tu velocidad y maestría."
+    "mythLabel": "MITO",
+    "realityLabel": "TESIS",
+    "mythExplanation": "Gastar en lujo visible demuestra éxito y genera satisfacción duradera.",
+    "realityExplanation": "El mayor dividendo del dinero es invisible: comprar tiempo, autonomía y paz mental."
   },
   "mathematicalProof": {
-    "dailyGainPct": 4,
-    "annualMultiplier": 5,
-    "declineMultiplier": 0.2,
-    "formulaLabel": "Producción = Tiempo × Intensidad de Enfoque",
-    "primaryBadge": "TRABAJO PROFUNDO",
-    "primaryRightBadge": "4 HORAS REALES",
-    "primaryValue": "5.00x",
-    "primarySub": "Tiempo × Intensidad de Enfoque (Fórmula de Newport)",
-    "secondaryTitle": "RESIDUO DE ATENCIÓN",
-    "secondarySub": "Mirar el móvil 1 vez tarda 23 min en recuperar el foco",
-    "secondaryValue": "-40% IQ"
+    "dailyGainPct": 1,
+    "annualMultiplier": 37.78,
+    "declineMultiplier": 0.03,
+    "formulaLabel": "Autonomía > Estatus"
   },
   "verifiedQuotes": [
-    {
-      "text": "El trabajo profundo es el superpoder del siglo veintiuno: enfocar sin distracción en una tarea exigente.",
-      "highlightPhrases": [
-        "superpoder del siglo veintiuno",
-        "enfocar sin distracción"
-      ],
-      "chapter": "Introducción · La hipótesis del Trabajo Profundo"
-    },
-    {
-      "text": "Quien eres, qué piensas, sientes y haces es la suma de aquello en lo que decides concentrarte.",
-      "highlightPhrases": [
-        "suma de aquello en lo que decides concentrarte"
-      ],
-      "chapter": "Capítulo 3 · El argumento neurológico del enfoque"
-    },
-    {
-      "text": "Tus esfuerzos por profundizar fracasarán si no destierras simultáneamente tu adicción a la distracción.",
-      "highlightPhrases": [
-        "adicción a la distracción"
-      ],
-      "chapter": "Regla 2 · Abraza el aburrimiento"
-    }
+    "El mayor dividendo que paga el dinero es la capacidad de controlar tu propio tiempo.",
+    "Gastar dinero para impresionar a gente que no te importa es la forma más rápida de quedarte sin dinero."
   ],
   "actionableLaws": [
     {
-      "index": "01",
-      "title": "TRABAJA CON PROFUNDIDAD",
-      "rule": "Bloques blindados de 90 min sin notificaciones",
-      "impactPct": 96,
+      "index": "LEY 01",
+      "title": "Marcador Interno",
+      "rule": "Gasta según lo que te aporta calma a ti, nunca para impresionar a los demás.",
+      "impactPct": 92,
       "highlight": true
     },
     {
-      "index": "02",
-      "title": "ABRAZA EL ABURRIMIENTO",
-      "rule": "No mires el móvil al esperar: entrena tu foco",
-      "impactPct": 91,
-      "highlight": false
-    },
-    {
-      "index": "03",
-      "title": "DEJA LAS REDES SOCIALES",
-      "rule": "Elimina apps que roban atención y aportan 0 valor",
-      "impactPct": 88,
+      "index": "LEY 02",
+      "title": "Compra de Tiempo",
+      "rule": "Usa tu dinero para eliminar tareas que odias y ganar horas de libertad.",
+      "impactPct": 95,
       "highlight": true
     },
     {
-      "index": "04",
-      "title": "DRENA LO SUPERFICIAL",
-      "rule": "Planifica cada minuto y apaga el trabajo a las 18h",
-      "impactPct": 94,
+      "index": "LEY 03",
+      "title": "Freno a la Inflación de Vida",
+      "rule": "Protege los placeres simples antes de que el lujo se vuelva tu nueva obligación.",
+      "impactPct": 89,
       "highlight": false
     }
   ],
   "tokenOptimizationStats": {
     "rawScrapedTokensApprox": 8400,
-    "normalizedDossierTokens": 1055,
-    "savingsPercentage": 87.4
+    "normalizedDossierTokens": 650,
+    "savingsPercentage": 92.3
   }
 }

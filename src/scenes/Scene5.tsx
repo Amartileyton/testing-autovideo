@@ -1,12 +1,23 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import type {
+  BookMetadata,
+  BookVisualData,
+  SceneLayoutPreset,
+  WordTimestamp,
+} from '../data/schema';
+import { BookCover } from '../components/BookCover';
 import {
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-} from 'remotion';
-import type { BookMetadata, BookVisualData } from '../data/schema';
-import { BRAND_CONFIG, SPRING_SNAPPY } from '../theme/motion';
-import { CtaEndCard, KineticCard } from '../components/kinetic';
+  BIG,
+  CTA_LAYOUT,
+  FS,
+  KineticWords,
+  PaleCard,
+  SceneFrame,
+  buildTokens,
+} from '../components/big';
+import { CLAMP_EXTRAPOLATION, SPRING_SNAPPY } from '../theme/motion';
+import { findKeywordFrameWindow } from '../utils/wordTimingBinder';
 
 export interface Scene5Props {
   headline?: string;
@@ -18,135 +29,224 @@ export interface Scene5Props {
   enterFrame?: number;
   bookMetadata?: BookMetadata;
   visualData?: BookVisualData;
+  layoutPreset?: SceneLayoutPreset;
+  wordTimestamps?: WordTimestamp[];
 }
 
 /**
- * Scene 5 — Tesis de Atención y Call To Action Final (@en1minuto.es):
- * 1. Titular limpio sin píldora superior.
- * 2. Tarjeta de Tesis en fondo bloc de notas ocre pálido (#FDF6DF) sin micro-etiquetas.
- * 3. CtaEndCard con Píldora Dinámica Animada (Reloj + @en1minuto.es).
+ * Scene 5 — MANIFIESTO + Leo Host + CTA (kit EDITORIAL PRO v4)
+ *  Arriba: cita manifiesto en tipografía cinética (se mantiene visible).
+ *  Medio (hasta el CTA): ficha del libro; al entrar el CTA se retira dando paso a Leo Avatar.
+ *  Abajo: tarjeta CTA con ranura para el reloj hero (volado desde Video.tsx).
+ *  Fórmula CTA: anclaje de guardado + promesa de marca + pregunta comunitaria concisa.
  */
 export const Scene5: React.FC<Scene5Props> = ({
-  headline = 'Protege tu Atención',
-  canvasOffsetX = 560,
-  canvasOffsetY = 3960,
-  enterFrame = 1402,
+  canvasOffsetX = 0,
+  canvasOffsetY = 0,
+  enterFrame = 0,
+  bookMetadata,
   visualData,
+  wordTimestamps,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const localFrame = Math.max(0, frame - enterFrame);
+  const local = frame - enterFrame;
 
-  // 1. Cabecera (frame 0)
-  const headerEntrance = spring({
-    frame: localFrame,
-    fps,
-    config: SPRING_SNAPPY,
-  });
+  const quote = visualData?.identityQuote ?? '';
+  const ctaHeadline = visualData?.ctaHeadline ?? visualData?.ctaActionText ?? 'GUARDA ESTE RESUMEN';
+  const handle = (visualData?.ctaHandle ?? '@en1minuto.es').toUpperCase();
+
+  const quoteTokens = useMemo(
+    () => buildTokens(quote, wordTimestamps, visualData?.highlightWords ?? [], 0),
+    [quote, wordTimestamps, visualData?.highlightWords]
+  );
+
+  const t = useMemo(() => {
+    const f = (kw: string | string[], fb: number, min = 0) =>
+      findKeywordFrameWindow(wordTimestamps, kw, fb, fb + 30, min).startFrame;
+    const bookT = Math.max(0, f(['arte'], 150, 100) - 8);
+    const ctaT = f(['guarda'], 250, bookT + 20);
+    const followT = f(['sigue'], 365, ctaT + 40);
+    const promiseT = f(['minuto'], 390, followT);
+    const questionT = f(['dominar'], 436, promiseT);
+    return { bookT, ctaT, followT, promiseT, questionT };
+  }, [wordTimestamps]);
+
+  const headTokens = useMemo(
+    () => buildTokens(ctaHeadline, wordTimestamps, ['guarda'], t.ctaT),
+    [ctaHeadline, wordTimestamps, t.ctaT]
+  );
+
+  const popAt = (start: number) =>
+    spring({ frame: Math.max(0, local - start), fps, config: SPRING_SNAPPY });
+
+  const followP = popAt(t.followT);
+  const promiseP = popAt(t.promiseT);
+  const questionP = popAt(t.questionT);
+  const saveP = popAt(Math.max(t.ctaT + 40, t.followT - 20));
+
+  const rating = bookMetadata?.rating;
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        left: canvasOffsetX,
-        top: canvasOffsetY,
-        width: 1080,
-        height: 1920,
-        pointerEvents: 'none',
-        padding: '0 96px',
-        boxSizing: 'border-box',
-      }}
-    >
-      {/* 1. Titular Limpio (Sin píldora superior) */}
+    <SceneFrame canvasOffsetX={canvasOffsetX} canvasOffsetY={canvasOffsetY}>
+      {/* 1. Manifiesto superior */}
+      <div style={{ position: 'absolute', top: BIG.contentTop, left: BIG.sideMargin, right: BIG.sideMargin }}>
+        <PaleCard frame={local} enterFrame={-4} from="top" style={{ padding: '28px 36px' }}>
+          <KineticWords tokens={quoteTokens} frame={local} fontSize={54} lineHeight={1.12} />
+        </PaleCard>
+      </div>
+
+      {/* 2. Ficha del libro (se retira al entrar el CTA para dar paso a Leo) */}
+      <div style={{ position: 'absolute', top: 330, left: BIG.sideMargin, right: BIG.sideMargin }}>
+        <PaleCard
+          frame={local}
+          enterFrame={t.bookT}
+          exitFrame={t.ctaT - 8}
+          from="left"
+          style={{ padding: '24px 30px', display: 'flex', gap: 28, alignItems: 'center' }}
+        >
+          <BookCover bookMetadata={bookMetadata} width={220} height={330} borderRadius={14} variant="hero" />
+          <div style={{ flex: 1 }}>
+            <div
+              style={{
+                fontFamily: BIG.font,
+                fontWeight: 800,
+                fontSize: 48,
+                lineHeight: 1.05,
+                letterSpacing: '-0.02em',
+                color: BIG.ink,
+              }}
+            >
+              {bookMetadata?.title}
+            </div>
+            <div
+              style={{
+                fontFamily: BIG.font,
+                fontWeight: 700,
+                fontSize: 34,
+                color: BIG.muted,
+                marginTop: 10,
+              }}
+            >
+              {bookMetadata?.author}
+            </div>
+            {rating ? (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginTop: 18,
+                  backgroundColor: BIG.ink,
+                  color: BIG.card,
+                  borderRadius: 14,
+                  padding: '6px 18px',
+                  fontFamily: BIG.font,
+                  fontWeight: 800,
+                  fontSize: 36,
+                }}
+              >
+                <span style={{ color: '#F59E0B' }}>★</span>
+                {rating}
+              </div>
+            ) : null}
+          </div>
+        </PaleCard>
+      </div>
+
+      {/* 4. CTA con ranura de reloj acoplado */}
       <div
         style={{
           position: 'absolute',
-          top: 140,
-          left: 96,
-          right: 96,
-          opacity: headerEntrance,
-          transform: `translateY(${(1 - headerEntrance) * -20}px)`,
+          top: CTA_LAYOUT.cardTop,
+          left: BIG.sideMargin,
+          right: BIG.sideMargin,
         }}
       >
-        <h1
+        <PaleCard
+          frame={local}
+          enterFrame={t.ctaT - 4}
+          from="bottom"
+          borderColor={BIG.accent}
           style={{
-            fontFamily: "'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif",
-            fontSize: 60,
-            fontWeight: 900,
-            color: '#141413',
-            margin: 0,
-            lineHeight: 1.06,
-            letterSpacing: '-0.035em',
+            borderWidth: 5,
+            padding: '24px 32px 24px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 16,
           }}
         >
-          {visualData?.headlineTitle || headline}
-        </h1>
-      </div>
+          {/* Ranura del reloj (el reloj vuela aquí desde Video.tsx) */}
+          <div style={{ height: CTA_LAYOUT.clockSize + 6 }} />
 
-      {/* 2. Tarjeta de Identidad en KineticCard (Sin píldoras pequeñas) */}
-      <div style={{ position: 'absolute', top: 265, left: 96, right: 96 }}>
-        <KineticCard
-          enterFrame={enterFrame + 30}
-          accentBorderColor="#141413"
-          padding="34px 38px"
-          style={{
-            borderTop: '8px solid #D94E34',
-          }}
-        >
-          <blockquote
+          <KineticWords tokens={headTokens} frame={local} fontSize={44} lineHeight={1.08} />
+
+          <div
             style={{
-              margin: 0,
-              fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-              fontSize: 34,
+              opacity: Math.min(1, saveP * 1.6),
+              transform: `scale(${interpolate(saveP, [0, 1], [0.8, 1], CLAMP_EXTRAPOLATION)})`,
+              fontFamily: BIG.font,
               fontWeight: 800,
-              fontStyle: 'normal',
-              lineHeight: 1.32,
-              color: '#141413',
-              letterSpacing: '-0.02em',
+              fontSize: 32,
+              color: BIG.ink,
+              backgroundColor: BIG.cream,
+              border: `3px solid ${BIG.ink}`,
+              borderRadius: 999,
+              padding: '6px 26px',
             }}
           >
-            «Quien eres y lo que logras es la suma de aquello en lo que decides{' '}
-            <span
+            🔖 GUARDA EL RESUMEN
+          </div>
+
+          <div
+            style={{
+              opacity: Math.min(1, followP * 1.6),
+              transform: `scale(${interpolate(followP, [0, 1], [0.8, 1], CLAMP_EXTRAPOLATION)})`,
+              fontFamily: BIG.font,
+              fontWeight: 800,
+              fontSize: 40,
+              color: BIG.cream,
+              backgroundColor: BIG.accent,
+              border: `3px solid ${BIG.ink}`,
+              borderRadius: 24,
+              padding: '16px 32px',
+              boxShadow: '0 12px 26px rgba(217, 78, 52, 0.35)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            🔔 SÍGUENOS · {handle}
+          </div>
+
+          <div
+            style={{
+              opacity: Math.min(1, promiseP * 1.6),
+              fontFamily: BIG.font,
+              fontWeight: 800,
+              fontSize: 32,
+              color: BIG.ink,
+            }}
+          >
+            {visualData?.brandPromise ?? '1 libro clave cada día en 60 s'}
+          </div>
+
+          {visualData?.communityQuestion ? (
+            <div
               style={{
-                backgroundColor: 'rgba(217, 78, 52, 0.20)',
-                padding: '2px 8px',
-                borderRadius: 6,
-                color: '#D94E34',
-                fontWeight: 900,
+                opacity: Math.min(1, questionP * 1.6),
+                transform: `translateY(${(1 - questionP) * 16}px)`,
+                fontFamily: BIG.font,
+                fontWeight: 700,
+                fontSize: 28,
+                color: BIG.muted,
+                textAlign: 'center',
               }}
             >
-              concentrarte
-            </span>
-            .»
-          </blockquote>
-
-          <p
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 18,
-              color: '#575550',
-              marginTop: 16,
-              marginBottom: 0,
-              fontWeight: 600,
-            }}
-          >
-            {visualData?.identitySub ||
-              'Tu atención es el activo más escaso y valioso de esta década.'}
-          </p>
-        </KineticCard>
+              💬 {visualData.communityQuestion}
+            </div>
+          ) : null}
+        </PaleCard>
       </div>
-
-      {/* 3. Tarjeta Final de Call To Action con Píldora Dinámica (Reloj + @en1minuto.es) */}
-      <div style={{ position: 'absolute', top: 585, left: 96, right: 96 }}>
-        <CtaEndCard
-          enterFrame={enterFrame + 155}
-          handle={BRAND_CONFIG.channelHandle}
-          questionText={
-            visualData?.ctaPrompt ??
-            '¿Cuántas horas de concentración real logras al día? Comenta abajo'
-          }
-        />
-      </div>
-    </div>
+    </SceneFrame>
   );
 };

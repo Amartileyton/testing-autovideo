@@ -1,23 +1,11 @@
 import React from 'react';
 import { Composition } from 'remotion';
-import { loadFont as loadPlusJakartaSans } from '@remotion/google-fonts/PlusJakartaSans';
-import { loadFont as loadInter } from '@remotion/google-fonts/Inter';
-import { loadFont as loadNunito } from '@remotion/google-fonts/Nunito';
 import audioManifestJson from '../public/audio/info.json';
 import scenesJson from './data/scenes.json';
 import { VideoPropsSchema, type AudioManifest } from './data/schema';
 import { BLUEPRINT_THEMES, VIDEO_CONFIG } from './theme/motion';
 import { Video } from './Video';
-import {
-  CATALOG_SHOWCASE_DURATION,
-  CATALOG_SHOWCASE_FPS,
-  CatalogShowcaseVideo,
-} from './CatalogShowcaseVideo';
-
-// Cargar fuentes oficiales (titulares Plus Jakarta Sans, cuerpo Inter, subtítulos con Nunito sin aristas agudas)
-loadPlusJakartaSans();
-loadInter();
-loadNunito();
+import { LeoShowcase } from './scenes/LeoShowcase';
 
 const manifest = audioManifestJson as AudioManifest;
 
@@ -37,7 +25,8 @@ const calculateTotalFrames = (audioManifest: AudioManifest): number => {
   );
   const totalOverlap =
     Math.max(0, audioManifest.scenes.length - 1) * crossDissolve;
-  return Math.max(30, rawSum - totalOverlap);
+  const initialLead = 12; // 12 fotogramas (400ms) de pre-roll inicial para dicción limpia sin cortes
+  return Math.max(30, rawSum - totalOverlap + initialLead);
 };
 
 export const RemotionRoot: React.FC = () => {
@@ -57,19 +46,19 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={{
           title:
             scenesJson.projectTitle ||
-            'Céntrate (Deep Work) — Cal Newport (Resumen 60s)',
+            '12 reglas para vivir — Jordan B. Peterson (Resumen 65s)',
           surfaceColor: BLUEPRINT_THEMES.EDITORIAL_PAPER.surface,
           enableCaptions: true,
-          enableBackgroundMusic: false,
-          enableGrain: true,
-          enableVignette: true,
+          enableBackgroundMusic: true,
         }}
       />
+
+      {/* Composición de Auditoría y Verificación de la Mascota Humana "Leo" */}
       <Composition
-        id="CatalogShowcase"
-        component={CatalogShowcaseVideo}
-        durationInFrames={CATALOG_SHOWCASE_DURATION}
-        fps={CATALOG_SHOWCASE_FPS}
+        id="LeoShowcase"
+        component={LeoShowcase}
+        durationInFrames={330}
+        fps={fps}
         width={VIDEO_CONFIG.width}
         height={VIDEO_CONFIG.height}
       />

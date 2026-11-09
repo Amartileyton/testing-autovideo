@@ -1,11 +1,14 @@
-import React from 'react';
-import {
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-} from 'remotion';
-import type { BookMetadata, BookVisualData } from '../data/schema';
-import { PALETTE, SPRING_SNAPPY } from '../theme/motion';
+import React, { useMemo } from 'react';
+import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import type {
+  BookMetadata,
+  BookVisualData,
+  SceneLayoutPreset,
+  WordTimestamp,
+} from '../data/schema';
+import { BIG, FS, PaleCard, SceneFrame, TriangleConnector } from '../components/big';
+import { CLAMP_EXTRAPOLATION, SPRING_SNAPPY } from '../theme/motion';
+import { findKeywordFrameWindow } from '../utils/wordTimingBinder';
 
 export interface Scene4Props {
   headline?: string;
@@ -17,197 +20,133 @@ export interface Scene4Props {
   enterFrame?: number;
   bookMetadata?: BookMetadata;
   visualData?: BookVisualData;
+  layoutPreset?: SceneLayoutPreset;
+  wordTimestamps?: WordTimestamp[];
 }
 
-const DEFAULT_LAWS = [
-  {
-    num: '01',
-    title: 'TRABAJA CON PROFUNDIDAD',
-    desc: 'Blinda bloques de 90 minutos sin notificaciones',
-    triggerFrame: 45,
-  },
-  {
-    num: '02',
-    title: 'ABRAZA EL ABURRIMIENTO',
-    desc: 'No mires el móvil al esperar: entrena tu foco',
-    triggerFrame: 105,
-  },
-  {
-    num: '03',
-    title: 'DEJA LAS REDES SOCIALES',
-    desc: 'Elimina apps que roban atención y aportan 0 valor',
-    triggerFrame: 165,
-  },
-  {
-    num: '04',
-    title: 'DRENA LO SUPERFICIAL',
-    desc: 'Planifica cada minuto y apaga el trabajo a las 18h',
-    triggerFrame: 225,
-  },
-];
+const CARD_H = 320;
+const GAP_H = 75;
+const ACCENTS = [BIG.accent, BIG.amber, BIG.green];
 
 /**
- * Scene 4 — Las 4 Reglas Accionables en Cascada (@en1minuto.es):
- * Cajón de 4 fichas en fondo bloc de notas ocre pálido (#FDF6DF), sin píldoras pequeñas de relleno.
+ * Scene 4 — 3 LEYES ACCIONABLES (kit EDITORIAL PRO v4)
+ * Cascada vertical de 3 tarjetas de 320px con numeral destacado, título conciso y regla de ≤ 6 palabras.
+ * Conectores triangulares puros sin texto. Cada ley se enciende sincronizada a la locución.
  */
 export const Scene4: React.FC<Scene4Props> = ({
-  headline = 'Las 4 Reglas de Céntrate',
   canvasOffsetX = 0,
-  canvasOffsetY = 1980,
-  enterFrame = 1091,
+  canvasOffsetY = 0,
+  enterFrame = 0,
   visualData,
+  wordTimestamps,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const localFrame = Math.max(0, frame - enterFrame);
+  const local = frame - enterFrame;
+  const laws = (visualData?.actionableLaws ?? []).slice(0, 3);
 
-  // 1. Cabecera (frame 0)
-  const headerEntrance = spring({
-    frame: localFrame,
-    fps,
-    config: SPRING_SNAPPY,
-  });
-
-  const lawsToRender = React.useMemo(() => {
-    if (visualData?.actionableLaws && visualData.actionableLaws.length === 4) {
-      const triggers = [45, 105, 165, 225];
-      return visualData.actionableLaws.map((item, idx) => ({
-        num: item.index || `0${idx + 1}`,
-        title: item.title,
-        desc: item.rule,
-        triggerFrame: triggers[idx] ?? 50 + idx * 55,
-      }));
-    }
-    return DEFAULT_LAWS;
-  }, [visualData]);
+  const starts = useMemo(() => {
+    const result: number[] = [];
+    laws.forEach((law, i) => {
+      const fb = 100 + i * 110;
+      const min = i === 0 ? 0 : result[i - 1] + 20;
+      const raw = findKeywordFrameWindow(wordTimestamps, law.triggerKeyword ?? law.title, fb, fb + 40, min).startFrame;
+      // La tarjeta entra ~14 fotogramas antes de la palabra clave para que llegue con la voz
+      result.push(Math.max(min, raw - 14));
+    });
+    return result;
+  }, [laws, wordTimestamps]);
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        left: canvasOffsetX,
-        top: canvasOffsetY,
-        width: 1080,
-        height: 1920,
-        pointerEvents: 'none',
-        padding: '0 96px',
-        boxSizing: 'border-box',
-      }}
-    >
-      {/* 1. Titular Limpio (Sin píldora superior) */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 140,
-          left: 96,
-          right: 96,
-          opacity: headerEntrance,
-          transform: `translateY(${(1 - headerEntrance) * -20}px)`,
-        }}
-      >
-        <h1
-          style={{
-            fontFamily: "'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif",
-            fontSize: 60,
-            fontWeight: 900,
-            color: '#141413',
-            margin: 0,
-            lineHeight: 1.06,
-            letterSpacing: '-0.035em',
-          }}
-        >
-          {visualData?.headlineTitle || headline}
-        </h1>
-      </div>
-
-      {/* 2. Cajón de las 4 Fichas Cinéticas en Cascada (Sin etiquetas pequeñas ni badges) */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 265,
-          left: 96,
-          right: 96,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 22,
-        }}
-      >
-        {lawsToRender.map((law) => {
-          const isTriggered = localFrame >= law.triggerFrame;
-          const lawProgress = spring({
-            frame: Math.max(0, localFrame - law.triggerFrame),
-            fps,
-            config: SPRING_SNAPPY,
-          });
+    <SceneFrame canvasOffsetX={canvasOffsetX} canvasOffsetY={canvasOffsetY}>
+      <div style={{ position: 'absolute', top: BIG.contentTop, left: BIG.sideMargin, right: BIG.sideMargin }}>
+        {laws.map((law, i) => {
+          const t = starts[i] ?? 9999;
+          const nextT = starts[i + 1] ?? 99999;
+          const lit = local >= t;
+          const isActive = lit && local < nextT;
+          const p = spring({ frame: Math.max(0, local - t), fps, config: SPRING_SNAPPY });
+          const accent = ACCENTS[i % ACCENTS.length];
+          const numScale = isActive ? interpolate(p, [0, 1], [1.25, 1], CLAMP_EXTRAPOLATION) : 1;
 
           return (
-            <div
-              key={law.num}
-              style={{
-                position: 'relative',
-                backgroundColor: PALETTE.cardNotepad,
-                border: isTriggered
-                  ? '2.5px solid #D94E34'
-                  : `2px solid ${PALETTE.cardBorder}`,
-                borderLeft: isTriggered
-                  ? '10px solid #D94E34'
-                  : `2px solid ${PALETTE.cardBorder}`,
-                borderRadius: 20,
-                padding: '28px 34px',
-                boxShadow: isTriggered
-                  ? '0 16px 40px rgba(217, 78, 52, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04)'
-                  : '0 6px 18px rgba(45, 43, 40, 0.05)',
-                opacity: lawProgress,
-                transform: `translateX(${(1 - lawProgress) * 50}px) scale(${isTriggered ? 1.01 : 0.98})`,
-                transformOrigin: 'left center',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 28,
-              }}
-            >
-              <div
+            <React.Fragment key={law.index}>
+              <PaleCard
+                frame={local}
+                enterFrame={2 + i * 5}
+                from="bottom"
+                borderColor={lit ? (isActive ? accent : BIG.ink) : 'rgba(20,20,19,0.35)'}
+                borderStyle={lit ? 'solid' : 'dashed'}
+                restScale={isActive ? 1.02 : 1}
                 style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: 38,
-                  fontWeight: 900,
-                  color: isTriggered ? '#D94E34' : '#78716C',
-                  minWidth: 54,
-                  lineHeight: 1,
+                  height: CARD_H,
+                  padding: '0 32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 28,
+                  borderWidth: isActive ? 5 : 3,
+                  opacity: lit ? 1 : 0.45,
                 }}
               >
-                {law.num}
-              </div>
-
-              <div>
                 <div
                   style={{
-                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-                    fontSize: 31,
-                    fontWeight: 900,
-                    color: '#141413',
-                    letterSpacing: '-0.02em',
-                    marginBottom: 6,
-                    lineHeight: 1.1,
+                    flexShrink: 0,
+                    width: 130,
+                    height: 130,
+                    borderRadius: 65,
+                    backgroundColor: lit ? accent : 'transparent',
+                    border: `4px solid ${lit ? BIG.ink : 'rgba(20,20,19,0.35)'}`,
+                    color: lit ? BIG.cream : 'rgba(20,20,19,0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: BIG.font,
+                    fontWeight: 800,
+                    fontSize: 80,
+                    transform: `scale(${numScale})`,
                   }}
                 >
-                  {law.title}
+                  {String(i + 1)}
                 </div>
-                <div
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 18,
-                    fontWeight: 600,
-                    color: '#575550',
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {law.desc}
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      fontFamily: BIG.font,
+                      fontWeight: 800,
+                      fontSize: 54,
+                      lineHeight: 1.04,
+                      letterSpacing: '-0.02em',
+                      color: BIG.ink,
+                    }}
+                  >
+                    {law.title}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: BIG.font,
+                      fontWeight: 700,
+                      fontSize: 32,
+                      lineHeight: 1.18,
+                      color: BIG.muted,
+                      marginTop: 10,
+                    }}
+                  >
+                    {law.shortRule ?? law.rule}
+                  </div>
                 </div>
-              </div>
-            </div>
+              </PaleCard>
+              {i < laws.length - 1 ? (
+                <TriangleConnector
+                  frame={local}
+                  enterFrame={nextT - 6}
+                  color={i === 0 ? BIG.accent : BIG.amber}
+                  height={GAP_H}
+                />
+              ) : null}
+            </React.Fragment>
           );
         })}
       </div>
-    </div>
+    </SceneFrame>
   );
 };

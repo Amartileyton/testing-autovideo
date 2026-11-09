@@ -1,6 +1,6 @@
 import React from 'react';
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { CLAMP_EXTRAPOLATION, PALETTE, SPRING_SNAPPY } from '../../theme/motion';
+import { CLAMP_EXTRAPOLATION, SPRING_SNAPPY } from '../../theme/motion';
 
 export interface KineticCardProps {
   children: React.ReactNode;
@@ -12,7 +12,11 @@ export interface KineticCardProps {
   tiltDeg?: number;
   /** Color de acento de la tarjeta o del borde */
   accentBorderColor?: string;
-  /** (Obsoleto / Ignorado por limpieza corporativa) */
+  /** Color de fondo de la tarjeta (por defecto amarillo pálido #FEF9C3) */
+  backgroundColor?: string;
+  /** Título limpio integrado en la cabecera de la tarjeta */
+  title?: string;
+  /** Badge o título superior opcional */
   badgeText?: string;
   badgeColor?: string;
   width?: number | string;
@@ -21,8 +25,8 @@ export interface KineticCardProps {
 }
 
 /**
- * KineticCard — Tarjeta Cinética Multicapa 2.5D con Fondo Bloc de Notas Ocre Pálido (#FDF6DF)
- * Sin píldoras ni micro-etiquetas superfluas.
+ * KineticCard — Tarjeta Cinética Multicapa 2.5D en Amarillo Pálido (#FEF9C3)
+ * Entrada elástica con inercia, título limpio integrado y sombras suaves multicapa.
  */
 export const KineticCard: React.FC<KineticCardProps> = ({
   children,
@@ -30,8 +34,12 @@ export const KineticCard: React.FC<KineticCardProps> = ({
   enterY = 40,
   tiltDeg = 0,
   accentBorderColor = '#141413',
+  backgroundColor = '#FEF9C3',
+  title,
+  badgeText,
+  badgeColor = '#D94E34',
   width = '100%',
-  padding = '30px 36px',
+  padding = '28px 32px',
   style,
 }) => {
   const frame = useCurrentFrame();
@@ -59,19 +67,21 @@ export const KineticCard: React.FC<KineticCardProps> = ({
     CLAMP_EXTRAPOLATION
   );
 
+  const headerTitle = title || badgeText;
+
   return (
     <div
       style={{
         position: 'relative',
         width,
-        backgroundColor: PALETTE.cardNotepad,
+        backgroundColor,
         border: accentBorderColor
           ? `2px solid ${accentBorderColor}`
-          : `1.5px solid ${PALETTE.cardBorder}`,
+          : '2px solid #141413',
         borderRadius: 20,
         padding,
         boxShadow:
-          '0 20px 50px rgba(45, 43, 40, 0.09), 0 4px 12px rgba(45, 43, 40, 0.04)',
+          '0 20px 50px rgba(20, 20, 19, 0.08), 0 4px 12px rgba(20, 20, 19, 0.04)',
         boxSizing: 'border-box',
         opacity: entranceSpring,
         transform: `translateY(${translateY}px) scale(${scale}) perspective(1000px) rotateX(${tiltDeg}deg)`,
@@ -79,6 +89,39 @@ export const KineticCard: React.FC<KineticCardProps> = ({
         ...style,
       }}
     >
+      {headerTitle && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            marginBottom: 14,
+            paddingBottom: 10,
+            borderBottom: '1.5px solid rgba(20, 20, 19, 0.12)',
+          }}
+        >
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              backgroundColor: badgeColor,
+              flexShrink: 0,
+            }}
+          />
+          <span
+            style={{
+              fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+              fontSize: 18,
+              fontWeight: 800,
+              color: '#141413',
+              letterSpacing: '-0.01em',
+            }}
+          >
+            {headerTitle}
+          </span>
+        </div>
+      )}
       {children}
     </div>
   );

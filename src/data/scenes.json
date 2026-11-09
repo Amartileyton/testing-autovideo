@@ -1,31 +1,36 @@
 {
-  "projectTitle": "Céntrate (Deep Work) — Cal Newport (Resumen 65s)",
+  "projectTitle": "El arte de gastar dinero — Morgan Housel (Resumen 65s)",
   "fps": 30,
   "width": 1080,
   "height": 1920,
   "crossDissolveFrames": 10,
   "bookMetadata": {
-    "title": "Céntrate (Deep Work)",
-    "originalTitle": "Deep Work: Rules for Focused Success in a Distracted World",
-    "author": "Cal Newport",
-    "publishYear": 2016,
-    "pages": 296,
+    "title": "El arte de gastar dinero",
+    "originalTitle": "The Art of Spending Money: Simple Choices for a Richer Life",
+    "author": "Morgan Housel",
+    "publishYear": 2025,
+    "pages": 256,
     "readingTimeHours": 3.8,
     "rating": 4.15,
-    "ratingsCount": "190K",
-    "salesCopies": "+3M COPIAS",
-    "coverImage": "assets/books/centrate-deep-work-cover.jpg",
-    "categoryTag": "PRODUCTIVIDAD COGNITIVA · ENFOQUE",
-    "goodreadsUrl": "https://www.goodreads.com/book/show/60055273-c-ntrate-deep-work-las-cuatro-reglas-para-el-xito-en-la-era-de-la-di"
+    "ratingsCount": "+45K",
+    "salesCopies": "+1M",
+    "coverImage": "assets/books/el-arte-de-gastar-dinero-cover.jpg",
+    "fallbackCoverImage": "assets/books/el-arte-de-gastar-dinero-cover.svg",
+    "categoryTag": "FINANZAS · PSICOLOGÍA",
+    "goodreadsUrl": "https://www.goodreads.com/book/show/231148075-the-art-of-spending-money",
+    "coverSource": "penguinrandomhouse-hd",
+    "ratingSource": "Goodreads",
+    "ratingDate": "2026-10"
   },
   "scenes": [
     {
       "id": "scene-1",
-      "title": "El superpoder perdido",
-      "text": "El trabajo profundo es el superpoder del siglo veintiuno. [PAUSA 0.4s] Cal Newport revela que concentrarse sin distracciones en tareas exigentes es hoy un activo escaso. [PAUSA 0.4s] Es la clave para destacar en nuestra economía digital actual.",
+      "title": "LA GRAN PARADOJA DEL DINERO",
+      "text": "¿Por qué acumular dinero no te hace sentir más libre? [PAUSA 0.4s] Morgan Housel revela que ganar dinero es una habilidad técnica, pero gastarlo con sabiduría es un arte emocional que casi nadie domina.",
       "characterPreset": "dramatic",
-      "blueprintMode": "DARK_CAD_XRAY",
-      "visualCue": "Señal de alerta parpadeante, portada oficial de Céntrate (Deep Work) y pop-ups de ventas (+3M copias) y Goodreads (★ 4.15).",
+      "blueprintMode": "EDITORIAL_PAPER",
+      "layoutPreset": "HOOK_COVER_QUESTION",
+      "visualCue": "Portada editorial 2.5D de El arte de gastar dinero de Morgan Housel con 3 píldoras GoodreadsBadgeCluster (Morgan Housel, Logo Goodreads ★ 4.15, +45K Lectores) y Pregunta Provocadora Subrayada Editorial.",
       "cameraTarget": {
         "x": 0,
         "y": 0,
@@ -33,23 +38,70 @@
         "rotateDeg": 0
       },
       "metrics": {
-        "label": "RATING GOODREADS",
+        "label": "VALORACIÓN GOODREADS",
         "numericValue": 4.15,
         "unit": "★"
       },
       "bookVisualData": {
-        "badgeVentas": "+3M COPIAS",
+        "provocativeQuestion": "¿Gastas tu dinero para disfrutar de tu vida o para impresionar a gente que ni siquiera conoces?",
+        "provocativeHighlight": "impresionar a gente",
+        "hookStat": "100%",
+        "hookNumericValue": 100,
+        "hookUnit": "%",
+        "hookLabel": "De tu bienestar depende de cómo gastas, no de cuánto acumulas",
+        "hookSource": "El Arte de Gastar Dinero · Morgan Housel",
+        "hookTriggerKeyword": [
+          "acumular",
+          "libre",
+          "dinero"
+        ],
+        "battleTriggerKeyword": [
+          "habilidad",
+          "sabiduria",
+          "emocional"
+        ],
+        "mythLabel": "Mito: Gasto de Estatus",
+        "mythSubtitle": "Comprar bienes visibles para impresionar a desconocidos",
+        "mythTag": "TRAMPA FINANCIERA",
+        "realityLabel": "Tesis: Comprar Libertad",
+        "realitySubtitle": "Usar el dinero para ganar control sobre tu propio tiempo",
+        "realityTag": "EL ARTE REAL (100%)",
         "goodreadsRating": "★ 4.15",
-        "goodreadsReviews": "190K reseñas"
+        "goodreadsReviews": "+45K lectores",
+        "rulerLabel": "256 PÁGINAS · +45K LECTORES EN GOODREADS",
+        "hookText": "¿Por qué acumular dinero no te hace sentir más libre?",
+        "hookHighlight": [
+          "acumular dinero",
+          "más libre"
+        ],
+        "duelALabel": "LO TÉCNICO",
+        "duelAValue": "GANAR DINERO",
+        "duelATrigger": [
+          "ganar",
+          "habilidad"
+        ],
+        "duelBLabel": "EL ARTE REAL",
+        "duelBValue": "SABER GASTARLO",
+        "duelBTrigger": [
+          "gastarlo",
+          "sabiduria",
+          "arte"
+        ],
+        "duelBTag": "ARTE EMOCIONAL",
+        "duelTagTrigger": [
+          "emocional",
+          "domina"
+        ]
       }
     },
     {
       "id": "scene-2",
-      "title": "La trampa de la atención",
-      "text": "Mirar el móvil solo una vez genera un residuo de atención que reduce tu coeficiente intelectual en un cuarenta por ciento. [PAUSA 0.4s] La multitarea constante fragmenta tus neuronas y destruye tu capacidad de crear valor real.",
+      "title": "EL CIRCUITO DEL ESTATUS",
+      "text": "La gran paradoja del gasto: [PAUSA 0.4s] casi todas las compras de lujo no buscan satisfacción propia, sino comprar la admiración de personas que ni siquiera conocemos.",
       "characterPreset": "narrator",
-      "blueprintMode": "DARK_CAD_XRAY",
-      "visualCue": "Tarjeta comparativa entre Trabajo Superficial (fragmentación) y Trabajo Profundo (foco extremo) con cita de Cal Newport.",
+      "blueprintMode": "EDITORIAL_PAPER",
+      "layoutPreset": "THESIS_LOOP_CIRCUIT",
+      "visualCue": "Circuito vectorial VectorLoopCircuit de 4 fases (Compra de Lujo ➔ Búsqueda de Envidia ➔ Admiración Falsa ➔ Vacío Emocional) con activación sincronizada a la voz y tarjeta en amarillo pálido #FEF9C3.",
       "cameraTarget": {
         "x": 1120,
         "y": 0,
@@ -57,28 +109,86 @@
         "rotateDeg": 0
       },
       "metrics": {
-        "label": "VALOR COGNITIVO",
-        "numericValue": 100,
-        "unit": "% ENFOQUE"
+        "label": "TRAMPA DEL ESTATUS",
+        "numericValue": 1,
+        "unit": "PARADOJA"
       },
       "bookVisualData": {
-        "sectionBadge": "PUNTO 01 · LA GRAN PARADOJA",
-        "headlineTitle": "OCUPADO ≠ PRODUCTIVO",
-        "mythLabel": "TRABAJO SUPERFICIAL",
-        "mythText": "Responder correos, chats y reuniones constantes que fragmentan tus neuronas y no crean valor.",
-        "realityLabel": "TRABAJO PROFUNDO",
-        "realityText": "Bloques de concentración extrema sin distracciones que multiplican tu velocidad y maestría.",
-        "quote": "El trabajo profundo es el superpoder del siglo veintiuno: enfocar sin distracción en una tarea exigente.",
-        "quoteAuthor": "Cal Newport"
+        "hookTriggerKeyword": [
+          "gran",
+          "paradoja",
+          "gasto"
+        ],
+        "growthMetric": "PARADOJA 01",
+        "growthFormula": "Lujo Visible ≠ Felicidad Real",
+        "formulaLabel": "PARADOJA · COMPRAR ADMIRACIÓN",
+        "loopSteps": [
+          "COMPRA DE LUJO",
+          "BÚSQUEDA DE ENVIDIA",
+          "ADMIRACIÓN FALSA",
+          "VACÍO EMOCIONAL"
+        ],
+        "circuitNodes": [
+          {
+            "id": "luxury",
+            "num": "01",
+            "label": "COMPRA DE LUJO",
+            "sublabel": "Gasto impulsado por imagen externa",
+            "triggerKeyword": [
+              "compras",
+              "lujo"
+            ]
+          },
+          {
+            "id": "envy",
+            "num": "02",
+            "label": "ENVIDIA AJENA",
+            "sublabel": "Confundir envidia con respeto",
+            "triggerKeyword": [
+              "satisfaccion",
+              "propia"
+            ]
+          },
+          {
+            "id": "admiration",
+            "num": "03",
+            "label": "ADMIRACIÓN FALSA",
+            "sublabel": "La gente admira el objeto, no a ti",
+            "triggerKeyword": [
+              "admiracion",
+              "personas"
+            ]
+          },
+          {
+            "id": "emptiness",
+            "num": "04",
+            "label": "VACÍO EMOCIONAL",
+            "sublabel": "La euforia material se evapora rápido",
+            "triggerKeyword": [
+              "conocemos",
+              "siquiera"
+            ]
+          }
+        ],
+        "centralQuote": "«Comprar cosas para impresionar a otros es la forma más rápida de quedarte sin dinero.»",
+        "highlightWords": [
+          "admiración de personas",
+          "satisfacción propia"
+        ],
+        "thesisHeadline": "EL CIRCUITO DEL ESTATUS",
+        "thesisHighlight": [
+          "ESTATUS"
+        ]
       }
     },
     {
       "id": "scene-3",
-      "title": "La fórmula del éxito",
-      "text": "Tu producción es igual al tiempo multiplicado por la intensidad de enfoque. [PAUSA 0.4s] Con cuatro horas reales de trabajo profundo, puedes multiplicar tu rendimiento hasta cinco veces. [PAUSA 0.4s] Es la diferencia entre ser promedio o extraordinario.",
+      "title": "TU MARCADOR INTERNO",
+      "text": "La regla de oro de Housel: [PAUSA 0.4s] cambia tu marcador externo por un baremo interno. [PAUSA 0.4s] El mayor dividendo que paga el dinero no son los lujos, es la autonomía total sobre tu tiempo.",
       "characterPreset": "expert",
-      "blueprintMode": "CHRONO_OSCILLOSCOPE",
-      "visualCue": "Tarjeta matemática de Cal Newport: Producción = Tiempo × Intensidad (5.00x) frente al Residuo de Atención (-40% IQ).",
+      "blueprintMode": "EDITORIAL_PAPER",
+      "layoutPreset": "RULE_SUBSTITUTION_DIAGRAM",
+      "visualCue": "Tarjeta de Cita Subrayada (KineticCard) con contraste radical: sustitución del marcador externo de estatus por el dividendo de autonomía y tiempo.",
       "cameraTarget": {
         "x": 1120,
         "y": 1980,
@@ -86,29 +196,103 @@
         "rotateDeg": 0
       },
       "metrics": {
-        "label": "RENDIMIENTO COGNITIVO",
-        "numericValue": 5,
-        "unit": "x"
+        "label": "DIVIDENDO DE VIDA",
+        "numericValue": 100,
+        "unit": "% AUTONOMÍA"
       },
       "bookVisualData": {
-        "sectionBadge": "PUNTO 02 · LEY MATEMÁTICA",
-        "headlineTitle": "LA ECUACIÓN DEL FOCO",
-        "primaryBadge": "TRABAJO PROFUNDO",
-        "primaryRightBadge": "4 HORAS REALES",
-        "targetCounterValue": 5,
-        "formulaLabel": "Producción = Tiempo × Intensidad de Enfoque",
-        "secondaryTitle": "RESIDUO DE ATENCIÓN",
-        "secondarySub": "Mirar el móvil 1 vez tarda 23 min en recuperar el foco",
-        "secondaryValue": "-40% IQ"
+        "mythLabel": "Marcador Externo de Estatus",
+        "mythSubtitle": "Vivir endeudado para validar tu valía frente al juicio de terceros",
+        "mythTag": "ESCLAVITUD MODERNA",
+        "realityLabel": "Marcador Interno de Autonomía",
+        "realitySubtitle": "Comprar tiempo libre, tranquilidad financiera e independencia",
+        "realityTag": "DIVIDENDO SUPREMO (100%)",
+        "circuitNodes": [
+          {
+            "id": "marcador_ext",
+            "num": "01",
+            "label": "MARCADOR EXTERNO",
+            "sublabel": "Estatus y validación ajena",
+            "triggerKeyword": [
+              "marcador",
+              "externo"
+            ]
+          },
+          {
+            "id": "baremo_int",
+            "num": "02",
+            "label": "BAREMO INTERNO",
+            "sublabel": "Tus valores auténticos",
+            "triggerKeyword": [
+              "baremo",
+              "interno"
+            ]
+          },
+          {
+            "id": "dividendo",
+            "num": "03",
+            "label": "MAYOR DIVIDENDO",
+            "sublabel": "No cosas materiales",
+            "triggerKeyword": [
+              "dividendo",
+              "paga"
+            ]
+          },
+          {
+            "id": "autonomia",
+            "num": "04",
+            "label": "AUTONOMÍA TOTAL",
+            "sublabel": "Dueño absoluto de tu tiempo",
+            "triggerKeyword": [
+              "autonomia",
+              "tiempo"
+            ]
+          }
+        ],
+        "centralQuote": "El mayor dividendo que paga el dinero es la capacidad de levantarte cada mañana y decidir qué hacer con tu día.",
+        "highlightWords": [
+          "marcador externo por un baremo interno",
+          "autonomía total sobre tu tiempo"
+        ],
+        "formulaLabel": "Riqueza Invisible > Lujo Visible",
+        "formulaSublabel": "El valor del dinero se mide en horas libres, no en posesiones",
+        "swapFrom": "MARCADOR EXTERNO",
+        "swapFromTrigger": [
+          "marcador",
+          "externo"
+        ],
+        "swapTo": "BAREMO INTERNO",
+        "swapToTrigger": [
+          "baremo",
+          "interno"
+        ],
+        "payoffLead": "EL MAYOR DIVIDENDO",
+        "payoffLeadTrigger": [
+          "dividendo",
+          "paga"
+        ],
+        "payoffOld": "LUJOS",
+        "payoffOldTrigger": [
+          "lujos"
+        ],
+        "payoffNew": "AUTONOMÍA TOTAL",
+        "payoffNewTrigger": [
+          "autonomia"
+        ],
+        "payoffTail": "DUEÑO DE TU TIEMPO",
+        "payoffTailTrigger": [
+          "tiempo"
+        ]
       }
     },
     {
       "id": "scene-4",
-      "title": "Reglas para dominar",
-      "text": "Primero, blinda bloques de noventa minutos sin notificaciones. [PAUSA 0.4s] Segundo, abraza el aburrimiento y no mires el móvil al esperar. [PAUSA 0.4s] Tercero, elimina redes sociales que roban tu atención y finalmente, drena todo lo superficial.",
+      "title": "TRES LEYES DEL GASTO INTELIGENTE",
+      "text": "Aplica tres leyes fundamentales: [PAUSA 0.4s] uno, compra tiempo eliminando tareas que odias. [PAUSA 0.4s] Dos, no generes deuda social para encajar. [PAUSA 0.4s] Y tres, protege tus placeres simples.",
       "characterPreset": "narrator",
-      "blueprintMode": "BLUEPRINT_BLUE",
-      "visualCue": "Despliegue en cascada de las 4 Reglas para el Éxito en la Era de la Distracción.",
+      "blueprintMode": "EDITORIAL_PAPER",
+      "layoutPreset": "LAWS_DOMINO_CASCADE",
+      "visualCue": "Cascada vertical de 3 Leyes en tarjetas amarillo pálido (#FEF9C3) con barras de impacto y flujo descendente de libertad financiera.",
       "cameraTarget": {
         "x": 0,
         "y": 1980,
@@ -116,52 +300,85 @@
         "rotateDeg": 0
       },
       "metrics": {
-        "label": "BLOQUE MÍNIMO",
-        "numericValue": 90,
-        "unit": "MIN"
+        "label": "LEYES DEL GASTO",
+        "numericValue": 3,
+        "unit": "LEYES"
       },
       "bookVisualData": {
-        "sectionBadge": "PUNTO 03 · PROTOCOLO PRÁCTICO",
-        "headlineTitle": "LAS 4 REGLAS DE CÉNTRATE",
+        "dominoTriggerKeyword": [
+          "leyes",
+          "fundamentales",
+          "aplica"
+        ],
         "actionableLaws": [
           {
             "index": "01",
-            "title": "TRABAJA CON PROFUNDIDAD",
-            "rule": "Bloques blindados de 90 min sin notificaciones",
+            "title": "COMPRA TIEMPO",
+            "rule": "Paga para eliminar fricción y delegar obligaciones que consumen tu energía vital.",
             "impactPct": 96,
-            "highlight": true
+            "highlight": true,
+            "triggerKeyword": [
+              "tiempo",
+              "eliminando",
+              "odias"
+            ],
+            "shortRule": "Paga para eliminar tareas que odias"
           },
           {
             "index": "02",
-            "title": "ABRAZA EL ABURRIMIENTO",
-            "rule": "No mires el móvil al esperar: entrena tu foco",
-            "impactPct": 91,
-            "highlight": false
+            "title": "CERO DEUDA SOCIAL",
+            "rule": "Nunca compres cosas caras para mantener apariencias con amigos o vecinos.",
+            "impactPct": 93,
+            "highlight": false,
+            "triggerKeyword": [
+              "deuda",
+              "social",
+              "encajar"
+            ],
+            "shortRule": "Cero deuda para encajar o aparentar"
           },
           {
             "index": "03",
-            "title": "DEJA LAS REDES SOCIALES",
-            "rule": "Elimina apps que roban atención y aportan 0 valor",
-            "impactPct": 88,
-            "highlight": true
+            "title": "PROTEGE PLACERES SIMPLES",
+            "rule": "Evita que la inflación de estilo de vida destruya tu capacidad de disfrutar lo cotidiano.",
+            "impactPct": 95,
+            "highlight": true,
+            "triggerKeyword": [
+              "protege",
+              "placeres",
+              "simples"
+            ],
+            "shortRule": "Protege tus placeres cotidianos simples"
+          }
+        ],
+        "dominoSteps": [
+          {
+            "label": "Compra Tiempo",
+            "sub": "Ley 1"
           },
           {
-            "index": "04",
-            "title": "DRENA LO SUPERFICIAL",
-            "rule": "Planifica cada minuto y apaga el trabajo a las 18h",
-            "impactPct": 94,
-            "highlight": false
+            "label": "Cero Deuda Social",
+            "sub": "Ley 2"
+          },
+          {
+            "label": "Placeres Simples",
+            "sub": "Ley 3"
+          },
+          {
+            "label": "Libertad Real",
+            "sub": "Meta"
           }
         ]
       }
     },
     {
       "id": "scene-5",
-      "title": "Tu decisión final",
-      "text": "Quien eres y lo que logras es la suma de aquello en lo que decides concentrarte. [PAUSA 0.4s] Destierra tu adicción a la distracción hoy mismo. [PAUSA 0.4s] Aplica estas reglas y transforma tu vida profesional para siempre.",
+      "title": "EL MANIFIESTO",
+      "text": "Ser rico es tener dinero; ser libre es que el dinero no te controle. [PAUSA 0.4s] El arte de gastar dinero, de Morgan Housel. [PAUSA 0.4s] Guarda este resumen para cuando la presión social te empuje a gastar y sigue la cuenta de en un minuto para dominar un libro clave cada día.",
       "characterPreset": "conversational",
-      "blueprintMode": "TOPOLOGY_WIREFRAME",
-      "visualCue": "Tarjeta de tesis central sobre la atención y panel animado de CTA con portada de Céntrate.",
+      "blueprintMode": "EDITORIAL_PAPER",
+      "layoutPreset": "CTA_MANIFESTO_GOODREADS",
+      "visualCue": "Cita Manifiesto (KineticCard) + Ficha oficial Goodreads con Mini-Portada + CtaEndCard con Cronómetro Hero y doble llamada a la acción (guardado psicológico + promesa de marca para conseguir seguidores).",
       "cameraTarget": {
         "x": 560,
         "y": 3960,
@@ -169,18 +386,33 @@
         "rotateDeg": 0
       },
       "metrics": {
-        "label": "LECTURA ESTIMADA",
-        "numericValue": 3.8,
-        "unit": "HORAS"
+        "label": "VALORACIÓN",
+        "numericValue": 4.15,
+        "unit": "★"
       },
       "bookVisualData": {
-        "sectionBadge": "LA REGLA DE ORO",
-        "headlineTitle": "PROTEGE TU ATENCIÓN",
-        "identityQuote": "Quien eres, qué piensas, sientes y haces es la suma de aquello en lo que decides concentrarte.",
-        "identitySub": "Tu atención es el activo más escaso y valioso de esta década.",
-        "ctaMain": "¿Quieres más libros en 60 segundos?",
-        "ctaSub": "¡Síguenos y comenta tu opinión!"
+        "identityQuote": "Ser rico es tener dinero; ser libre es que el dinero no te controle.",
+        "highlightWords": [
+          "el dinero no te controle"
+        ],
+        "ctaPrompt": "Para reflexionar tras guardar el resumen: ¿cuál es ese gasto que hiciste solo por aparentar y del que hoy te arrepientes?",
+        "ctaActionText": "GUARDA ESTE RESUMEN PARA CUANDO LA PRESIÓN SOCIAL TE EMPUJE A GASTAR",
+        "brandPromise": "1 libro clave cada día en 60s",
+        "showCommunityQuestion": true,
+        "ctaHandle": "@en1minuto.es",
+        "verdictBadge": "NUEVO BESTSELLER · MORGAN HOUSEL",
+        "ctaHeadline": "GUARDA ESTE RESUMEN PARA CUANDO LA PRESIÓN SOCIAL TE EMPUJE A GASTAR",
+        "communityQuestion": "¿Qué gasto hiciste solo por aparentar y del que hoy te arrepientes?"
       }
     }
-  ]
+  ],
+  "music": {
+    "file": "audio/music/vibing-over-venus.mp3",
+    "title": "Vibing Over Venus",
+    "artist": "Kevin MacLeod",
+    "license": "CC BY 4.0",
+    "attribution": "\"Vibing Over Venus\" Kevin MacLeod (incompetech.com) Licensed under CC BY 4.0",
+    "volume": 0.55,
+    "duckedVolume": 0.28
+  }
 }

@@ -8,7 +8,6 @@ export const CharacterPresetSchema = z.enum([
   'expert',
   'dramatic',
   'conversational',
-  'salesperson',
   'calm',
 ]);
 
@@ -37,14 +36,18 @@ export const BookMetadataSchema = z.object({
   publishYear: z.number(),
   pages: z.number(),
   readingTimeHours: z.number().optional(),
+  salesCopies: z.string().optional(),
   rating: z.number(),
   ratingsCount: z.string(),
-  salesCopies: z.string().optional(),
   coverImage: z.string(),
   fallbackCoverImage: z.string().optional(),
   coverSource: z.string().optional(),
   categoryTag: z.string(),
   goodreadsUrl: z.string().optional(),
+  /** Fuente REAL de la valoración ('Google Books', 'Open Library', 'Goodreads'...). Se muestra en pantalla. */
+  ratingSource: z.string().optional(),
+  /** Fecha de captura del dato (YYYY-MM) */
+  ratingDate: z.string().optional(),
 });
 
 export type BookMetadata = z.infer<typeof BookMetadataSchema>;
@@ -66,70 +69,160 @@ export const BookActionableLawSchema = z.object({
   rule: z.string(),
   impactPct: z.number(),
   highlight: z.boolean().optional(),
+  /** Versión corta de la regla (≤ 6 palabras) para la tarjeta grande */
+  shortRule: z.string().optional(),
+  triggerKeyword: z.union([z.string(), z.array(z.string())]).optional(),
 });
 
 export type BookActionableLaw = z.infer<typeof BookActionableLawSchema>;
 
+/**
+ * Catálogo de Presets Visuales del Motor Híbrido Inteligente (mapeado 1:1 al cuestionario ask_question)
+ */
+export const SceneLayoutPresetSchema = z.enum([
+  // Escena 1 — El Gancho + Portada
+  'HOOK_COVER_BATTLE',
+  'HOOK_COVER_STAT',
+  'HOOK_COVER_QUESTION',
+  // Escena 2 — La Tesis / Mecanismo Científico
+  'THESIS_LOOP_CIRCUIT',
+  'THESIS_EXPONENTIAL_CHART',
+  'THESIS_COMPARISON_BATTLE',
+  // Escena 3 — La Regla de Oro / Evidencia Central
+  'RULE_TRANSFORM_CIRCUIT',
+  'RULE_SUBSTITUTION_DIAGRAM',
+  'RULE_EXPONENTIAL_EVIDENCE',
+  // Escena 4 — Las Leyes Accionables / Casos Reales
+  'LAWS_DOMINO_CASCADE',
+  'LAWS_COMPARISON_BATTLE',
+  'LAWS_PILLAR_MATRIX',
+  // Escena 5 — El Manifiesto Final + CTA @en1minuto.es
+  'CTA_MANIFESTO_GOODREADS',
+  'CTA_EXECUTIVE_SUMMARY',
+]);
+
+export type SceneLayoutPreset = z.infer<typeof SceneLayoutPresetSchema>;
+
+/**
+ * Nodo declarativo del circuito vectorial con auto-binding semántico por palabra clave
+ */
+export const CircuitNodeInputSchema = z.object({
+  id: z.string(),
+  num: z.string(),
+  label: z.string(),
+  sublabel: z.string(),
+  triggerKeyword: z.union([z.string(), z.array(z.string())]).optional(),
+  triggerFrame: z.number().optional(),
+  endSpokenFrame: z.number().optional(),
+});
+
+export type CircuitNodeInput = z.infer<typeof CircuitNodeInputSchema>;
+
+/**
+ * Bloque custom declarativo para overrides en el Motor Híbrido Inteligente
+ */
+export const SceneCustomBlockSchema = z.object({
+  type: z.enum([
+    'KINETIC_QUOTE',
+    'LIVE_COUNTER',
+    'COMPARISON_BATTLE',
+    'VECTOR_LOOP',
+    'EXPONENTIAL_CHART',
+    'GOODREADS_BADGES',
+  ]),
+  triggerKeyword: z.union([z.string(), z.array(z.string())]).optional(),
+  props: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type SceneCustomBlock = z.infer<typeof SceneCustomBlockSchema>;
+
 export const BookVisualDataSchema = z
   .object({
+    // ── Kit BIG v3 (menos palabras, tarjetas grandes) ─────────────────────────
+    /** Escena 1: frase gancho en pantalla desde el fotograma 0 (≤ 9 palabras) */
+    hookText: z.string().optional(),
+    hookHighlight: z.array(z.string()).optional(),
+    /** Escena 1: duelo final A (lo fácil) vs B (lo difícil) con etiquetas cortas */
+    duelALabel: z.string().optional(),
+    duelAValue: z.string().optional(),
+    duelATrigger: z.union([z.string(), z.array(z.string())]).optional(),
+    duelBLabel: z.string().optional(),
+    duelBValue: z.string().optional(),
+    duelBTrigger: z.union([z.string(), z.array(z.string())]).optional(),
+    duelBTag: z.string().optional(),
+    duelTagTrigger: z.union([z.string(), z.array(z.string())]).optional(),
+    /** Escena 2: titular corto en tarjeta (≤ 4 palabras) */
+    thesisHeadline: z.string().optional(),
+    thesisHighlight: z.array(z.string()).optional(),
+    /** Escena 3: sustitución (de → a) y remate (viejo tachado → nuevo) */
+    swapFrom: z.string().optional(),
+    swapFromTrigger: z.union([z.string(), z.array(z.string())]).optional(),
+    swapTo: z.string().optional(),
+    swapToTrigger: z.union([z.string(), z.array(z.string())]).optional(),
+    payoffLead: z.string().optional(),
+    payoffLeadTrigger: z.union([z.string(), z.array(z.string())]).optional(),
+    payoffOld: z.string().optional(),
+    payoffOldTrigger: z.union([z.string(), z.array(z.string())]).optional(),
+    payoffNew: z.string().optional(),
+    payoffNewTrigger: z.union([z.string(), z.array(z.string())]).optional(),
+    payoffTail: z.string().optional(),
+    payoffTailTrigger: z.union([z.string(), z.array(z.string())]).optional(),
+    /** Escena 5: titular del CTA y pregunta comunitaria cortos */
+    ctaHeadline: z.string().optional(),
+    communityQuestion: z.string().optional(),
+    // ── Campos heredados ──────────────────────────────────────────────────────
+    provocativeQuestion: z.string().optional(),
+    provocativeHighlight: z.string().optional(),
+    bookKeywords: z.array(z.string()).optional(),
+    growthMetric: z.string().optional(),
+    growthFormula: z.string().optional(),
+    mythTriggerKeyword: z.union([z.string(), z.array(z.string())]).optional(),
+    strikeTriggerKeyword: z.union([z.string(), z.array(z.string())]).optional(),
+    realityTriggerKeyword: z.union([z.string(), z.array(z.string())]).optional(),
     hookStat: z.string().optional(),
-    hookStatValue: z.number().optional(),
-    hookStatSuffix: z.string().optional(),
+    hookNumericValue: z.number().optional(),
+    hookUnit: z.string().optional(),
     hookLabel: z.string().optional(),
-    hookSublabel: z.string().optional(),
-    badgeVentas: z.string().optional(),
+    hookSource: z.string().optional(),
+    hookTriggerKeyword: z.union([z.string(), z.array(z.string())]).optional(),
+    battleTriggerKeyword: z.union([z.string(), z.array(z.string())]).optional(),
+    mythLabel: z.string().optional(),
+    mythSubtitle: z.string().optional(),
+    mythTag: z.string().optional(),
+    realityLabel: z.string().optional(),
+    realitySubtitle: z.string().optional(),
+    realityTag: z.string().optional(),
     goodreadsRating: z.string().optional(),
     goodreadsReviews: z.string().optional(),
-    sectionBadge: z.string().optional(),
-    headlineTitle: z.string().optional(),
-    mythLabel: z.string().optional(),
-    mythText: z.string().optional(),
-    realityLabel: z.string().optional(),
-    realityText: z.string().optional(),
-    quote: z.string().optional(),
-    quoteAuthor: z.string().optional(),
-    centralQuote: z.string().optional(),
-    highlightWords: z.array(z.string()).optional(),
-    loopSteps: z.array(z.string()).optional(),
     rulerLabel: z.string().optional(),
-    primaryBadge: z.string().optional(),
-    primaryRightBadge: z.string().optional(),
-    targetCounterValue: z.number().optional(),
     formulaLabel: z.string().optional(),
-    formula: z.string().optional(),
-    contrastFormula: z.string().optional(),
-    growthLabel: z.string().optional(),
-    decayLabel: z.string().optional(),
-    secondaryTitle: z.string().optional(),
-    secondarySub: z.string().optional(),
-    secondaryValue: z.string().optional(),
+    formulaSublabel: z.string().optional(),
     primaryCurveLabel: z.string().optional(),
     secondaryCurveLabel: z.string().optional(),
+    loopSteps: z.array(z.string()).optional(),
+    circuitNodes: z.array(CircuitNodeInputSchema).optional(),
+    centralQuote: z.string().optional(),
+    highlightWords: z.array(z.string()).optional(),
     quoteExcerpt: BookQuoteExcerptSchema.optional(),
     secondaryQuote: BookQuoteExcerptSchema.optional(),
     actionableLaws: z.array(BookActionableLawSchema).optional(),
-    laws: z
+    dominoSteps: z
       .array(
         z.object({
-          num: z.string(),
-          name: z.string(),
-          desc: z.string(),
-          tag: z.string().optional(),
-          highlightBadge: z.string().optional(),
+          label: z.string(),
+          sub: z.string(),
         })
       )
       .optional(),
+    dominoTriggerKeyword: z.union([z.string(), z.array(z.string())]).optional(),
     identityQuote: z.string().optional(),
-    identityPhrase: z.string().optional(),
-    identitySub: z.string().optional(),
-    verdictTitle: z.string().optional(),
-    verdictSubtitle: z.string().optional(),
-    readingTime: z.string().optional(),
-    ctaPrompt: z.string().optional(),
-    ctaHandle: z.string().optional(),
-    ctaMain: z.string().optional(),
-    ctaSub: z.string().optional(),
     verdictBadge: z.string().optional(),
+    ctaPrompt: z.string().optional(),
+    ctaActionText: z.string().optional(),
+    brandPromise: z.string().optional(),
+    showCommunityQuestion: z.boolean().optional(),
+    ctaHandle: z.string().optional(),
+    executiveSummaryPoints: z.array(z.string()).optional(),
     callouts: z
       .array(
         z.object({
@@ -161,6 +254,8 @@ export const SceneInputSchema = z.object({
       'EDITORIAL_PAPER',
     ])
     .optional(),
+  layoutPreset: SceneLayoutPresetSchema.optional(),
+  customBlocks: z.array(SceneCustomBlockSchema).optional(),
   visualCue: z.string(),
   cameraTarget: z
     .object({
@@ -189,6 +284,20 @@ export const ScenesFileSchema = z.object({
   height: z.number().default(1920),
   crossDissolveFrames: z.number().default(10),
   bookMetadata: BookMetadataSchema.optional(),
+  /** Música de fondo de marca (ver public/audio/music/music-catalog.json) */
+  music: z
+    .object({
+      file: z.string(),
+      title: z.string(),
+      artist: z.string(),
+      license: z.string(),
+      attribution: z.string(),
+      /** Volumen base (0-1) cuando NO habla la voz */
+      volume: z.number().default(0.55),
+      /** Volumen bajo la voz (ducking) */
+      duckedVolume: z.number().default(0.28),
+    })
+    .optional(),
   scenes: z.array(SceneInputSchema),
 });
 
@@ -231,12 +340,10 @@ export type AudioManifest = z.infer<typeof AudioManifestSchema>;
 export const VideoPropsSchema = z.object({
   title: z
     .string()
-    .default('Céntrate (Deep Work) — Cal Newport (Resumen 60s)'),
-  surfaceColor: z.string().default('#F8F7F4'),
+    .default('Hábitos Atómicos — James Clear (Resumen Vectorial 65s)'),
+  surfaceColor: z.string().default('#111111'),
   enableCaptions: z.boolean().default(true),
-  enableBackgroundMusic: z.boolean().default(false),
-  enableGrain: z.boolean().default(true),
-  enableVignette: z.boolean().default(true),
+  enableBackgroundMusic: z.boolean().default(true),
 });
 
 export type VideoProps = z.infer<typeof VideoPropsSchema>;

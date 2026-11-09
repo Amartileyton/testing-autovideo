@@ -1,17 +1,22 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import type {
+  BookMetadata,
+  BookVisualData,
+  SceneLayoutPreset,
+  WordTimestamp,
+} from '../data/schema';
 import {
-  interpolate,
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-} from 'remotion';
-import type { BookMetadata, BookVisualData } from '../data/schema';
+  BIG,
+  FS,
+  KineticWords,
+  PaleCard,
+  SceneFrame,
+  TriangleConnector,
+  buildTokens,
+} from '../components/big';
 import { CLAMP_EXTRAPOLATION, SPRING_SNAPPY } from '../theme/motion';
-import {
-  ExponentialGrowthChart,
-  KineticCard,
-  LiveCounter,
-} from '../components/kinetic';
+import { findKeywordFrameWindow } from '../utils/wordTimingBinder';
 
 export interface Scene2Props {
   headline?: string;
@@ -23,159 +28,135 @@ export interface Scene2Props {
   enterFrame?: number;
   bookMetadata?: BookMetadata;
   visualData?: BookVisualData;
+  layoutPreset?: SceneLayoutPreset;
+  wordTimestamps?: WordTimestamp[];
 }
 
+const STATION_H = 175;
+const GAP_H = 64;
+const STACK_TOP = 340;
+
 /**
- * Scene 2 — Ecuación Cognitiva y Curva de Crecimiento Exponencial (@en1minuto.es):
- * Sin píldoras pequeñas ni micro-títulos superfluos. Tarjetas en fondo ocre pálido bloc de notas (#FDF6DF).
+ * Scene 2 — TESIS / CIRCUITO (kit EDITORIAL PRO v4)
+ * Titular corto en tarjeta + 4 estaciones que se encienden al ritmo de la voz,
+ * unidas por conectores triangulares limpios. Sin subtítulos internos.
  */
 export const Scene2: React.FC<Scene2Props> = ({
-  headline = 'Ocupado ≠ Productivo',
-  canvasOffsetX = 1120,
+  canvasOffsetX = 0,
   canvasOffsetY = 0,
-  enterFrame = 393,
+  enterFrame = 0,
   visualData,
+  wordTimestamps,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const localFrame = Math.max(0, frame - enterFrame);
+  const local = frame - enterFrame;
 
-  // 1. Cabecera (frame 0)
-  const headerEntrance = spring({
-    frame: localFrame,
-    fps,
-    config: SPRING_SNAPPY,
-  });
+  const nodes = visualData?.circuitNodes ?? [];
+  const headline = visualData?.thesisHeadline ?? visualData?.growthMetric ?? 'LA TESIS';
+  const headTokens = useMemo(
+    () => buildTokens(headline, wordTimestamps, visualData?.thesisHighlight ?? [], 4),
+    [headline, wordTimestamps, visualData?.thesisHighlight]
+  );
 
-  // 2. Progreso de llenado de la barra reactiva
-  const fillProgress = spring({
-    frame: Math.max(0, localFrame - 180),
-    fps,
-    config: { damping: 22, stiffness: 100, mass: 0.9 },
-    durationInFrames: 50,
-  });
-
-  const targetVal = visualData?.targetCounterValue ?? 5.0;
+  // Fotograma de encendido de cada estación (auto-binder con las palabras de la voz)
+  const starts = useMemo(() => {
+    const result: number[] = [];
+    nodes.forEach((n, i) => {
+      const fallback = 70 + i * 55;
+      const min = i === 0 ? 0 : result[i - 1] + 10;
+      result.push(
+        findKeywordFrameWindow(wordTimestamps, n.triggerKeyword ?? n.label, fallback, fallback + 40, min)
+          .startFrame
+      );
+    });
+    return result;
+  }, [nodes, wordTimestamps]);
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        left: canvasOffsetX,
-        top: canvasOffsetY,
-        width: 1080,
-        height: 1920,
-        pointerEvents: 'none',
-        padding: '0 96px',
-        boxSizing: 'border-box',
-      }}
-    >
-      {/* 1. Titular Limpio (Sin píldora superior) */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 140,
-          left: 96,
-          right: 96,
-          opacity: headerEntrance,
-          transform: `translateY(${(1 - headerEntrance) * -20}px)`,
-        }}
-      >
-        <h1
-          style={{
-            fontFamily: "'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif",
-            fontSize: 60,
-            fontWeight: 900,
-            color: '#141413',
-            margin: 0,
-            lineHeight: 1.06,
-            letterSpacing: '-0.035em',
-          }}
-        >
-          {visualData?.headlineTitle || headline}
-        </h1>
+    <SceneFrame canvasOffsetX={canvasOffsetX} canvasOffsetY={canvasOffsetY}>
+      <div style={{ position: 'absolute', top: BIG.contentTop, left: BIG.sideMargin, right: BIG.sideMargin }}>
+        <PaleCard frame={local} enterFrame={-4} from="top" style={{ padding: '26px 40px' }}>
+          <KineticWords tokens={headTokens} frame={local} fontSize={FS.title} lineHeight={1.06} />
+        </PaleCard>
       </div>
 
-      {/* 2. Tarjeta Hero Integrada con LiveCounter (Sin píldoras pequeñas) */}
-      <div style={{ position: 'absolute', top: 265, left: 96, right: 96 }}>
-        <KineticCard
-          enterFrame={enterFrame + 10}
-          accentBorderColor="#141413"
-          padding="32px 36px"
-          style={{
-            borderTop: '8px solid #D94E34',
-            textAlign: 'center',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'baseline',
-              lineHeight: 1,
-            }}
-          >
-            <LiveCounter
-              from={1.0}
-              to={targetVal}
-              startFrame={enterFrame + 140}
-              durationFrames={45}
-              decimals={2}
-              suffix="x"
-              fontSize={112}
-              color="#141413"
-              fontFamily="'Plus Jakarta Sans', 'Inter', sans-serif"
-            />
-          </div>
+      <div style={{ position: 'absolute', top: STACK_TOP, left: BIG.sideMargin, right: BIG.sideMargin }}>
+        {nodes.map((n, i) => {
+          const t = starts[i] ?? 9999;
+          const nextT = starts[i + 1] ?? 99999;
+          const isActive = local >= t && local < nextT;
+          const isDone = local >= nextT;
+          const isLast = i === nodes.length - 1;
+          const p = spring({ frame: Math.max(0, local - t), fps, config: SPRING_SNAPPY });
+          const lit = local >= t;
 
-          <div
-            style={{
-              fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-              fontSize: 25,
-              fontWeight: 800,
-              color: '#141413',
-              marginTop: 14,
-              letterSpacing: '-0.02em',
-            }}
-          >
-            {visualData?.formulaLabel || 'Producción = Tiempo × Intensidad de Enfoque'}
-          </div>
+          const fill = isActive ? (isLast ? BIG.ink : BIG.accent) : lit ? BIG.card : BIG.cream;
+          const textColor = isActive ? BIG.cream : lit ? BIG.ink : 'rgba(20, 20, 19, 0.42)';
+          const scale = isActive ? interpolate(p, [0, 1], [1, 1.03], CLAMP_EXTRAPOLATION) : 1;
 
-          {/* Barra reactiva */}
-          <div
-            style={{
-              marginTop: 18,
-              width: '100%',
-              height: 10,
-              backgroundColor: 'rgba(217, 78, 52, 0.14)',
-              borderRadius: 5,
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                width: `${interpolate(fillProgress, [0, 1], [3, 100], CLAMP_EXTRAPOLATION)}%`,
-                height: '100%',
-                backgroundColor: '#D94E34',
-                borderRadius: 5,
-              }}
-            />
-          </div>
-        </KineticCard>
+          return (
+            <React.Fragment key={n.id}>
+              <PaleCard
+                frame={local}
+                enterFrame={4 + i * 4}
+                from="bottom"
+                fill={fill}
+                borderStyle={lit ? 'solid' : 'dashed'}
+                borderColor={lit ? BIG.ink : 'rgba(20, 20, 19, 0.35)'}
+                restScale={scale}
+                style={{
+                  height: STATION_H,
+                  padding: '0 32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 26,
+                }}
+              >
+                <div
+                  style={{
+                    flexShrink: 0,
+                    width: 92,
+                    height: 92,
+                    borderRadius: 46,
+                    border: `3px solid ${isActive ? BIG.cream : lit ? BIG.ink : 'rgba(20,20,19,0.35)'}`,
+                    backgroundColor: isActive ? 'rgba(255,251,235,0.16)' : isDone ? BIG.ink : 'transparent',
+                    color: isDone ? BIG.card : textColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: BIG.font,
+                    fontWeight: 800,
+                    fontSize: 44,
+                  }}
+                >
+                  {isDone ? '✓' : n.num}
+                </div>
+                <div
+                  style={{
+                    fontFamily: BIG.font,
+                    fontWeight: 800,
+                    fontSize: 52,
+                    lineHeight: 1.05,
+                    letterSpacing: '-0.02em',
+                    color: textColor,
+                  }}
+                >
+                  {n.label}
+                </div>
+              </PaleCard>
+              {i < nodes.length - 1 ? (
+                <TriangleConnector
+                  frame={local}
+                  enterFrame={nextT - 4}
+                  color={i === 1 ? BIG.amber : BIG.accent}
+                  height={GAP_H}
+                />
+              ) : null}
+            </React.Fragment>
+          );
+        })}
       </div>
-
-      {/* 3. Gráfico de Crecimiento Exponencial Animado debajo de la tarjeta */}
-      <div style={{ position: 'absolute', top: 610, left: 96, right: 96 }}>
-        <ExponentialGrowthChart
-          startFrame={enterFrame}
-          width={888}
-          height={520}
-          accentColor="#D94E34"
-          peakValue={targetVal}
-          xUnitLabel="HORA"
-          maxUnits={4}
-        />
-      </div>
-    </div>
+    </SceneFrame>
   );
 };

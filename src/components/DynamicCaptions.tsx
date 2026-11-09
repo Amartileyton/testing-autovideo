@@ -13,7 +13,7 @@ export type CaptionVariant =
   | 'vector-box'      // Modo texto limpio con resaltado kinetic en amarillo ocre #FBBF24
   | 'ochre-blueprint' // Ref 1: Texto blanco con acento ocre (#FBBF24) sobre azul ingeniería
   | 'red-pill'        // Ref 5: Pastilla rectangular roja (#DC2626) sobre laboratorio oscuro
-  | 'editorial-clean'; // Modo papel técnico claro (#F8F7F4) sin caja de fondo
+  | 'editorial-clean'; // Modo papel técnico claro (#F8F7F4)
 
 export type CaptionPlacement = 'upper' | 'middle' | 'lower';
 
@@ -65,23 +65,25 @@ function isSemanticKeyword(word: string): boolean {
     'bucle',
     'señal',
     'anhelo',
-    'foco',
   ]);
   return hooks.has(clean);
 }
 
 /**
- * DynamicCaptions — Motor de Subtítulos @en1minuto.es + Leo Sync:
+ * DynamicCaptions — Motor de Subtítulos @resultaaquee + Leo Sync:
  * 1. Tolerancia de retención de 450ms (0.45s) en pausas naturales.
  * 2. Cero vibraciones y cero reflujo horizontal:
- *    - En 'editorial-clean', texto Nunito 52px 800 sin fondo (backgroundColor: 'transparent'),
- *      palabra activa en terracota #D94E34 e inactivas en carbón #141413 con halo #F8F7F4.
+ *    - Todas las palabras (activas e inactivas) comparten exactamente el mismo box-model
+ *      (padding: '2px 10px', border: '2.5px solid ...', fontWeight: 700).
+ *    - Escala sobre-amortiguada (SPRING_SNAPPY) acotada de 1.0 a 1.05.
+ * 3. Soporta los 4 modos visuales: 'vector-box' (Ref 2/3), 'ochre-blueprint' (Ref 1),
+ *    'red-pill' (Ref 5) y 'editorial-clean'.
  */
 export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
   wordTimestamps = [],
   sceneStartFrame = 0,
   wordsPerWindow,
-  variant = 'editorial-clean',
+  variant = 'vector-box',
   placement = 'lower',
   showVectorBox = false,
 }) => {
@@ -91,25 +93,32 @@ export const DynamicCaptions: React.FC<DynamicCaptionsProps> = ({
   const currentSec = localFrame / fps;
   const currentMs = currentSec * 1000;
 
-  // Normalizar y desinfectar timestamps para evitar tokens que sean exclusivamente signos de puntuación aislados o dobles (.,)
+  // Normalizar y desinfectar timestamps para evitar tokens que sean exclusivamente signos de puntuación aislados
   const sanitizedTimestamps = React.useMemo(() => {
     const list: WordTimestamp[] = [];
     for (const item of wordTimestamps) {
-      const cleanedWord = item.word.trim().replace(/([.!?¡¿:;]),+/g, '$1');
-      const isOnlyPunctuation = /^[.,;:¡!¿?«»"'\-–—\s]+$/.test(cleanedWord);
+      const isOnlyPunctuation = /^[.,;:¡!¿?«»"'\-–—\s]+$/.test(item.word.trim());
       if (isOnlyPunctuation) {
         if (list.length > 0) {
-          const prevWord = list[list.length - 1].word;
-          const mergedWord = `${prevWord}${cleanedWord}`.replace(/([.!?¡¿:;]),+/g, '$1');
+          // Fusionar signo de puntuación con la palabra previa para evitar palabra huérfana
+          const prev = list[list.length - 1];
+          const punct = item.word.trim();
+          const cleanPunct = (w: string) =>
+            w.replace(/([:.,;!?])\s*([,;])/g, '$1').replace(/\.{4,}/g, '...');
+          const merged =
+            /[:.,;!?]$/.test(prev.word) && /^[,;]/.test(punct)
+              ? prev.word
+              : cleanPunct(`${prev.word}${punct}`);
           list[list.length - 1] = {
-            ...list[list.length - 1],
-            word: mergedWord,
-            endMs: Math.max(list[list.length - 1].endMs, item.endMs),
-            endFrame: Math.max(list[list.length - 1].endFrame, item.endFrame),
+            ...prev,
+            word: merged,
+            endMs: Math.max(prev.endMs, item.endMs),
+            endFrame: Math.max(prev.endFrame, item.endFrame),
           };
         }
       } else {
-        list.push({ ...item, word: cleanedWord });
+        const cleanWord = item.word.replace(/([:.,;!?])\s*([,;])/g, '$1');
+        list.push({ ...item, word: cleanWord });
       }
     }
     return list;

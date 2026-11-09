@@ -1,7 +1,7 @@
 /**
  * src/theme/motion.ts
  * Sistema de Movimiento Cerrado, Físicas Spring, 5 Modos de Superficie @resultaaquee,
- * 15 Blueprints de OPENMONTAGE, Reglas Haidrrrry y Configuración de Marca @en1minuto.es.
+ * 15 Blueprints de OPENMONTAGE y las 27 Reglas de LottieFiles/motion-design-skill.
  *
  * REGLAS INQUEBRANTABLES:
  * 1. Prohibido CSS transition o @keyframes. Todo movimiento usa useCurrentFrame().
@@ -13,8 +13,7 @@
  * 5. Zona Segura Vertical (9:16): Todo texto y vector clave en el 85% superior (288px inferiores reservados).
  */
 
-import type React from 'react';
-import { Easing, interpolate, spring, type SpringConfig } from 'remotion';
+import { Easing, type SpringConfig } from 'remotion';
 
 /**
  * Física Spring #1: Entradas de UI, cajas de selección vectorial, contadores numéricos y trazos.
@@ -57,102 +56,6 @@ export const MOTION_EASING = {
   /** Ligera anticipación antes de un movimiento rápido */
   anticipate: Easing.bezier(0.36, 0, 0.66, -0.56),
 } as const;
-
-export interface ThreePropertyEntranceOptions {
-  delayFrames?: number;
-  durationFrames?: number;
-  riseDistancePx?: number;
-  initialScale?: number;
-  useSpring?: boolean;
-}
-
-export interface ThreePropertyEntranceResult {
-  opacity: number;
-  translateY: number;
-  scale: number;
-  transform: string;
-  style: React.CSSProperties;
-}
-
-/**
- * Regla de Oro de Motion Design (Haidrrrry + @resultaaquee):
- * Ningún elemento entra de golpe ni con una sola propiedad.
- * Combina simultáneamente Opacity (0 -> 1), Rise (translateY: +dist -> 0) y Scale (0.92 -> 1.0)
- * con física SPRING_SNAPPY o curva quartOut.
- */
-export function threePropertyEntrance(
-  frame: number,
-  fps: number = 30,
-  options: ThreePropertyEntranceOptions = {}
-): ThreePropertyEntranceResult {
-  const {
-    delayFrames = 0,
-    durationFrames = 18,
-    riseDistancePx = 36,
-    initialScale = 0.92,
-    useSpring = true,
-  } = options;
-
-  const localFrame = Math.max(0, frame - delayFrames);
-
-  let progress: number;
-  if (useSpring) {
-    progress = spring({
-      frame: localFrame,
-      fps,
-      config: SPRING_SNAPPY,
-    });
-  } else {
-    progress = interpolate(
-      localFrame,
-      [0, Math.max(1, durationFrames)],
-      [0, 1],
-      {
-        ...CLAMP_EXTRAPOLATION,
-        easing: MOTION_EASING.quartOut,
-      }
-    );
-  }
-
-  const opacity = interpolate(
-    localFrame,
-    [0, Math.min(10, durationFrames)],
-    [0, 1],
-    CLAMP_EXTRAPOLATION
-  );
-
-  const translateY = interpolate(
-    progress,
-    [0, 1],
-    [riseDistancePx, 0],
-    CLAMP_EXTRAPOLATION
-  );
-
-  const scale = interpolate(
-    progress,
-    [0, 1],
-    [initialScale, 1.0],
-    CLAMP_EXTRAPOLATION
-  );
-
-  return {
-    opacity,
-    translateY,
-    scale,
-    transform: `translateY(${translateY}px) scale(${scale})`,
-    style: {
-      opacity,
-      transform: `translateY(${translateY}px) scale(${scale})`,
-    },
-  };
-}
-
-/**
- * Calcula el offset en fotogramas para coreografía escalonada (Stagger) de 3 a 6 frames.
- */
-export function staggerDelay(index: number, baseDelayFrames: number = 4): number {
-  return index * baseDelayFrames;
-}
 
 /**
  * Constantes de las 27 Reglas de OPENMONTAGE + LottieFiles/motion-design-skill
@@ -345,11 +248,11 @@ export const BLUEPRINT_THEMES: Record<BlueprintModeId, BlueprintTheme> = {
   EDITORIAL_PAPER: {
     id: 'EDITORIAL_PAPER',
     name: 'Papel Técnico Editorial',
-    surface: '#F6F2E8',
-    surfaceRadialGlow: '#F9F6EE',
-    surfaceElevated: '#FDF6DF',
-    gridMajor: 'rgba(135, 118, 92, 0.42)',
-    gridMinor: 'rgba(135, 118, 92, 0.20)',
+    surface: '#F8F7F4',
+    surfaceRadialGlow: '#FFFBEB',
+    surfaceElevated: '#FEF9C3',
+    gridMajor: '#E5E2DC',
+    gridMinor: '#EFECE6',
     ink: '#141413',
     inkMuted: '#575550',
     accentPrimary: '#D94E34',
@@ -367,13 +270,12 @@ export const BLUEPRINT_THEMES: Record<BlueprintModeId, BlueprintTheme> = {
  * Paleta por defecto compatible con escenas existentes
  */
 export const PALETTE = {
-  surface: '#F6F2E8',
-  surfaceElevated: '#FDF6DF',
-  cardNotepad: '#FDF6DF',
-  cardNotepadAlt: '#F9EFCB',
-  cardBorder: '#DECBA4',
+  surface: '#F8F7F4',
+  surfaceElevated: '#FEF9C3',
+  cardPaleYellow: '#FEF9C3',
+  cardSoftCream: '#FFFBEB',
   surfaceMuted: '#EFECE6',
-  gridLine: 'rgba(135, 118, 92, 0.42)',
+  gridLine: '#E5E2DC',
   ink: '#141413',
   inkMuted: '#575550',
   accentPrimary: '#D94E34',
@@ -383,8 +285,9 @@ export const PALETTE = {
   border: '#262523',
 } as const;
 
+
 /**
- * Configuración de Marca Corporativa para el Canal de Resúmenes en 60s (@en1minuto.es)
+ * Configuración de Marca Corporativa para el Canal de Resúmenes en 60s
  */
 export const BRAND_CONFIG = {
   channelHandle: '@en1minuto.es',

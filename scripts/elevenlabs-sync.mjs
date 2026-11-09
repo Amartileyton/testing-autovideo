@@ -148,17 +148,18 @@ export const CHARACTER_PRESETS = {
 export function cleanPauseMarkers(text, replaceWithPunctuation = true) {
   if (!text) return '';
   let cleaned = text.replace(
-    /\[PAUSA(?:\s*[:=-]?\s*([0-9.,]*)\s*s?)?\]/gi,
-    (_match, durRaw) => {
-      if (!replaceWithPunctuation) return ' ';
+    /([:.,;!?])?\s*\[PAUSA(?:\s*[:=-]?\s*([0-9.,]*)\s*s?)?\]/gi,
+    (_match, prevPunct, durRaw) => {
       const normalized = (durRaw || '').trim().replace(',', '.');
       const dur = normalized ? parseFloat(normalized) : 0.4;
-      if (!Number.isNaN(dur) && dur >= 0.5) {
-        return '... ';
+      if (!replaceWithPunctuation) return prevPunct ? `${prevPunct} ` : ' ';
+      if (prevPunct) {
+        return dur >= 0.5 && prevPunct === '.' ? '... ' : `${prevPunct} `;
       }
-      return ', ';
+      return dur >= 0.5 ? '... ' : ', ';
     }
   );
+  cleaned = cleaned.replace(/([:.,;!?])\s*([,;])/g, '$1');
   cleaned = cleaned.replace(/\s*,\s*,+/g, ',');
   cleaned = cleaned.replace(/\s*\.{4,}/g, '...');
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
@@ -179,6 +180,8 @@ export function preprocessForTts(text) {
   cleaned = cleanPauseMarkers(cleaned, true);
   cleaned = cleaned.replace(/\[[^\]]{1,60}\]/g, '');
   cleaned = cleaned.replace(/`+/g, '');
+  // Fusión fonética de marca: elimina la parada antinatural de falso punto ortográfico en "punto es"
+  cleaned = cleaned.replace(/\bpunto\s+es\b/gi, 'puntoes');
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
   return cleaned;
 }
@@ -205,6 +208,33 @@ export function buildWordTimestamps(alignment, fps, trimOffsetMs = 0) {
   const ends = alignment.character_end_times_seconds;
 
   const words = [];
+  const pushWordItem = (w, sMs, eMs) => {
+    if (w.toLowerCase() === 'puntoes') {
+      const splitMs = Math.round(sMs + (eMs - sMs) * 0.65);
+      words.push({
+        word: 'punto',
+        startMs: sMs,
+        endMs: splitMs,
+        startFrame: Math.floor((sMs / 1000) * fps),
+        endFrame: Math.ceil((splitMs / 1000) * fps),
+      });
+      words.push({
+        word: 'es',
+        startMs: splitMs,
+        endMs: eMs,
+        startFrame: Math.floor((splitMs / 1000) * fps),
+        endFrame: Math.ceil((eMs / 1000) * fps),
+      });
+    } else {
+      words.push({
+        word: w,
+        startMs: sMs,
+        endMs: eMs,
+        startFrame: Math.floor((sMs / 1000) * fps),
+        endFrame: Math.ceil((eMs / 1000) * fps),
+      });
+    }
+  };
   let currentWord = '';
   let wordStartSec = null;
   let wordEndSec = null;
@@ -225,13 +255,7 @@ export function buildWordTimestamps(alignment, fps, trimOffsetMs = 0) {
           startMs + 25,
           Math.round(continuousEndSec * 1000 - trimOffsetMs)
         );
-        words.push({
-          word: currentWord,
-          startMs,
-          endMs,
-          startFrame: Math.floor((startMs / 1000) * fps),
-          endFrame: Math.ceil((endMs / 1000) * fps),
-        });
+        pushWordItem(currentWord, startMs, endMs);
         currentWord = '';
         wordStartSec = null;
         wordEndSec = null;
@@ -252,13 +276,7 @@ export function buildWordTimestamps(alignment, fps, trimOffsetMs = 0) {
   if (currentWord.length > 0 && wordStartSec !== null && wordEndSec !== null) {
     const startMs = Math.max(0, Math.round(wordStartSec * 1000 - trimOffsetMs));
     const endMs = Math.max(startMs + 25, Math.round(wordEndSec * 1000 - trimOffsetMs));
-    words.push({
-      word: currentWord,
-      startMs,
-      endMs,
-      startFrame: Math.floor((startMs / 1000) * fps),
-      endFrame: Math.ceil((endMs / 1000) * fps),
-    });
+    pushWordItem(currentWord, startMs, endMs);
   }
 
   const leadingSilenceMs =
@@ -523,6 +541,19 @@ async function main() {
     return;
   }
 
+  const sceneArgIdx = process.argv.indexOf('--scene');
+  const targetSceneArg =
+    sceneArgIdx !== -1 && process.argv[sceneArgIdx + 1]
+      ? process.argv[sceneArgIdx + 1]
+      : null;
+
+  let existingManifest = null;
+  if (fs.existsSync(INFO_JSON_PATH)) {
+    try {
+      existingManifest = JSON.parse(fs.readFileSync(INFO_JSON_PATH, 'utf-8'));
+    } catch {}
+  }
+
   const previousRequestIds = [];
   const manifestScenes = [];
 
@@ -540,6 +571,28 @@ async function main() {
 
     const mp3Filename = `${scene.id}.mp3`;
     const mp3Path = path.join(AUDIO_DIR, mp3Filename);
+    const existingScene = existingManifest?.scenes?.find(
+      (s) => s.id === scene.id
+    );
+
+    const shouldSynthesize =
+      !targetSceneArg ||
+      scene.id === targetSceneArg ||
+      !fs.existsSync(mp3Path) ||
+      !existingScene;
+
+    if (!shouldSynthesize && existingScene) {
+      console.log(
+        `⏩ [${i + 1}/${scenes.length}] Reutilizando audio y alignment existente para "${scene.id}"...`
+      );
+      manifestScenes.push({
+        ...existingScene,
+      });
+      const sceneAdvanceSec =
+        Math.max(1, existingScene.durationInFrames - crossDissolveFrames) / fps;
+      globalTimeCursorSec += sceneAdvanceSec;
+      continue;
+    }
 
     console.log(
       `🎙️ [${i + 1}/${scenes.length}] Sintetizando "${scene.id}" (preset: ${scene.characterPreset}, voice: ${voiceId})...`
